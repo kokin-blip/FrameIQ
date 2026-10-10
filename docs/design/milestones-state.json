@@ -1,0 +1,14 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "pageId": "20:2",
+  "screens": {
+    "recommendations": "23:16",
+    "presets": "23:105",
+    "comparison": "23:191",
+    "exportRecovery": "23:275",
+    "models": "23:314",
+    "recoveryStates": "23:347"
+  },
+  "status": "editable compositions created before production panels; earlier iterations preserved",
+  "automaticModelCapabilities": "not released pending parity and evaluation"
+}

@@ -1,0 +1,28 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "url": "https://www.figma.com/design/5L64rf754pinHPHimkme5e",
+  "pages": {
+    "foundations": "0:1",
+    "components": "2:2",
+    "extraction": "2:3",
+    "analysis": "2:4",
+    "fashion": "2:5",
+    "exportSettings": "2:6",
+    "handoff": "2:7"
+  },
+  "foundation": "2:34",
+  "views": {
+    "workspace": "4:2",
+    "library": "4:52",
+    "presets": "5:2",
+    "recommendations": "5:19",
+    "comparison": "5:50",
+    "detection": "7:2",
+    "identification": "7:14",
+    "looks": "7:26",
+    "export": "7:38",
+    "models": "7:42",
+    "precision": "8:2"
+  },
+  "handoff": "8:52"
+}

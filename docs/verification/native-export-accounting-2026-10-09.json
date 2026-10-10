@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "attemptOutcomes": [
+    {
+      "jobId": "225084cd-73fb-40ce-9316-7881cbc15348",
+      "outcome": "completed",
+      "count": 2
+    },
+    {
+      "jobId": "cb8591d7-98d5-49f6-be4c-863cfa69fa43",
+      "outcome": "skipped",
+      "count": 2
+    }
+  ],
+  "verifiedImageSidecarOrdinals": [
+    "1",
+    "60"
+  ],
+  "scope": "Packaged macOS native dialog export and resume in separate synthetic verification project; checked hashes and explicit BT.709 sidecar policy. Not full platform acceptance."
+}

@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T04:05:44.025753+00:00",
+  "title": "Design System: FrameIQ",
+  "extensions": {
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "Graphite Ground",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Dock Graphite",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Raised Graphite",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Graphite Divider",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Reading White",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Secondary Gray",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Fluent Action Blue",
+        "tonalRamp": [
+          "#06233c",
+          "#0a3c66",
+          "#0d548f",
+          "#0f6cbd",
+          "#3585ca",
+          "#64a2dc",
+          "#a0c6ed",
+          "#e5f1fc"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Action Hover Blue",
+        "tonalRamp": [
+          "#06233c",
+          "#0a3c66",
+          "#0d548f",
+          "#0f6cbd",
+          "#3585ca",
+          "#64a2dc",
+          "#a0c6ed",
+          "#e5f1fc"
+        ]
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Focus Blue",
+        "tonalRamp": [
+          "#06233c",
+          "#0a3c66",
+          "#0d548f",
+          "#0f6cbd",
+          "#3585ca",
+          "#64a2dc",
+          "#a0c6ed",
+          "#e5f1fc"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Action White",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Error Rose",
+        "tonalRamp": [
+          "#3a1e20",
+          "#613537",
+          "#885052",
+          "#ae7072",
+          "#cb9192",
+          "#dfb2b3",
+          "#efd2d3",
+          "#fbecee"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Inspection Charcoal",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover Graphite",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#616161",
+          "#7d7d7d",
+          "#999999",
+          "#b5b5b5",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "selected": {
+        "role": "neutral",
+        "displayName": "Selection Slate",
+        "tonalRamp": [
+          "#06233c",
+          "#0a3c66",
+          "#0d548f",
+          "#0f6cbd",
+          "#3585ca",
+          "#64a2dc",
+          "#a0c6ed",
+          "#e5f1fc"
+        ]
+      },
+      "error-surface": {
+        "role": "neutral",
+        "displayName": "Error Ground",
+        "tonalRamp": [
+          "#3a1e20",
+          "#613537",
+          "#885052",
+          "#ae7072",
+          "#cb9192",
+          "#dfb2b3",
+          "#efd2d3",
+          "#fbecee"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Library, Export, and Settings page titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraph text and default reading size."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Standard action labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-panel",
+        "value": "0 8px 24px rgba(0, 0, 0, 0.3)",
+        "purpose": "Floating activity panel only; docked surfaces remain flat."
+      }
+    ],
+    "motion": [
+      {
+        "name": "button-state",
+        "value": "background 120ms ease-out, border-color 120ms ease-out",
+        "purpose": "Restrained button state changes; reduced motion disables transitions and animations."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-width",
+        "value": "1100px"
+      },
+      {
+        "name": "compact-height",
+        "value": "740px"
+      }
+    ],
+    "materials": {
+      "focus": "2px solid var(--color-focus); outline-offset: 2px",
+      "surface": "Opaque graphite; no backdrop blur or decorative gradients.",
+      "iconStroke": "1.6"
+    },
+    "tonalRampNote": "Synthesized eight-step preview metadata only; CSS tokens remain authoritative. Preview ramps are not application palettes.",
+    "sources": [
+      "packages/ui/src/tokens.css",
+      "apps/desktop/src/style.css",
+      "apps/desktop/src/components"
+    ],
+    "provenance": {
+      "reference": "docs/design/mockups/fluent-option-1.png",
+      "figmaPage": "10 Fluent Docked Editor",
+      "ledger": "docs/design/fluent-state.json",
+      "handoff": "docs/design/fluent-handoff.md",
+      "verification": "docs/design/fluent-feature-parity.md",
+      "kit": "Local editable Fluent-style adaptations; no imported official kit instances.",
+      "limitations": "Browser empty-state review and build/test evidence only. Full native Mac QA blocked by locked Mac; populated native parity and Windows verification not claimed. No canonical composition-diff artifact or separate canonical spec created."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Select a resolved frame or open/start export.",
+      "html": "<button class=\"ds-primary\">Select frame</button>",
+      "css": ".ds-primary{font-family:Inter,sans-serif;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--radius-control,4px);cursor:pointer;transition:background 120ms ease-out,border-color 120ms ease-out;background:var(--color-accent,#0f6cbd);color:var(--color-ink,#ffffff);border-color:transparent;font-weight:500}.ds-primary:hover:enabled{background:var(--color-accent-hover,#115ea3)}.ds-primary:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-primary:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Supporting project and workspace actions.",
+      "html": "<button class=\"ds-secondary\">Import video</button>",
+      "css": ".ds-secondary{font-family:Inter,sans-serif;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--radius-control,4px);cursor:pointer;transition:background 120ms ease-out,border-color 120ms ease-out;background:var(--color-raised,#292929);color:var(--color-text,#f5f5f5);border-color:var(--color-border,#3d3d3d);font-weight:500}.ds-secondary:hover:enabled{background:var(--color-hover,#333333)}.ds-secondary:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-secondary:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-secondary{transition:none}}"
+    },
+    {
+      "name": "Text button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Compact supporting actions without persistent fill.",
+      "html": "<button class=\"ds-ghost\">Precision guide</button>",
+      "css": ".ds-ghost{font-family:Inter,sans-serif;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--radius-control,4px);cursor:pointer;transition:background 120ms ease-out,border-color 120ms ease-out;background:transparent;color:var(--color-muted,#bdbdbd);border-color:transparent;font-weight:500}.ds-ghost:hover:enabled{background:var(--color-hover,#333333);color:var(--color-text,#f5f5f5)}.ds-ghost:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-ghost:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-ghost{transition:none}}"
+    },
+    {
+      "name": "Timestamp input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Seek by timestamp with tabular presentation time.",
+      "html": "<label class=\"ds-field\">Seek to timestamp<input class=\"ds-timestamp\" value=\"00:00:01.500\" aria-label=\"Seek to timestamp\"></label>",
+      "css": ".ds-field{font-family:Inter,sans-serif;font-size:13px;display:grid;gap:8px;color:var(--color-text,#f5f5f5)}.ds-timestamp{font-family:Inter,sans-serif;font-size:13px;width:145px;height:36px;text-align:center;font-variant-numeric:tabular-nums;padding:8px 12px;background:var(--color-raised,#292929);color:var(--color-text,#f5f5f5);border:1px solid var(--color-border,#3d3d3d);border-radius:var(--radius-control,4px);caret-color:var(--color-focus,#479ef5)}.ds-timestamp:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-timestamp:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-timestamp{transition:none}}"
+    },
+    {
+      "name": "Workspace switch",
+      "kind": "nav",
+      "refersTo": "workspace-switch",
+      "description": "Compact Studio/Export workspace navigation.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspaces\"><button class=\"ds-tab\" aria-current=\"page\">Studio</button><button class=\"ds-tab\">Export</button></nav>",
+      "css": ".ds-nav{display:flex;gap:2px}.ds-tab{font-family:Inter,sans-serif;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:36px;padding:7px 12px;border:1px solid transparent;border-radius:var(--radius-control,4px);cursor:pointer;transition:background 120ms ease-out,border-color 120ms ease-out;background:transparent;color:var(--color-muted,#bdbdbd)}.ds-tab[aria-current]{background:var(--color-raised,#292929);color:var(--color-text,#f5f5f5)}.ds-tab:hover:enabled{background:var(--color-hover,#333333)}.ds-tab:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-tab:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-tab{transition:none}}"
+    },
+    {
+      "name": "Status badge",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "Factual unavailable-module or status label.",
+      "html": "<span class=\"ds-badge\">Planned module</span>",
+      "css": ".ds-badge{font-family:Inter,sans-serif;font-size:13px;display:inline-block;font-size:11px;padding:4px 8px;background:var(--color-raised,#292929);color:var(--color-muted,#bdbdbd);border-radius:var(--radius-control,4px)}"
+    },
+    {
+      "name": "Selected frame row",
+      "kind": "card",
+      "refersTo": "frame-card",
+      "description": "Selected frame identity, time, and source in the right dock.",
+      "html": "<button class=\"ds-frame\"><span class=\"ds-thumb\">Frame preview</span><span><strong>Frame 12</strong><small>00:00:00.600</small></span><span class=\"ds-source\">Source video</span></button>",
+      "css": ".ds-frame{font-family:Inter,sans-serif;font-size:13px;display:grid;grid-template-columns:96px minmax(0,1fr);gap:5px 12px;align-items:center;width:280px;padding:9px;text-align:left;background:var(--color-selected,#253544);color:var(--color-text,#f5f5f5);border:1px solid var(--color-focus,#479ef5);border-radius:var(--radius-panel,6px)}.ds-thumb{grid-row:span 2;width:96px;height:66px;display:flex;align-items:center;justify-content:center;background:var(--color-canvas,#141414);color:var(--color-muted,#bdbdbd);border-radius:3px;font-size:11px}.ds-frame strong{font-size:13px;font-weight:500}.ds-frame small{display:block;font-size:11px;margin-top:6px;font-variant-numeric:tabular-nums;color:var(--color-muted,#bdbdbd)}.ds-source{font-size:10px;color:var(--color-muted,#bdbdbd)}.ds-frame:hover:enabled{background:var(--color-raised,#292929)}.ds-frame:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-frame:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-frame{transition:none}}"
+    },
+    {
+      "name": "Attachment area",
+      "kind": "custom",
+      "refersTo": "attachment",
+      "description": "Direct attachment instruction and native picker entry.",
+      "html": "<button class=\"ds-attach\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13l5 3-5 3z\"/></svg><strong>Drop a video here</strong><span>or click to attach</span></button>",
+      "css": ".ds-attach{font-family:Inter,sans-serif;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:220px;width:100%;background:var(--color-canvas,#141414);color:var(--color-text,#f5f5f5);border:1px dashed transparent;border-radius:var(--radius-panel,6px)}.ds-attach svg,.ds-attach span{color:var(--color-muted,#bdbdbd)}.ds-attach strong{font-size:22px;font-weight:500}.ds-attach:hover:enabled{background:var(--color-surface,#202020);border-color:var(--color-border,#3d3d3d)}.ds-attach:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-attach:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-attach{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Fluent Docked Editor",
+    "overview": "FrameIQ follows the approved Fluent Docked Editor direction: matte graphite surfaces, compact Inter typography, outlined icons, and restrained blue actions. Image inspection remains central, with direct access to frame identity and supporting controls.\n\nThe shared visual system applies to Studio, Library, Export, and Settings. Tonal surface steps and fine dividers organize information; imagery comes from imported media. The approved reference is docs/design/mockups/fluent-option-1.png. The previous Canvas/DesignCode world is superseded; its handoffs, captures, and earlier Figma pages remain historical references.",
+    "keyCharacteristics": [
+      "Opaque graphite surfaces with no decorative glow or blur.",
+      "Compact Inter controls and tabular frame/time numerals.",
+      "Docked tools with a large neutral image inspection canvas.",
+      "Consistent outlined Lucide icons with a 1.6px stroke and distinct keyboard focus."
+    ],
+    "rules": [
+      {
+        "name": "Image Fit",
+        "body": "Keep the inspection canvas opaque and fit the complete frame without distorting its aspect ratio. Zoom is relative to the fitted view.",
+        "section": "colors"
+      },
+      {
+        "name": "Flat at Rest",
+        "body": "Separate docked surfaces with tone and borders. Reserve the panel shadow for the floating activity panel.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** use shared tokens and preserve full-frame image fit on the opaque canvas.",
+      "**Do** keep project context, exact frame identities, selections, and metadata accessible.",
+      "**Do** distinguish approximate playback from resolved selection and export.",
+      "**Do** preserve visible focus, labels, reduced motion, and factual Settings copy."
+    ],
+    "donts": [
+      "**Don't** add decorative glow, gradients, blur, or translucent dock surfaces.",
+      "**Don't** restore floating playback tools or collapsible selection/detail panels from the superseded Canvas composition.",
+      "**Don't** add a permanent privacy shield or local-processing footer badge.",
+      "**Don't** claim official Fluent kit imports; components are local editable adaptations.",
+      "**Don't** present unavailable AI or shopping modules as enabled, or use invented result imagery."
+    ]
+  }
+}

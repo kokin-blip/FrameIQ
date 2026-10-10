@@ -1,0 +1,17 @@
+[package]
+name = "frameiq-media"
+version.workspace = true
+edition.workspace = true
+publish = false
+[dependencies]
+frameiq-contracts = { path = "../contracts" }
+ffmpeg-next.workspace = true
+image.workspace = true
+sha2.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+frameiq-analysis = { path = "../analysis" }
+png = "=0.18.1"
+[build-dependencies]
+bindgen = { version = "0.72", default-features = false, features = ["runtime"] }
+pkg-config = "0.3"

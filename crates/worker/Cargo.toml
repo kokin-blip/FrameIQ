@@ -1,0 +1,9 @@
+[package]
+name = "frameiq-worker"
+version.workspace = true
+edition.workspace = true
+publish = false
+[dependencies]
+frameiq-contracts = { path = "../contracts" }
+frameiq-media = { path = "../media" }
+serde_json.workspace = true

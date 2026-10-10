@@ -1,0 +1,27 @@
+[package]
+name = "frameiq-application"
+version.workspace = true
+edition.workspace = true
+publish = false
+[features]
+fault-injection = []
+
+[[bin]]
+name = "frameiq-test-ai-worker"
+path = "tests/helpers/ai-worker.rs"
+required-features = ["fault-injection"]
+
+[dependencies]
+image.workspace = true
+sysinfo = "0.37"
+frameiq-contracts = { path = "../contracts" }
+frameiq-persistence = { path = "../persistence" }
+serde_json.workspace = true
+uuid.workspace = true
+sha2.workspace = true
+tempfile.workspace = true
+frameiq-analysis = { path = "../analysis" }
+frameiq-inference = { path = "../inference" }
+
+[dev-dependencies]
+rusqlite.workspace = true

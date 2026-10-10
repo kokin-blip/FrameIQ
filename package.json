@@ -1,0 +1,23 @@
+{
+  "name": "frameiq",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/desktop",
+    "packages/ui"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @frameiq/desktop",
+    "build": "npm run build -w @frameiq/desktop",
+    "check": "npm run check -w @frameiq/desktop",
+    "test": "npm run test -w @frameiq/desktop",
+    "desktop": "node tools/desktop.mjs",
+    "contracts": "cargo run -p frameiq-contracts --bin generate-types",
+    "contracts:check": "cargo run -p frameiq-contracts --bin generate-types -- --check",
+    "native:prepare": "node tools/desktop.mjs --prepare",
+    "format": "prettier --write apps/desktop/src packages/ui/src tools/*.mjs"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.9"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "passed": false,
+  "decoderParityPassed": true,
+  "opencvVersion": "4.12.0",
+  "algorithm": "mediapipe-pose-roi-v1",
+  "modelHash": "9d89c599319a18fb7d2e28451a883476164543182bafca5f09eb2cf767ed2f3f",
+  "regions": [
+    {
+      "region": "0",
+      "maxInputAbsoluteError": 0.003921568393707275,
+      "maxTensorAbsoluteError": 0.0398406982421875,
+      "runtimeTensorParity": false,
+      "abstained": false,
+      "maxLandmarkAbsoluteError": 2.956390380859375e-05,
+      "maskIoU": 1.0,
+      "fullPipelineMaxLandmarkError": 0.04278331995010376,
+      "fullPipelineMaskIoU": 0.9999914247738284
+    }
+  ],
+  "scope": "Separate decoder and runtime tensor checks on correlated fixtures; not held-out pose/visibility accuracy or garment segmentation.",
+  "diagnostic": "Temporary ORT graph optimization disabled; failed raw parity. Production configuration unchanged."
+}

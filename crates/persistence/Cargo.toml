@@ -1,0 +1,14 @@
+[package]
+name = "frameiq-persistence"
+version.workspace = true
+edition.workspace = true
+publish = false
+[dependencies]
+frameiq-contracts = { path = "../contracts" }
+frameiq-domain = { path = "../domain" }
+rusqlite.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+uuid.workspace = true
+[dev-dependencies]
+tempfile.workspace = true

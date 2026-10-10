@@ -1,0 +1,4 @@
+CREATE TABLE model_installations(id TEXT PRIMARY KEY, manifest_json TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN('ready','failed','removed')), path TEXT NOT NULL, error_json TEXT) STRICT;
+CREATE TABLE model_benchmarks(id TEXT PRIMARY KEY,model_id TEXT NOT NULL REFERENCES model_installations(id) ON DELETE CASCADE,result_json TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT(strftime('%Y-%m-%dT%H:%M:%fZ','now'))) STRICT;
+CREATE TABLE preset_versions(id TEXT PRIMARY KEY,name TEXT NOT NULL,config_json TEXT NOT NULL,created_at TEXT NOT NULL DEFAULT(strftime('%Y-%m-%dT%H:%M:%fZ','now'))) STRICT;
+CREATE TABLE target_regions(id TEXT PRIMARY KEY,source_id TEXT NOT NULL REFERENCES sources(id) ON DELETE CASCADE,index_id TEXT NOT NULL REFERENCES frame_indexes(id) ON DELETE CASCADE,ordinal INTEGER NOT NULL,revision INTEGER NOT NULL CHECK(revision>0),region_json TEXT NOT NULL,FOREIGN KEY(index_id,ordinal) REFERENCES frames(index_id,ordinal) ON DELETE CASCADE) STRICT;

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "FrameIQ", "version": "0.1.0", "identifier": "com.frameiq.desktop",
+  "build": {"beforeDevCommand": "npm run dev", "devUrl": "http://127.0.0.1:1420", "beforeBuildCommand": "npm run build", "frontendDist": "../dist"},
+  "app": {"windows": [{"label":"main", "title":"FrameIQ", "width":1440, "height":960, "minWidth":1000, "minHeight":700}], "security": {"csp":"default-src 'self'; img-src 'self' asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src ipc: http://ipc.localhost", "assetProtocol":{"enable":true,"scope":["$APPDATA/cache/**"]}}},
+  "bundle": {"active":true,"targets":["app"], "externalBin":["binaries/frameiq-worker", "binaries/frameiq-ai-worker"], "resources":["native/*"], "macOS":{"minimumSystemVersion":"14.0"}}
+}

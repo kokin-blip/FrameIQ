@@ -1,0 +1,78 @@
+name: FrameIQ checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  contracts-and-ui:
+    strategy:
+      matrix:
+        os: [macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: rustup update stable --no-self-update
+      - run: rustup default stable
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tools -p test_validate_corpus.py
+      - run: npm run build
+      - run: cargo test -p frameiq-contracts -p frameiq-domain -p frameiq-persistence
+      - run: cargo test --locked -p frameiq-inference --lib
+      - run: cargo check -p frameiq-application
+      - run: npm run contracts:check
+  macos-media:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update stable --no-self-update
+      - run: rustup default stable
+      - run: brew install pkg-config gnupg llvm autoconf automake libtool
+      - run: bash tools/build-ffmpeg.sh
+      - name: Native fidelity and offline integration
+        shell: bash
+        run: |
+          export LIBCLANG_PATH="$(brew --prefix llvm)/lib"
+          source tools/native-env.sh
+          cargo build -p frameiq-worker
+          cargo test --workspace --exclude frameiq-desktop --features frameiq-application/fault-injection
+  windows-native:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - run: npm ci
+      - name: Build pinned MSVC media engine and native fidelity fixtures
+        shell: pwsh
+        run: ./tools/build-windows.ps1
+      - run: node tools/prepare-onnxruntime.mjs
+      - name: Bundle private installer and audit dependencies
+        shell: pwsh
+        run: ./tools/package-windows.ps1
+      - name: Installed worker smoke with isolated PATH
+        shell: pwsh
+        run: ./tools/smoke-windows-install.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FrameIQ-private-windows-x64
+          path: target/release/bundle/nsis/*.exe
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FrameIQ-windows-acceptance-evidence
+          path: |
+            .cache/windows-evidence/**
+            .native/ffmpeg/build-config.mak

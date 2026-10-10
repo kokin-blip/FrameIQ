@@ -1,0 +1,7 @@
+[package]
+name = "frameiq-domain"
+version.workspace = true
+edition.workspace = true
+publish = false
+[dependencies]
+frameiq-contracts = { path = "../contracts" }

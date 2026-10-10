@@ -1,0 +1,9 @@
+{
+ "fileKey": "5L64rf754pinHPHimkme5e",
+ "pageId": "20:2",
+ "collectionId": "VariableCollectionId:20:3",
+ "screens": {"studio1440":"20:26", "studio1000":"20:103", "emptyStudio":"20:180", "library":"20:245", "export":"20:270", "settings":"20:301"},
+ "buttonVariants": "20:25",
+ "reference": "mockups/fluent-option-1.png",
+ "provenance": "Local editable Fluent-style adaptations of inspected Microsoft official previews; no Fluent library asset imports. Previous pages preserved. Runtime imagery and metadata come from imported media."
+}

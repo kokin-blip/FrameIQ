@@ -1,0 +1,16 @@
+[package]
+name = "frameiq-desktop"
+version.workspace = true
+edition.workspace = true
+publish = false
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+[dependencies]
+keyring = { version = "=3.6.3", features = ["apple-native", "windows-native"] }
+frameiq-inference = { path = "../../../crates/inference" }
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+frameiq-contracts = { path = "../../../crates/contracts" }
+frameiq-application = { path = "../../../crates/application" }
+serde_json.workspace = true

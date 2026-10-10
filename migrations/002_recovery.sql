@@ -1,0 +1,10 @@
+ALTER TABLE export_jobs ADD COLUMN project_id TEXT REFERENCES projects(id) ON DELETE CASCADE;
+ALTER TABLE export_jobs ADD COLUMN dismissed INTEGER NOT NULL DEFAULT 0 CHECK(dismissed IN(0,1));
+ALTER TABLE export_items ADD COLUMN source_id TEXT REFERENCES sources(id);
+ALTER TABLE export_items ADD COLUMN frame_json TEXT;
+ALTER TABLE export_items ADD COLUMN source_hash TEXT;
+ALTER TABLE export_items ADD COLUMN sidecar_checksum TEXT;
+ALTER TABLE export_items ADD COLUMN error_json TEXT;
+CREATE TABLE export_attempts(job_id TEXT PRIMARY KEY REFERENCES jobs(id) ON DELETE CASCADE, plan_id TEXT NOT NULL REFERENCES export_jobs(job_id) ON DELETE CASCADE) STRICT;
+CREATE INDEX export_attempts_plan ON export_attempts(plan_id);
+CREATE INDEX export_projects ON export_jobs(project_id,dismissed);

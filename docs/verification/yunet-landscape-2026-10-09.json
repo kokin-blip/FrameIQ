@@ -1,0 +1,10 @@
+{
+  "opencvVersion": "4.12.0",
+  "algorithm": "yunet-2023-letterbox-v1",
+  "modelSha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+  "faceCount": 1,
+  "maxTensorAbsoluteError": 5.602836608886719e-06,
+  "maxNormalizedDetectionError": 1.7867434504159618e-08,
+  "passed": true,
+  "scope": "Reference tensor/box/landmark parity on this fixture; no population accuracy or visibility precision claim."
+}

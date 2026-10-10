@@ -1,0 +1,4 @@
+apps/desktop/src/contracts.ts
+node_modules
+target
+.native

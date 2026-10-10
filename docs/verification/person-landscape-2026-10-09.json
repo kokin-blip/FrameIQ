@@ -1,0 +1,11 @@
+{
+  "opencvVersion": "4.12.0",
+  "algorithm": "mediapipe-person-224-v1",
+  "modelSha256": "47fd5599d6fa17608f03e0eb0ae230baa6e597d7e8a2c8199fe00abea55a701f",
+  "personCount": 1,
+  "maxInputAbsoluteError": 5.960464477539063e-08,
+  "maxTensorAbsoluteError": 1.0625,
+  "maxDetectionAbsoluteError": 7.193429132712481e-05,
+  "passed": true,
+  "scope": "Numerical parity only; detector boxes are not full-body boxes and scores are not calibrated visibility probabilities."
+}

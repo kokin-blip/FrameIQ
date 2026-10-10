@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "requests": 4,
+  "modelHash": "9d89c599319a18fb7d2e28451a883476164543182bafca5f09eb2cf767ed2f3f",
+  "repeatedPoseIdentical": true,
+  "maskChecksumsVerified": true,
+  "outputCollisionRejected": true,
+  "bundledRuntimeResolution": true,
+  "width": 512,
+  "height": 512,
+  "scope": "Packaged worker protocol and atomic assets on a correlated fixture, not held-out accuracy or preset eligibility."
+}

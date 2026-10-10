@@ -1,0 +1,22 @@
+[package]
+name = "frameiq-inference"
+version.workspace = true
+edition.workspace = true
+publish = false
+[dependencies]
+libc = "0.2"
+frameiq-contracts = { path = "../contracts" }
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+image.workspace = true
+tempfile.workspace = true
+uuid.workspace = true
+ort = { version = "=2.0.0-rc.13", default-features = false, features = ["std", "load-dynamic", "api-21", "coreml", "directml"] }
+prost = "0.14"
+sysinfo = "0.37"
+reqwest = { version = "=0.12.28", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+tokio = { version = "1", features = ["rt", "time", "net"] }
+
+[dev-dependencies]
+rustls = { version = "0.23", default-features = false, features = ["std", "ring", "tls12"] }

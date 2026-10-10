@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "requests": 3,
+  "repeatedResultIdentical": true,
+  "personCount": 1,
+  "unloaded": true,
+  "modelSha256": "47fd5599d6fa17608f03e0eb0ae230baa6e597d7e8a2c8199fe00abea55a701f",
+  "bundledRuntimeResolution": true,
+  "scope": "Persistent packaged worker protocol; not accuracy, full pose execution, or preset eligibility."
+}

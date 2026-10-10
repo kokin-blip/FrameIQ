@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "id": "pose_estimation_mediapipe-2023mar-fp32",
+  "name": "Pose Estimation Mediapipe FP32",
+  "task": "pose",
+  "sourceUrl": "https://media.githubusercontent.com/media/opencv/opencv_zoo/47534e27c9851bb1128ccc0102f1145e27f23f98/models/pose_estimation_mediapipe/pose_estimation_mediapipe_2023mar.onnx",
+  "license": "Apache-2.0",
+  "licenseUrl": "https://github.com/opencv/opencv_zoo/blob/47534e27c9851bb1128ccc0102f1145e27f23f98/models/pose_estimation_mediapipe/LICENSE",
+  "sha256": "9d89c599319a18fb7d2e28451a883476164543182bafca5f09eb2cf767ed2f3f",
+  "byteSize": "5557238",
+  "input": {
+    "name": "input_1",
+    "shape": [
+      1,
+      256,
+      256,
+      3
+    ]
+  },
+  "inputLayout": "nhwc",
+  "outputs": [
+    {
+      "name": "Identity",
+      "shape": [
+        1,
+        195
+      ]
+    },
+    {
+      "name": "Identity_1",
+      "shape": [
+        1,
+        1
+      ]
+    },
+    {
+      "name": "Identity_2",
+      "shape": [
+        1,
+        256,
+        256,
+        1
+      ]
+    },
+    {
+      "name": "Identity_3",
+      "shape": [
+        1,
+        64,
+        64,
+        39
+      ]
+    },
+    {
+      "name": "Identity_4",
+      "shape": [
+        1,
+        117
+      ]
+    }
+  ],
+  "channelOrder": "rgb",
+  "scale": 0.00392156862745098,
+  "mean": [
+    0,
+    0,
+    0
+  ],
+  "labels": [
+    "person"
+  ],
+  "runtimeVersion": "1.22.0"
+}

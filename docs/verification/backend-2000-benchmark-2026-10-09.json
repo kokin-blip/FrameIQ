@@ -1,0 +1,65 @@
+{
+  "analysisMs": 1979.677584,
+  "buildProfile": "release",
+  "cachedDisplayP95Ms": 0.14191700000000002,
+  "cancellation": {
+    "acknowledgementMs": 0.049249999999999995,
+    "scope": "Cached analysis cancellation; a succeeded race does not establish cancellation latency.",
+    "status": "cancelled",
+    "terminalMs": 5.6177090000000005
+  },
+  "frames": "5000",
+  "hardware": {
+    "aiBudgetBytes": "4294967296",
+    "architecture": "aarch64",
+    "availableMemoryBytes": "6172000256",
+    "logicalCores": 12,
+    "os": "macos",
+    "totalMemoryBytes": "25769803776",
+    "workerThreads": 4
+  },
+  "importMs": 579.187208,
+  "measuredCandidateCount": 2099,
+  "memory": {
+    "firstObservedTreeRssBytes": 6209536,
+    "lastObservedTreeRssBytes": 49922048,
+    "peakObservedTreeRssBytes": 73351168,
+    "sampleCount": 531,
+    "samplePeriodMs": 50,
+    "scope": "Coordinator and live descendant RSS; sampled, shared pages can be double counted; not an OS high-water mark."
+  },
+  "rank2000P95Ms": 1.068917,
+  "recommendationCount": 8,
+  "rerankP95Ms": 30.166625,
+  "schemaVersion": 2,
+  "scope": "Backend timings on supplied media; no UI latency or accuracy claim. rank2000 is null unless 2000 real cached measurements exist. Sustained duration is reported rather than assumed to be a long-run test.",
+  "sourceMetadata": {
+    "durationSeconds": 1000.0,
+    "selectedStream": 0,
+    "streams": [
+      {
+        "bitDepth": 8,
+        "codec": "mpeg4",
+        "colorPrimaries": "Unspecified",
+        "colorRange": "MPEG",
+        "colorSpace": "Unspecified",
+        "colorTransfer": "Unspecified",
+        "durationSeconds": null,
+        "height": 180,
+        "index": 0,
+        "rotation": 0,
+        "sampleAspectRatio": "1:1",
+        "timeBaseDenominator": 1000,
+        "timeBaseNumerator": 1,
+        "width": 320
+      }
+    ]
+  },
+  "sustained": {
+    "durationMs": 29479.226083,
+    "iterationP95Ms": 32.246666,
+    "iterations": 1000
+  },
+  "uncachedSeekP95Ms": 16.63075,
+  "workerBuildProfile": "Not asserted; supplied worker binary is independent of coordinator profile"
+}

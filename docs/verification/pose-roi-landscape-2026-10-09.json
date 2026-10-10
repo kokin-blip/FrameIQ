@@ -1,0 +1,7 @@
+{
+  "opencvVersion": "4.12.0",
+  "testedRois": 1,
+  "maxSourcePixelError": 1.923413648796668e-06,
+  "passed": true,
+  "scope": "ROI geometry only; pose raster interpolation, landmark tensors, mask mapping and accuracy remain unvalidated."
+}

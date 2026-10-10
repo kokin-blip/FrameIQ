@@ -1,0 +1,25 @@
+/target/
+/node_modules/
+/apps/desktop/node_modules/
+/apps/desktop/dist/
+/.native/
+/.cache/
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+.env
+/apps/desktop/src-tauri/binaries/
+apps/desktop/src-tauri/binaries/
+apps/desktop/src-tauri/native/
+apps/desktop/src-tauri/gen/
+*.tsbuildinfo
+
+__pycache__/
+*.pyc
+
+# Local design captures/reference imagery are not needed by CI or the source build.
+/docs/design/mockups/**/*.png
+/docs/design/mockups/**/*.webp
+/docs/design/review/**/*.png
+/docs/verification/**/*.png

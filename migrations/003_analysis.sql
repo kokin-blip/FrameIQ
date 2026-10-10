@@ -1,0 +1,5 @@
+CREATE TABLE analysis_runs(id TEXT PRIMARY KEY REFERENCES jobs(id), source_id TEXT NOT NULL REFERENCES sources(id) ON DELETE CASCADE, index_id TEXT NOT NULL REFERENCES frame_indexes(id) ON DELETE CASCADE, algorithm TEXT NOT NULL, coverage_complete INTEGER NOT NULL DEFAULT 0 CHECK(coverage_complete IN(0,1))) STRICT;
+CREATE TABLE frame_features(index_id TEXT NOT NULL, ordinal INTEGER NOT NULL, algorithm TEXT NOT NULL, metrics_json TEXT NOT NULL, PRIMARY KEY(index_id,ordinal,algorithm), FOREIGN KEY(index_id,ordinal) REFERENCES frames(index_id,ordinal) ON DELETE CASCADE) STRICT;
+CREATE TABLE analysis_samples(run_id TEXT NOT NULL REFERENCES analysis_runs(id) ON DELETE CASCADE,index_id TEXT NOT NULL,ordinal INTEGER NOT NULL,algorithm TEXT NOT NULL,PRIMARY KEY(run_id,index_id,ordinal),FOREIGN KEY(index_id,ordinal,algorithm) REFERENCES frame_features(index_id,ordinal,algorithm) ON DELETE CASCADE) STRICT;
+CREATE TABLE recommendation_sets(id TEXT PRIMARY KEY,run_id TEXT NOT NULL REFERENCES analysis_runs(id) ON DELETE CASCADE,config_json TEXT NOT NULL,result_json TEXT NOT NULL) STRICT;
+CREATE INDEX analysis_source ON analysis_runs(source_id,index_id,algorithm);

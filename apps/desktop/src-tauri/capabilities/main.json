@@ -1,0 +1,1 @@
+{"$schema":"../gen/schemas/desktop-schema.json","identifier":"main","description":"Local FrameIQ workspace dialogs and recoverable job events.","windows":["main"],"permissions":["core:default","dialog:allow-open"]}

@@ -1,0 +1,10 @@
+[package]
+name = "frameiq-contracts"
+version.workspace = true
+edition.workspace = true
+publish = false
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+ts-rs.workspace = true
+thiserror.workspace = true

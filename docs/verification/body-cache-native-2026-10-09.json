@@ -1,0 +1,15 @@
+{
+  "cacheReused": true,
+  "detectorHash": "47fd5599d6fa17608f03e0eb0ae230baa6e597d7e8a2c8199fe00abea55a701f",
+  "guidedRegionLinked": true,
+  "height": 512,
+  "landmarks": 39,
+  "maskSha256": "4c1d5f83f68b07e1ee51d7243fbd0b45d8aea5ada573cf672c6d2aef958b5e20",
+  "ordinal": "0",
+  "passed": true,
+  "poseHash": "9d89c599319a18fb7d2e28451a883476164543182bafca5f09eb2cf767ed2f3f",
+  "scope": "Native model orchestration/cache smoke test; not accuracy or runtime parity evaluation",
+  "subjectChoiceSaved": true,
+  "subjects": 1,
+  "width": 512
+}

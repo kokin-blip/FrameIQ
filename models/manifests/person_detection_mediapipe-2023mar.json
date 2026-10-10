@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "person_detection_mediapipe-2023mar-fp32",
+  "name": "Person Detection Mediapipe FP32",
+  "task": "person_detector",
+  "sourceUrl": "https://media.githubusercontent.com/media/opencv/opencv_zoo/47534e27c9851bb1128ccc0102f1145e27f23f98/models/person_detection_mediapipe/person_detection_mediapipe_2023mar.onnx",
+  "license": "Apache-2.0",
+  "licenseUrl": "https://github.com/opencv/opencv_zoo/blob/47534e27c9851bb1128ccc0102f1145e27f23f98/models/person_detection_mediapipe/LICENSE",
+  "sha256": "47fd5599d6fa17608f03e0eb0ae230baa6e597d7e8a2c8199fe00abea55a701f",
+  "byteSize": "11990159",
+  "input": {
+    "name": "input_1:0",
+    "shape": [
+      1,
+      3,
+      224,
+      224
+    ]
+  },
+  "inputLayout": "nchw",
+  "outputs": [
+    {
+      "name": "Identity:0",
+      "shape": [
+        1,
+        2254,
+        12
+      ]
+    },
+    {
+      "name": "Identity_1:0",
+      "shape": [
+        1,
+        2254,
+        1
+      ]
+    }
+  ],
+  "channelOrder": "rgb",
+  "scale": 0.00784313725490196,
+  "mean": [
+    127.5,
+    127.5,
+    127.5
+  ],
+  "labels": [
+    "person"
+  ],
+  "runtimeVersion": "1.22.0"
+}

@@ -1,0 +1,14 @@
+FrameIQ YuNet face decoder
+
+The stride decoding, score combination, landmark convention and integer-rectangle NMS contract follow OpenCV FaceDetectorYN:
+https://github.com/opencv/opencv/blob/4.12.0/modules/objdetect/src/face_detect.cpp
+
+The FrameIQ adapter uses source-normalized geometry and aspect-preserving resize/padding, bounded finite output validation, clipped-area coverage, and padding-only result rejection. OpenCV reference source is licensed under Apache License 2.0; its license is included as OpenCV-Apache-2.0.txt. Model weights have a separate license and checksum in their manifest and are not bundled.
+
+FrameIQ MediaPipe person/pose geometry adapters
+
+These adapters follow the Apache-2.0 OpenCV Zoo references at revision 47534e27c9851bb1128ccc0102f1145e27f23f98:
+https://github.com/opencv/opencv_zoo/blob/47534e27c9851bb1128ccc0102f1145e27f23f98/models/person_detection_mediapipe/mp_persondet.py
+https://github.com/opencv/opencv_zoo/blob/47534e27c9851bb1128ccc0102f1145e27f23f98/models/pose_estimation_mediapipe/mp_pose.py
+
+The person adapter preserves the pinned reference NMS convention and exposes detector regions separately from body coverage. Pose support includes ROI geometry, bounded raster preprocessing, landmark decoding and source-sized person mask mapping; numerical and held-out accuracy gates are documented separately. Reviewed weight source/checksum/license links are recorded independently in the model manifests. No weights are bundled.

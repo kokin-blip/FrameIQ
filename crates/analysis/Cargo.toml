@@ -1,0 +1,8 @@
+[package]
+name = "frameiq-analysis"
+version.workspace = true
+edition.workspace = true
+publish = false
+[dependencies]
+frameiq-contracts = { path = "../contracts" }
+image.workspace = true

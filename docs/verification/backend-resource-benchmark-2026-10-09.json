@@ -1,0 +1,64 @@
+{
+  "analysisMs": 1012.135375,
+  "buildProfile": "release",
+  "cachedDisplayP95Ms": 0.150083,
+  "cancellation": {
+    "acknowledgementMs": 0.045583,
+    "scope": "Cached analysis cancellation; a succeeded race does not establish cancellation latency.",
+    "status": "cancelled",
+    "terminalMs": 5.847291
+  },
+  "frames": "300",
+  "hardware": {
+    "aiBudgetBytes": "4294967296",
+    "architecture": "aarch64",
+    "availableMemoryBytes": "7275610112",
+    "logicalCores": 12,
+    "os": "macos",
+    "totalMemoryBytes": "25769803776",
+    "workerThreads": 4
+  },
+  "importMs": 338.486875,
+  "measuredCandidateCount": 205,
+  "memory": {
+    "firstObservedTreeRssBytes": 6193152,
+    "lastObservedTreeRssBytes": 16908288,
+    "peakObservedTreeRssBytes": 51642368,
+    "sampleCount": 40,
+    "samplePeriodMs": 50,
+    "scope": "Coordinator and live descendant RSS; sampled, shared pages can be double counted; not an OS high-water mark."
+  },
+  "rank2000P95Ms": null,
+  "recommendationCount": 8,
+  "rerankP95Ms": 2.84325,
+  "schemaVersion": 2,
+  "scope": "Backend timings on supplied media; no UI latency or accuracy claim. rank2000 is null unless 2000 real cached measurements exist. Sustained duration is reported rather than assumed to be a long-run test.",
+  "sourceMetadata": {
+    "durationSeconds": 10.0,
+    "selectedStream": 0,
+    "streams": [
+      {
+        "bitDepth": 8,
+        "codec": "mpeg4",
+        "colorPrimaries": "Unspecified",
+        "colorRange": "MPEG",
+        "colorSpace": "Unspecified",
+        "colorTransfer": "Unspecified",
+        "durationSeconds": null,
+        "height": 1080,
+        "index": 0,
+        "rotation": 0,
+        "sampleAspectRatio": "1:1",
+        "timeBaseDenominator": 1000,
+        "timeBaseNumerator": 1,
+        "width": 1920
+      }
+    ]
+  },
+  "sustained": {
+    "durationMs": 542.197916,
+    "iterationP95Ms": 2.787375,
+    "iterations": 200
+  },
+  "uncachedSeekP95Ms": 63.215959000000005
+}

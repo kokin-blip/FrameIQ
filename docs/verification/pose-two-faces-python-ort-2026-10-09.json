@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "passed": true,
+  "runtimeVersion": "1.22.0",
+  "numpyVersion": "2.2.6",
+  "provider": "CPUExecutionProvider",
+  "modelHash": "9d89c599319a18fb7d2e28451a883476164543182bafca5f09eb2cf767ed2f3f",
+  "atol": 0.003,
+  "rtol": 0.003,
+  "regions": [
+    {
+      "region": "0",
+      "outputs": [
+        {
+          "name": "Identity",
+          "shape": [
+            1,
+            195
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_1",
+          "shape": [
+            1,
+            1
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_2",
+          "shape": [
+            1,
+            256,
+            256,
+            1
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_3",
+          "shape": [
+            1,
+            64,
+            64,
+            39
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_4",
+          "shape": [
+            1,
+            117
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "region": "1",
+      "outputs": [
+        {
+          "name": "Identity",
+          "shape": [
+            1,
+            195
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_1",
+          "shape": [
+            1,
+            1
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_2",
+          "shape": [
+            1,
+            256,
+            256,
+            1
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_3",
+          "shape": [
+            1,
+            64,
+            64,
+            39
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        },
+        {
+          "name": "Identity_4",
+          "shape": [
+            1,
+            117
+          ],
+          "maxAbsoluteError": 0.0,
+          "failedElementCount": 0,
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "scope": "Same-input Rust/Python ORT runtime parity only. Does not clear OpenCV discrepancies or held-out visibility/accuracy gates."
+}

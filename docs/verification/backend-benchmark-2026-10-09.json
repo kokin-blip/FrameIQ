@@ -1,0 +1,44 @@
+{
+  "analysisMs": 1063.807875,
+  "buildProfile": "release",
+  "cachedDisplayP95Ms": 0.180166,
+  "frames": "300",
+  "hardware": {
+    "aiBudgetBytes": "4294967296",
+    "architecture": "aarch64",
+    "availableMemoryBytes": "3903275008",
+    "logicalCores": 12,
+    "os": "macos",
+    "totalMemoryBytes": "25769803776",
+    "workerThreads": 4
+  },
+  "importMs": 340.8345,
+  "recommendationCount": 8,
+  "rerankP95Ms": 3.3461250000000002,
+  "schemaVersion": 1,
+  "scope": "Backend timings on supplied media; no UI latency, accuracy, 2000-candidate guarantee, or memory peak claim.",
+  "sourceMetadata": {
+    "durationSeconds": 10.0,
+    "selectedStream": 0,
+    "streams": [
+      {
+        "bitDepth": 8,
+        "codec": "mpeg4",
+        "colorPrimaries": "Unspecified",
+        "colorRange": "MPEG",
+        "colorSpace": "Unspecified",
+        "colorTransfer": "Unspecified",
+        "durationSeconds": null,
+        "height": 1080,
+        "index": 0,
+        "rotation": 0,
+        "sampleAspectRatio": "1:1",
+        "timeBaseDenominator": 1000,
+        "timeBaseNumerator": 1,
+        "width": 1920
+      }
+    ]
+  },
+  "uncachedSeekP95Ms": 65.381917,
+  "reportGeneratedAtUtc": "2026-10-09T07:04:06.526467+00:00"
+}
