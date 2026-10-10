@@ -25,7 +25,8 @@ if(!$crt){throw 'MSVC runtime redistributable directory is missing.'}
 Get-ChildItem $crt.FullName -Filter '*.dll' | Copy-Item -Destination "$stage/native" -Force
 Copy-Item "$ort/LICENSE" "$stage/native/ONNXRuntime-LICENSE" -Force
 Copy-Item "$repo/docs/licenses/OpenCV-Apache-2.0.txt","$repo/docs/licenses/FaceDecoder-NOTICE.txt" "$stage/native" -Force
-node "$repo/tools/audit-windows-dlls.mjs" "$stage"
+New-Item -ItemType Directory -Force "$repo/.cache/windows-evidence" | Out-Null
+node "$repo/tools/audit-windows-dlls.mjs" "$stage" "$repo/.cache/windows-evidence/dependencies.json"
 if($LASTEXITCODE){throw 'Native DLL dependency audit failed'}
 Push-Location "$repo/apps/desktop"
 npx tauri build --bundles nsis --config '{"bundle":{"resources":{"native/*":"."}}}'

@@ -76,6 +76,7 @@ impl Server {
                     }
                 };
                 socket.set_nonblocking(false).unwrap();
+                socket.set_nodelay(true).unwrap();
                 socket
                     .set_read_timeout(Some(Duration::from_secs(2)))
                     .unwrap();
@@ -299,17 +300,22 @@ fn tls_trust_and_stalled_transfer_are_enforced() {
     .is_err());
     assert!(!d.path().join(format!("{}.partial", m.sha256)).exists());
     let mut reply = Reply::full(&b, "\"v1\"");
-    reply.delay = Duration::from_millis(200);
+    reply.delay = Duration::from_millis(600);
     let s = Server::new(vec![reply]);
     let m = manifest(&s.url, &b);
     assert!(download_with(
         &m,
         d.path(),
-        s.transport(true, Duration::from_millis(50)),
+        s.transport(true, Duration::from_millis(250)),
         || false,
         |_, _| Ok(())
     )
     .is_err());
+    assert_eq!(
+        s.requests.lock().unwrap().len(),
+        1,
+        "stalled body test must reach HTTP headers"
+    );
 }
 
 #[test]
@@ -317,7 +323,7 @@ fn progressing_body_can_outlast_the_idle_timeout() {
     let b = bytes();
     let mut reply = Reply::full(&b, "\"v1\"");
     reply.pieces = b.iter().map(|byte| vec![*byte]).collect();
-    reply.delay = Duration::from_millis(50);
+    reply.delay = Duration::from_millis(150);
     let s = Server::new(vec![reply]);
     let d = tempfile::tempdir().unwrap();
     let m = manifest(&s.url, &b);
@@ -325,12 +331,12 @@ fn progressing_body_can_outlast_the_idle_timeout() {
     let path = download_with(
         &m,
         d.path(),
-        s.transport(true, Duration::from_millis(200)),
+        s.transport(true, Duration::from_secs(1)),
         || false,
         |_, _| Ok(()),
     )
     .unwrap();
-    assert!(start.elapsed() > Duration::from_millis(600));
+    assert!(start.elapsed() > Duration::from_millis(1800));
     assert_eq!(std::fs::read(path).unwrap(), b);
 }
 
@@ -359,5 +365,96 @@ fn oversize_checksum_and_graph_failures_cannot_activate_downloads() {
         assert_eq!(fetch(&s, &m, d.path()).unwrap_err().code, code);
         assert!(!d.path().join(format!("{}.partial", m.sha256)).exists());
         assert!(!d.path().join(format!("{}.json", m.sha256)).exists());
+    }
+}
+
+#[test]
+#[ignore = "Invoked in subprocesses by the HTTPS crash matrix"]
+fn download_crash_helper() {
+    let m: ModelManifestV1 =
+        serde_json::from_str(&std::env::var("FRAMEIQ_TEST_DOWNLOAD_MANIFEST").unwrap()).unwrap();
+    let directory =
+        std::path::PathBuf::from(std::env::var_os("FRAMEIQ_TEST_DOWNLOAD_DIRECTORY").unwrap());
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .resolve(
+            "localhost",
+            format!(
+                "127.0.0.1:{}",
+                reqwest::Url::parse(&m.source_url).unwrap().port().unwrap()
+            )
+            .parse()
+            .unwrap(),
+        )
+        .add_root_certificate(reqwest::Certificate::from_pem(CERT).unwrap())
+        .read_timeout(Duration::from_secs(2))
+        .build()
+        .unwrap();
+    let result = download_with(
+        &m,
+        &directory,
+        Transport {
+            client,
+            permitted: |u| u.scheme() == "https" && u.host_str() == Some("localhost"),
+        },
+        || false,
+        |_, _| Ok(()),
+    );
+    panic!("Crash point was not reached: {result:?}");
+}
+#[test]
+fn process_crashes_do_not_associate_old_bytes_with_new_validators() {
+    let b = bytes();
+    for point in [
+        "before_reset",
+        "after_reset",
+        "after_metadata",
+        "after_body_write",
+        "before_verification",
+    ] {
+        let s = Server::new(vec![Reply::full(&b, "\"v2\""), Reply::full(&b, "\"v2\"")]);
+        let m = manifest(&s.url, &b);
+        let d = tempfile::tempdir().unwrap();
+        let partial = d.path().join(format!("{}.partial", m.sha256));
+        std::fs::write(&partial, b"old!!").unwrap();
+        std::fs::write(
+            partial.with_extension("json"),
+            serde_json::to_vec(&serde_json::json!({"url":m.source_url,"etag":"\"v1\""})).unwrap(),
+        )
+        .unwrap();
+        let status = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--ignored",
+                "--exact",
+                "download::https_tests::download_crash_helper",
+            ])
+            .env("FRAMEIQ_TEST_DOWNLOAD_CRASH", point)
+            .env(
+                "FRAMEIQ_TEST_DOWNLOAD_MANIFEST",
+                serde_json::to_string(&m).unwrap(),
+            )
+            .env("FRAMEIQ_TEST_DOWNLOAD_DIRECTORY", d.path())
+            .status()
+            .unwrap();
+        assert_eq!(status.code(), Some(91), "{point}");
+        let state: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(partial.with_extension("json")).unwrap())
+                .unwrap();
+        let retained = std::fs::read(&partial).unwrap();
+        if state["etag"] == "\"v2\"" {
+            assert!(
+                retained.is_empty() || retained == b,
+                "old bytes acquired new validator at {point}"
+            );
+        }
+        let path = download_with(
+            &m,
+            d.path(),
+            s.transport(true, Duration::from_secs(2)),
+            || false,
+            |_, _| Ok(()),
+        )
+        .unwrap();
+        assert_eq!(std::fs::read(path).unwrap(), b, "{point}");
     }
 }

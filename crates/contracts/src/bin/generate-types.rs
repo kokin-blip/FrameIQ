@@ -56,7 +56,9 @@ fn main() {
         .join("../../apps/desktop/src/contracts.ts");
     if std::env::args().any(|a| a == "--check") {
         assert_eq!(
-            std::fs::read_to_string(path).expect("generate contracts first"),
+            std::fs::read_to_string(path)
+                .expect("generate contracts first")
+                .replace("\r\n", "\n"),
             out,
             "contracts are stale"
         );

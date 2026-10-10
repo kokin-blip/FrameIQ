@@ -1,5 +1,15 @@
 name: FrameIQ checks
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      soak:
+        description: Run a two-hour backend soak instead of the ten-minute smoke
+        type: boolean
+        default: false
+env:
+  FRAMEIQ_STRESS_SECONDS: ${{ inputs.soak && '7200' || '600' }}
 permissions:
   contents: read
 jobs:
@@ -43,6 +53,18 @@ jobs:
           source tools/native-env.sh
           cargo build -p frameiq-worker
           cargo test --workspace --exclude frameiq-desktop --features frameiq-application/fault-injection
+      - name: Measured backend resource smoke
+        shell: bash
+        run: |
+          source tools/native-env.sh
+          mkdir -p .cache/resource-evidence
+          ffmpeg -hide_banner -loglevel error -y -f lavfi -i testsrc2=size=640x360:rate=10:duration=3 -c:v ffv1 .cache/resource-evidence/source.mkv
+          cargo run --locked -p frameiq-application --bin benchmark -- .cache/resource-evidence/source.mkv "$PWD/target/debug/frameiq-worker" .cache/resource-evidence/backend.json 20 "$FRAMEIQ_STRESS_SECONDS"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FrameIQ-macos-resource-evidence
+          path: .cache/resource-evidence/*.json
   windows-native:
     runs-on: windows-2025
     steps:
@@ -58,6 +80,17 @@ jobs:
       - name: Build pinned MSVC media engine and native fidelity fixtures
         shell: pwsh
         run: ./tools/build-windows.ps1
+      - name: Measured backend resource smoke
+        shell: pwsh
+        run: |
+          $env:FFMPEG_DIR = "$pwd/.native/ffmpeg"
+          $env:LIBCLANG_PATH = 'C:\Program Files\LLVM\bin'
+          $env:PATH = "$pwd/.native/ffmpeg/bin;$env:PATH"
+          New-Item -ItemType Directory -Force .cache/windows-evidence | Out-Null
+          & "$env:FFMPEG_DIR/bin/ffmpeg.exe" -hide_banner -loglevel error -y -f lavfi -i 'testsrc2=size=640x360:rate=10:duration=3' -c:v ffv1 .cache/windows-evidence/source.mkv
+          if($LASTEXITCODE){throw 'Stress fixture failed'}
+          cargo run --locked -p frameiq-application --bin benchmark -- .cache/windows-evidence/source.mkv "$pwd/target/debug/frameiq-worker.exe" .cache/windows-evidence/backend.json 20 $env:FRAMEIQ_STRESS_SECONDS
+          if($LASTEXITCODE){throw 'Resource smoke failed'}
       - run: node tools/prepare-onnxruntime.mjs
       - name: Bundle private installer and audit dependencies
         shell: pwsh
@@ -65,6 +98,17 @@ jobs:
       - name: Installed worker smoke with isolated PATH
         shell: pwsh
         run: ./tools/smoke-windows-install.ps1
+      - name: Retain native failure logs
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force .cache/windows-evidence/native-logs | Out-Null
+          foreach($port in @('ffmpeg','zimg')) {
+            $root = "C:/frameiq-native/vcpkg/buildtrees/$port"
+            if(Test-Path $root) {
+              Get-ChildItem $root -Filter '*.log' | ForEach-Object { Copy-Item $_.FullName ".cache/windows-evidence/native-logs/$port-$($_.Name)" -Force }
+            }
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: FrameIQ-private-windows-x64

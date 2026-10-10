@@ -191,9 +191,7 @@ impl AiProcess {
             let mut system = sysinfo::System::new();
             system.refresh_processes(sysinfo::ProcessesToUpdate::Some(&[pid]), true);
             let memory = system.process(pid).map(|p| p.memory()).unwrap_or(0);
-            if (native_inference && available < total * 15 / 100)
-                || memory > budget.max(256 * 1024 * 1024)
-            {
+            if resource_limit(native_inference, total, available, budget, memory) {
                 return Err(AppError::new(
                     "MEMORY_LIMIT",
                     "Inference stopped because its memory budget or system reserve was exceeded.",
@@ -650,5 +648,22 @@ impl Application {
         model_recovery::remove_installation(&owned)?;
         model_recovery::checkpoint("after_removal_files");
         Ok(())
+    }
+}
+
+fn resource_limit(native: bool, total: u64, available: u64, budget: u64, observed: u64) -> bool {
+    (native && (total == 0 || available < total.saturating_mul(15) / 100)) || observed > budget
+}
+#[cfg(test)]
+mod resource_tests {
+    use super::*;
+    #[test]
+    fn reserve_and_observed_budget_boundaries_are_exact() {
+        assert!(resource_limit(true, 1000, 149, 250, 20));
+        assert!(!resource_limit(true, 1000, 150, 250, 250));
+        assert!(resource_limit(true, 1000, 150, 250, 251));
+        assert!(resource_limit(true, 0, 0, 250, 0));
+        assert!(!resource_limit(false, 1000, 149, 250, 20));
+        assert!(resource_limit(false, 1000, 999, 250, 251));
     }
 }

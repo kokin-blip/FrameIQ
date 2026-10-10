@@ -39,8 +39,8 @@ for (const name of ["sdr", "pq", "hlg"]) {
   for (const mode of name === "sdr" ? ["sdr"] : ["sdr", "preserve16_bit"]) {
     const output = join(fixtures, `${name}-${mode}.png`);
     const messages = await request("frameiq-worker.exe", {
-      kind: "decode", path, stream: 0, ordinal: frame.ordinal,
-      expected_pts: Number(frame.ptsTicks), anchor: null, output, max_width: null,
+      kind: "decode", path, stream: 0, ordinal: Number(frame.ordinal),
+      expected_pts: frame.ptsTicks === null ? null : Number(frame.ptsTicks), anchor: null, output, max_width: null,
       options: { format: "png", jpegQuality: 95, colorMode: mode, colorPolicy: null },
     });
     const image = messages.find((r) => r.kind === "image");
@@ -48,7 +48,7 @@ for (const name of ["sdr", "pq", "hlg"]) {
     const png = readFileSync(output);
     const hash = createHash("sha256").update(png).digest("hex");
     if (hash !== image.sha256 || image.width !== 160 || image.height !== 120 || png[24] !== (mode === "sdr" ? 8 : 16)) throw new Error("Export fidelity metadata mismatch");
-    cases.push({ source: name, mode, ordinal: frame.ordinal, pts: frame.ptsTicks, hash, conversion: image.conversion });
+    cases.push({ source: name, mode, ordinal: Number(frame.ordinal), pts: frame.ptsTicks, hash, conversion: image.conversion });
   }
 }
 const manifest = JSON.parse(readFileSync(new URL("../models/manifests/yunet-2023mar.json", import.meta.url)));

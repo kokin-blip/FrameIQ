@@ -27,9 +27,12 @@ pub fn hardware() -> HardwareProfileV1 {
         logical_cores: cores,
         total_memory_bytes: total.to_string(),
         available_memory_bytes: available.to_string(),
-        ai_budget_bytes: (total / 4).min(4 * 1024 * 1024 * 1024).to_string(),
+        ai_budget_bytes: ai_budget(total).to_string(),
         worker_threads: (cores / 2).clamp(1, 4),
     }
+}
+fn ai_budget(total: u64) -> u64 {
+    (total / 4).min(4 * 1024 * 1024 * 1024)
 }
 fn input_dimensions(m: &ModelManifestV1) -> AppResult<(u32, u32)> {
     let s = &m.input.shape;
@@ -506,6 +509,15 @@ mod tensor_tests {
     use super::*;
     fn manifest() -> ModelManifestV1 {
         serde_json::from_str(include_str!("../../../models/manifests/yunet-2023mar.json")).unwrap()
+    }
+    #[test]
+    fn managed_budget_is_one_quarter_capped_at_four_gib() {
+        let gib = 1024 * 1024 * 1024;
+        assert_eq!(ai_budget(0), 0);
+        assert_eq!(ai_budget(8 * gib), 2 * gib);
+        assert_eq!(ai_budget(16 * gib), 4 * gib);
+        assert_eq!(ai_budget(24 * gib), 4 * gib);
+        assert_eq!(ai_budget(u64::MAX), 4 * gib);
     }
     #[test]
     fn memory_admission_rejects_low_reserve_and_oversized_loads() {

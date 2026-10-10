@@ -236,6 +236,7 @@ async fn download_async(
         .and_then(|v| v.to_str().ok())
         .unwrap_or(if resumed { etag.unwrap() } else { "" });
     let state = serde_json::json!({"url":manifest.source_url,"etag":tag});
+    checkpoint("before_reset");
     let mut output = std::fs::OpenOptions::new()
         .create(true)
         .write(true)
@@ -246,10 +247,12 @@ async fn download_async(
     // Reset and sync old bytes before publishing a new validator. A crash can
     // leave an empty file with old state, never old bytes with a new validator.
     output.sync_all().map_err(error)?;
-    let mut checkpoint = tempfile::NamedTempFile::new_in(directory).map_err(error)?;
-    serde_json::to_writer(&mut checkpoint, &state).map_err(error)?;
-    checkpoint.as_file().sync_all().map_err(error)?;
-    checkpoint.persist(&metadata).map_err(error)?;
+    checkpoint("after_reset");
+    let mut checkpoint_file = tempfile::NamedTempFile::new_in(directory).map_err(error)?;
+    serde_json::to_writer(&mut checkpoint_file, &state).map_err(error)?;
+    checkpoint_file.as_file().sync_all().map_err(error)?;
+    checkpoint_file.persist(&metadata).map_err(error)?;
+    checkpoint("after_metadata");
     loop {
         if cancel() {
             output.sync_all().map_err(error)?;
@@ -265,12 +268,15 @@ async fn download_async(
             return Err(error("Download exceeds expected size."));
         }
         output.write_all(&chunk).map_err(error)?;
+        checkpoint("after_body_write");
         progress(completed, expected)?;
     }
     output.sync_all().map_err(error)?;
     if completed != expected {
         return Err(error("Download ended before its declared size."));
     }
+    drop(output);
+    checkpoint("before_verification");
     if let Err(e) = super::verify_model(&path, manifest) {
         let _ = std::fs::remove_file(&path);
         let _ = std::fs::remove_file(&metadata);
@@ -328,6 +334,18 @@ mod tests {
         assert!(!partial.exists());
         assert!(!partial.with_extension("json").exists());
     }
+    #[test]
+    #[ignore = "Opt-in network smoke against the reviewed YuNet public model host"]
+    fn reviewed_public_host_download_smoke() {
+        let directory = tempfile::tempdir().unwrap();
+        let manifest = manifest();
+        let path = download(&manifest, directory.path(), || false, |_, _| Ok(())).unwrap();
+        super::super::verify_model(&path, &manifest).unwrap();
+        assert_eq!(
+            std::fs::metadata(path).unwrap().len().to_string(),
+            manifest.byte_size
+        );
+    }
     #[cfg(unix)]
     #[test]
     fn redirected_retained_files_are_rejected_before_dispatch() {
@@ -373,3 +391,12 @@ mod tests {
 #[cfg(test)]
 #[path = "download_https_tests.rs"]
 mod https_tests;
+
+// Process termination injection exists only in the unit-test executable.
+#[inline]
+fn checkpoint(_point: &str) {
+    #[cfg(test)]
+    if std::env::var("FRAMEIQ_TEST_DOWNLOAD_CRASH").ok().as_deref() == Some(_point) {
+        std::process::exit(91);
+    }
+}

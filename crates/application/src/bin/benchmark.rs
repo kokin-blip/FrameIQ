@@ -39,12 +39,16 @@ fn p95(values: &mut [f64]) -> f64 {
 struct MemorySampler {
     stop: Arc<AtomicBool>,
     values: Arc<Mutex<Vec<u64>>>,
+    checkpoints: Arc<Mutex<Vec<serde_json::Value>>>,
     thread: Option<std::thread::JoinHandle<()>>,
 }
 impl MemorySampler {
     fn start() -> Self {
         let stop = Arc::new(AtomicBool::new(false));
         let values = Arc::new(Mutex::new(Vec::new()));
+        let checkpoints = Arc::new(Mutex::new(Vec::new()));
+        let points = checkpoints.clone();
+        let sampled_start = Instant::now();
         let quit = stop.clone();
         let samples = values.clone();
         let root = sysinfo::Pid::from_u32(std::process::id());
@@ -69,13 +73,24 @@ impl MemorySampler {
                     .filter_map(|id| system.process(*id))
                     .map(|p| p.memory())
                     .sum();
-                samples.lock().unwrap().push(sum);
+                let cpu: f32 = tree
+                    .iter()
+                    .filter_map(|id| system.process(*id))
+                    .map(|p| p.cpu_usage())
+                    .sum();
+                let mut samples = samples.lock().unwrap();
+                if samples.len() % 20 == 0 {
+                    points.lock().unwrap().push(serde_json::json!({"elapsedMs":sampled_start.elapsed().as_millis(),"rssBytes":sum,"cpuPercent":cpu,"descendantCount":tree.len().saturating_sub(1)}));
+                }
+                samples.push(sum);
+                drop(samples);
                 std::thread::sleep(Duration::from_millis(50));
             }
         });
         Self {
             stop,
             values,
+            checkpoints,
             thread: Some(thread),
         }
     }
@@ -94,9 +109,9 @@ impl Drop for MemorySampler {
 }
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = std::env::args().collect();
-    if !(4..=5).contains(&args.len()) {
+    if !(4..=6).contains(&args.len()) {
         return Err(
-            "Usage: benchmark <video> <worker> <report.json> [sustained-iterations:1..10000]"
+            "Usage: benchmark <video> <worker> <report.json> [sustained-iterations:1..10000] [minimum-seconds:0..7200]"
                 .into(),
         );
     }
@@ -107,6 +122,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap_or(20);
     if !(1..=10000).contains(&iterations) {
         return Err("Sustained iterations must be 1..10000".into());
+    }
+    let minimum_seconds = args
+        .get(5)
+        .map(|s| s.parse::<u64>())
+        .transpose()?
+        .unwrap_or(0);
+    if minimum_seconds > 7200 {
+        return Err("Minimum duration must be 0..7200 seconds".into());
     }
     let mut memory = MemorySampler::start();
     let data = tempfile::tempdir()?;
@@ -169,14 +192,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let sustained_start = Instant::now();
     let mut sustained_times = Vec::new();
-    for i in 0..iterations {
+    let mut i = 0_u64;
+    while i < iterations as u64 || sustained_start.elapsed() < Duration::from_secs(minimum_seconds)
+    {
         let start = Instant::now();
         app.preview(
             &source.id,
-            &(count.saturating_sub(1) * (i as u64 % 10) / 9).to_string(),
+            &(count.saturating_sub(1) * (i % 10) / 9).to_string(),
         )?;
         app.recommendations(&source.id, RankingConfigV1::default())?;
-        sustained_times.push(start.elapsed().as_secs_f64() * 1000.);
+        let elapsed = start.elapsed();
+        sustained_times.push(elapsed.as_secs_f64() * 1000.);
+        i += 1;
+        // Bound sample storage and avoid saturating the machine with a cached spin loop.
+        if elapsed < Duration::from_millis(100) {
+            std::thread::sleep(Duration::from_millis(100) - elapsed);
+        }
     }
     let sustained_ms = sustained_start.elapsed().as_secs_f64() * 1000.;
     let cancellation = app.analyze(&source.id)?;
@@ -195,17 +226,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cancel_terminal_ms = start.elapsed().as_secs_f64() * 1000.;
     let cancellation_status = app.get_job(&cancellation.job_id)?.status;
     let samples = memory.finish();
+    if samples.iter().max().copied().unwrap_or(0) == 0 {
+        return Err("Process-tree memory sampling unavailable; allow native process inspection before claiming resource results".into());
+    }
+    let observed_descendants = memory
+        .checkpoints
+        .lock()
+        .unwrap()
+        .iter()
+        .filter_map(|p| p["descendantCount"].as_u64())
+        .max()
+        .unwrap_or(0);
     let report = serde_json::json!({
-        "schemaVersion":2,"buildProfile":if cfg!(debug_assertions){"debug"}else{"release"},
+        "schemaVersion":3,"buildProfile":if cfg!(debug_assertions){"debug"}else{"release"},
         "hardware":app.hardware(),"sourceMetadata":source.metadata,"frames":source.frame_count,
         "workerBuildProfile":"Not asserted; supplied worker binary is independent of coordinator profile",
         "importMs":import_ms,"uncachedSeekP95Ms":p95(&mut uncached),"cachedDisplayP95Ms":p95(&mut cached),
         "analysisMs":analysis_ms,"rerankP95Ms":p95(&mut rerank),"recommendationCount":candidates,
         "measuredCandidateCount":measurements.len(),"rank2000P95Ms":rank_2000,
-        "sustained":{"iterations":iterations,"durationMs":sustained_ms,"iterationP95Ms":p95(&mut sustained_times)},
+        "sustained":{"iterations":i,"requestedMinimumSeconds":minimum_seconds,"durationMs":sustained_ms,"iterationP95Ms":p95(&mut sustained_times)},
         "cancellation":{"acknowledgementMs":cancel_ack_ms,"terminalMs":cancel_terminal_ms,"status":cancellation_status,
             "scope":"Cached analysis cancellation; a succeeded race does not establish cancellation latency."},
-        "memory":{"samplePeriodMs":50,"sampleCount":samples.len(),"peakObservedTreeRssBytes":samples.iter().max(),
+        "processCheckpoints":memory.checkpoints.lock().unwrap().clone(),
+        "memory":{"maximumObservedDescendants":observed_descendants,
+            "childMemoryCoverage":if observed_descendants == 0 { "No child captured; coordinator RSS alone cannot establish the worker memory gate." } else { "Live descendants sampled; short-lived peaks may be missed." },
+            "samplePeriodMs":50,"sampleCount":samples.len(),"peakObservedTreeRssBytes":samples.iter().max(),
             "firstObservedTreeRssBytes":samples.first(),"lastObservedTreeRssBytes":samples.last(),
             "scope":"Coordinator and live descendant RSS; sampled, shared pages can be double counted; not an OS high-water mark."},
         "scope":"Backend timings on supplied media; no UI latency or accuracy claim. rank2000 is null unless 2000 real cached measurements exist. Sustained duration is reported rather than assumed to be a long-run test."

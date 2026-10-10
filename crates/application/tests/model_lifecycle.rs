@@ -344,3 +344,38 @@ fn idle_worker_helper() {
     // The monitor must not retain the application or its instance lock.
     drop(Application::new(&data, worker, Arc::new(|_| {})).unwrap());
 }
+
+#[test]
+fn repeated_worker_failures_leave_no_processes_or_staging_growth() {
+    let root = tempfile::tempdir().unwrap();
+    let (worker, original, manifest) = setup(root.path());
+    let data = root.path().join("data");
+    let app = Application::new(&data, worker, Arc::new(|_| {})).unwrap();
+    let first = app.import_model(&original, manifest.clone()).unwrap();
+    assert!(matches!(
+        terminal(&app, &first.job_id).status,
+        JobStatus::Succeeded
+    ));
+    let installed = app.models().unwrap()[0].clone();
+    for i in 0..20 {
+        std::fs::write(
+            root.path().join("ai-worker-mode.txt"),
+            if i % 2 == 0 { "crashed" } else { "rejected" },
+        )
+        .unwrap();
+        let job = app.import_model(&original, manifest.clone()).unwrap();
+        assert!(matches!(
+            terminal(&app, &job.job_id).status,
+            JobStatus::Failed
+        ));
+        let pid = std::fs::read_to_string(root.path().join("ai-worker.pid"))
+            .unwrap()
+            .parse()
+            .unwrap();
+        wait_stopped(pid);
+        assert_eq!(std::fs::read_dir(data.join("models")).unwrap().count(), 1);
+        assert_eq!(app.models().unwrap().len(), 1);
+        assert_eq!(std::fs::read(&installed.path).unwrap(), b"protocol fixture");
+    }
+    assert_eq!(std::fs::read(original).unwrap(), b"protocol fixture");
+}

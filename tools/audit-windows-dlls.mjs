@@ -1,6 +1,7 @@
-import { readdirSync, existsSync } from "node:fs";
+import { readdirSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 const stage = resolve(process.argv[2]);
 const files = [
   ...readdirSync(resolve(stage, "native"))
@@ -14,13 +15,16 @@ const bundled = new Set(
   readdirSync(resolve(stage, "native")).map((n) => n.toLowerCase()),
 );
 const missing = new Set();
+const manifest = [];
 for (const file of files) {
   const result = spawnSync("dumpbin", ["/dependents", file], {
     encoding: "utf8",
   });
   if (result.status !== 0)
     throw new Error("Run from an MSVC developer shell with dumpbin available.");
-  for (const dep of result.stdout.match(/\b[\w.-]+\.dll\b/gi) ?? []) {
+  const dependencies = result.stdout.match(/\b[\w.-]+\.dll\b/gi) ?? [];
+  manifest.push({ name: file.split(/[\\/]/).at(-1), sha256: createHash("sha256").update(readFileSync(file)).digest("hex"), dependencies });
+  for (const dep of dependencies) {
     if (/^api-ms-|^ext-ms-/i.test(dep) || bundled.has(dep.toLowerCase()))
       continue;
     // Microsoft CRT redistributables must be bundled, even when present on the build agent.
@@ -31,6 +35,7 @@ for (const file of files) {
       missing.add(dep);
   }
 }
+if (process.argv[3]) writeFileSync(process.argv[3], JSON.stringify({ schemaVersion: 1, files: manifest, missing: [...missing] }, null, 2));
 if (missing.size)
   throw new Error(`Bundle missing dependencies: ${[...missing].join(", ")}`);
 console.log(`Audited ${files.length} workers and libraries.`);

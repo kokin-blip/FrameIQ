@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "reviewDate": "2026-10-09",
+  "status": "Initial per-file provenance review; not an annotated acceptance corpus",
+  "sources": [
+    {
+      "id": "public-berlin-2012",
+      "title": "Ethical fashion show berlin 2012.webm",
+      "page": "https://commons.wikimedia.org/wiki/File:Ethical_fashion_show_berlin_2012.webm",
+      "revision": "1233932978",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Ethical_fashion_show_berlin_2012.webm",
+      "author": "GermanFashion.TV",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "expectedBytes": 34108236,
+      "expectedSha1": "bf8d3677de0c39335a8b9d87bf6ef39651721305",
+      "sourceGroup": "berlin-ethical-2012",
+      "split": "calibration",
+      "sha256": "9ed20809f79a5f6a9c29cad0ffd1a0c380180a3d69e784bd3d98b6c643fa40a7",
+      "acquisitionStatus": "downloaded and verified locally; original not committed",
+      "annotationStatus": "pending human labels and subject-group review"
+    },
+    {
+      "id": "public-whitehouse-2016",
+      "title": "20160915 Inclusive Design Fashion Show HD.webm",
+      "page": "https://commons.wikimedia.org/wiki/File:20160915_Inclusive_Design_Fashion_Show_HD.webm",
+      "revision": "913355066",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/d/d7/20160915_Inclusive_Design_Fashion_Show_HD.webm",
+      "author": "The White House",
+      "license": "US federal public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/Template:PD-USGov-POTUS",
+      "expectedBytes": 173809695,
+      "expectedSha1": "06ae1f1303ddbf7e4545eb69a00acec198b8e771",
+      "sourceGroup": "whitehouse-inclusive-2016",
+      "split": "held_out",
+      "sha256": "6bce59cd1a64a309e87db3a17fade3fa9cf92a250c2d3db23e8ae72ec0368489",
+      "acquisitionStatus": "downloaded and verified locally; original not committed",
+      "annotationStatus": "pending human labels and subject-group review"
+    }
+  ],
+  "excluded": [
+    {
+      "title": "Fashion And Stone.webm",
+      "reason": "Rendered commercial template with unclear third-party image provenance; unsuitable as real footage ground truth"
+    }
+  ]
+}
