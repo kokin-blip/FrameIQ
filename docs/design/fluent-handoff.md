@@ -37,3 +37,7 @@ Plain attachment copy remains “Drop a video here / or click to attach.” No p
 ## Verification artifacts
 
 Browser captures: `review/fluent/` at both required sizes. Tests and native-build evidence and remaining platform limitations are recorded in `fluent-feature-parity.md`. Earlier handoffs and captures are preserved as iteration references.
+
+## Experimental preset execution
+
+`preset-execution-state.json` records editable ready, running, stopped, and unavailable compositions on the existing Fluent page. `PresetExecutionPanel` reuses the shared Fluent Button and existing panel/row styles. Explicit opt-in is required; automatic validation status remains separate from experimental execution. The selected subject/current frame anchors each run. Stopped tracks report partial coverage, and a corrected subject on another anchor starts a new track. Accuracy-gated features remain unavailable rather than displaying illustrative detections.

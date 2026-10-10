@@ -8,7 +8,7 @@ pub fn builtins() -> Vec<PresetV1> {
   ("accessories","Accessories",[30.,15.,30.,15.,10.],vec!["accessory_region"]),
   ("footwear","Footwear",[25.,15.,30.,20.,10.],vec!["foot_landmarks","footwear_region"]),
   ("custom","Custom Region",[35.,20.,30.,5.,10.],vec!["region_tracking"]),
- ].into_iter().map(|(id,name,weights,required)|PresetV1{id:id.into(),name:name.into(),version:1,weights,count:8,required_capabilities:required.into_iter().map(String::from).collect(),automatic_available:false,unavailable_reason:Some("Automatic regions have not passed model parity and visibility evaluation. Draw and correct regions on individual frames.".into())}).collect()
+ ].into_iter().map(|(id,name,weights,required)|PresetV1{id:id.into(),name:name.into(),version:1,weights,count:8,required_capabilities:required.into_iter().map(String::from).collect(),automatic_available:false,unavailable_reason:Some("Automatic eligibility is not yet validated. Use guided regions or experimental tracking for supported presets.".into())}).collect()
 }
 pub fn validate(p: &PresetV1) -> AppResult<()> {
     if p.name.trim().is_empty()

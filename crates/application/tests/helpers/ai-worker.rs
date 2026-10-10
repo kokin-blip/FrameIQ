@@ -9,11 +9,36 @@ fn main() {
     )
     .unwrap();
     for line in std::io::stdin().lock().lines() {
-        if line.is_err() {
+        let Ok(line) = line else {
             break;
-        }
+        };
         let mode =
             std::fs::read_to_string(directory.join("ai-worker-mode.txt")).unwrap_or_default();
+        if mode == "tracking" {
+            let request: serde_json::Value = serde_json::from_str(&line).unwrap();
+            match request["kind"].as_str().unwrap() {
+                "validate" => println!("{{\"kind\":\"validated\"}}"),
+                "detect_persons" => {
+                    use std::io::Write;
+                    std::fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(directory.join("ai-worker.calls"))
+                        .unwrap()
+                        .write_all(b"inference\n")
+                        .unwrap();
+                    let (w, h) =
+                        image::image_dimensions(request["image"].as_str().unwrap()).unwrap();
+                    println!(
+                        "{}",
+                        serde_json::json!({"kind":"persons","result":{"width":w,"height":h,"algorithm":"mediapipe-person-224-v1","modelHash":request["manifest"]["sha256"],"persons":[{"detectorBox":[0.,0.,w as f64,h as f64],"landmarks":[[w as f64/2.,h as f64/2.],[w as f64/2.,0.],[w as f64/2.,h as f64/4.],[w as f64/2.,0.]],"score":0.9}]}})
+                    );
+                }
+                _ => panic!("Unsupported protocol-double request"),
+            }
+            std::io::stdout().flush().unwrap();
+            continue;
+        }
         match mode.as_str() {
             "crashed" => std::process::exit(1),
             "cancelled" => {

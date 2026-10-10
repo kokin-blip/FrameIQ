@@ -1,0 +1,15 @@
+{
+  "error": "Stage model_install: Some(AppError { code: \"MEMORY_LIMIT\", message: \"Available memory: 3.23 GiB; required system reserve: 3.60 GiB. Model load estimate: 0.04 GiB; managed budget: 4.00 GiB.\" })",
+  "hardware": {
+    "aiBudgetBytes": "4294967296",
+    "architecture": "aarch64",
+    "availableMemoryBytes": "3447554048",
+    "logicalCores": 12,
+    "os": "macos",
+    "totalMemoryBytes": "25769803776",
+    "workerThreads": 4
+  },
+  "passed": false,
+  "schemaVersion": 1,
+  "scope": "Real CPU inference stress stopped; this is not passing acceptance evidence"
+}

@@ -201,10 +201,60 @@ fn indexed_person_pose_cache_with_native_models() {
             "cacheReused":true,"subjectChoiceSaved":true,"guidedRegionLinked":true
         })).unwrap()).unwrap();
     }
+    let preset = app
+        .presets()
+        .unwrap()
+        .into_iter()
+        .find(|p| p.id == "outfit")
+        .unwrap();
+    let mut request = PresetExecutionV1 {
+        source_id: source.id.clone(),
+        preset,
+        anchor_ordinal: "0".into(),
+        person_model_id: detector.clone(),
+        person_index: 0,
+        face_model_id: None,
+        custom_rectangle: None,
+        experimental: false,
+    };
+    assert_eq!(
+        app.execute_preset(request.clone()).unwrap_err().code,
+        "CAPABILITY_UNVALIDATED"
+    );
+    request.experimental = true;
+    let execution = app.execute_preset(request.clone()).unwrap();
+    let done = wait(&app, &execution.job_id);
+    assert!(
+        matches!(done.status, JobStatus::Succeeded),
+        "{:?}",
+        done.error
+    );
+    let initial = app.preset_result(&execution.job_id).unwrap().unwrap();
+    assert!(!initial.track.observations.is_empty());
+    assert_eq!(initial.validation_status, "experimental_unvalidated");
+    let measurements = app.regions(&source.id).unwrap().len();
+    request.preset.weights = [90., 10., 0., 0., 0.];
+    let rerank = app.execute_preset(request).unwrap();
+    assert!(matches!(
+        wait(&app, &rerank.job_id).status,
+        JobStatus::Succeeded
+    ));
+    let repeated = app.preset_result(&rerank.job_id).unwrap().unwrap();
+    assert_eq!(initial.track.id, repeated.track.id);
+    assert_eq!(
+        app.regions(&source.id).unwrap().len(),
+        measurements,
+        "Reranking must not remeasure regions"
+    );
     app.remove_model(&pose_model).unwrap();
     assert!(!PathBuf::from(pose.result.mask_path.unwrap()).exists());
     assert!(app
         .person_feature(&source.id, "0", &detector)
         .unwrap()
         .is_some());
+    app.remove_model(&detector).unwrap();
+    assert!(
+        app.preset_result(&execution.job_id).unwrap().is_none(),
+        "Removed detector invalidates tracks and rankings"
+    );
 }

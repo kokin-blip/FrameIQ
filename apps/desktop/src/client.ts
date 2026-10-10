@@ -2,6 +2,8 @@ import { invoke, convertFileSrc, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type {
   PresetV1,
+  PresetExecutionV1,
+  PresetResultV1,
   FaceFrameV1,
   PersonFrameV1,
   SubjectChoiceV1,
@@ -37,6 +39,10 @@ function call<T>(name: string, args?: Record<string, unknown>): Promise<T> {
 export const api = {
   readModelManifest: (path: string) =>
     call<ModelManifestV1>("read_model_manifest", { path }),
+  executePreset: (request: PresetExecutionV1) =>
+    call<JobEvent>("execute_preset", { request }),
+  presetResult: (job: string) =>
+    call<PresetResultV1 | null>("preset_result", { job }),
   presets: () => call<PresetV1[]>("presets"),
   savePreset: (preset: PresetV1) => call<PresetV1>("save_preset", { preset }),
   regions: (source: string) => call<GuidedRegionV1[]>("regions", { source }),

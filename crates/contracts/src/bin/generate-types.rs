@@ -50,7 +50,11 @@ fn main() {
         PersonFrameV1,
         PoseFrameV1,
         SubjectReferenceV1,
-        SubjectChoiceV1
+        SubjectChoiceV1,
+        PresetExecutionV1,
+        TrackObservationV1,
+        SubjectTrackV1,
+        PresetResultV1
     );
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../apps/desktop/src/contracts.ts");

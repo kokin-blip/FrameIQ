@@ -680,3 +680,47 @@ pub struct SubjectChoiceV1 {
     pub subject: SubjectReferenceV1,
     pub frame: Selection,
 }
+
+/// Experimental execution is opt-in until human visibility and tracking gates pass.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct PresetExecutionV1 {
+    pub source_id: String,
+    pub preset: PresetV1,
+    pub anchor_ordinal: String,
+    pub person_model_id: String,
+    pub person_index: u32,
+    pub face_model_id: Option<String>,
+    pub custom_rectangle: Option<RegionRectV1>,
+    pub experimental: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackObservationV1 {
+    pub frame: Selection,
+    pub subject: SubjectReferenceV1,
+    pub rectangle: RegionRectV1,
+    pub region_id: String,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct SubjectTrackV1 {
+    pub id: String,
+    pub source_id: String,
+    pub index_generation: String,
+    pub algorithm: String,
+    pub cache_key: String,
+    pub observations: Vec<TrackObservationV1>,
+    pub coverage_complete: bool,
+    pub stop_reason: Option<String>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct PresetResultV1 {
+    pub job_id: String,
+    pub track: SubjectTrackV1,
+    pub preset: PresetV1,
+    pub frames: Vec<RecommendationV1>,
+    pub validation_status: String,
+    pub limitations: Vec<String>,
+}

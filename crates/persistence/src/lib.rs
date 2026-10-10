@@ -55,6 +55,10 @@ impl Database {
                 8i64,
                 include_str!("../../../migrations/008_export_attempt_items.sql"),
             ),
+            (
+                9i64,
+                include_str!("../../../migrations/009_preset_execution.sql"),
+            ),
         ];
         let max: i64 = conn
             .query_row(
@@ -434,6 +438,14 @@ impl Database {
         rows.collect::<Result<Vec<_>, _>>().map_err(err)
     }
     pub fn clear_model_features(&self, model: &str) -> AppResult<()> {
+        self.conn.execute("DELETE FROM target_regions WHERE json_extract(region_json,'$.origin')='experimental_shot_tracking' AND id IN (SELECT s.region_id FROM region_subjects s JOIN person_features p ON p.id=s.person_feature_id WHERE p.model_id=?)",[model]).map_err(err)?;
+        self.conn.execute("DELETE FROM target_regions WHERE id IN (SELECT o.region_id FROM track_observations o JOIN subject_tracks t ON t.id=o.track_id WHERE t.person_model_id=? OR t.face_model_id=?)",params![model,model]).map_err(err)?;
+        self.conn
+            .execute(
+                "DELETE FROM subject_tracks WHERE person_model_id=? OR face_model_id=?",
+                params![model, model],
+            )
+            .map_err(err)?;
         self.conn
             .execute("DELETE FROM pose_features WHERE model_id=?", [model])
             .map_err(err)?;
@@ -1359,7 +1371,7 @@ mod tests {
         };
         db.save_face_feature(&feature).unwrap();
         // Emulate an existing migration-005 database with preserved detector output.
-        db.conn.execute_batch("DROP TABLE export_attempt_items; DROP TABLE region_subjects; DROP TABLE subject_choices; DROP TABLE pose_features; DROP TABLE person_features; DELETE FROM schema_migrations WHERE version>=6;").unwrap();
+        db.conn.execute_batch("DROP TABLE preset_results; DROP TABLE track_observations; DROP TABLE subject_tracks; DROP TABLE export_attempt_items; DROP TABLE region_subjects; DROP TABLE subject_choices; DROP TABLE pose_features; DROP TABLE person_features; DELETE FROM schema_migrations WHERE version>=6;").unwrap();
         drop(db);
         let db = Database::open(&d.path().join("db.sqlite")).unwrap();
         assert!(d.path().join("db.pre-6.backup").exists());
@@ -1527,5 +1539,109 @@ mod tests {
         let s = db.create_source(&p.id, &f).unwrap();
         std::fs::write(&f, b"changed").unwrap();
         assert_eq!(db.validate_source(&s).unwrap_err().code, "SOURCE_CHANGED");
+    }
+}
+
+impl Database {
+    pub fn subject_track(
+        &mut self,
+        source: &SourceSummary,
+        key: &str,
+    ) -> AppResult<Option<SubjectTrackV1>> {
+        let value: Option<String> = self.conn.query_row("SELECT result_json FROM subject_tracks WHERE source_id=? AND index_id=? AND cache_key=?", params![source.id,source.index_generation,key], |r|r.get(0)).optional().map_err(err)?;
+        let track: Option<SubjectTrackV1> = value
+            .map(|v| serde_json::from_str(&v).map_err(err))
+            .transpose()?;
+        if let Some(t) = &track {
+            let count: i64 = self
+                .conn
+                .query_row(
+                    "SELECT COUNT(*) FROM track_observations WHERE track_id=?",
+                    [&t.id],
+                    |r| r.get(0),
+                )
+                .map_err(err)?;
+            if count != t.observations.len() as i64 {
+                self.discard_subject_track(&t.id)?;
+                return Ok(None);
+            }
+        }
+        Ok(track)
+    }
+    pub fn detach_interrupted_track(&self, id: &str) -> AppResult<()> {
+        self.conn
+            .execute("DELETE FROM subject_tracks WHERE id=?", [id])
+            .map_err(err)?;
+        Ok(())
+    }
+    pub fn discard_subject_track(&mut self, id: &str) -> AppResult<()> {
+        let tx = self.conn.transaction().map_err(err)?;
+        tx.execute("DELETE FROM target_regions WHERE id IN (SELECT region_id FROM track_observations WHERE track_id=?)",[id]).map_err(err)?;
+        tx.execute("DELETE FROM subject_tracks WHERE id=?", [id])
+            .map_err(err)?;
+        tx.commit().map_err(err)
+    }
+    pub fn save_subject_track(
+        &mut self,
+        track: &SubjectTrackV1,
+        person: &str,
+        face: Option<&str>,
+    ) -> AppResult<()> {
+        let tx = self.conn.transaction().map_err(err)?;
+        for id in std::iter::once(person).chain(face) {
+            let ready:bool=tx.query_row("SELECT EXISTS(SELECT 1 FROM model_installations WHERE id=? AND status='ready')",[id],|r|r.get(0)).map_err(err)?;
+            if !ready {
+                return Err(AppError::new(
+                    "MODEL_MISSING",
+                    "A tracking model was removed during execution.",
+                ));
+            }
+        }
+        tx.execute("INSERT INTO subject_tracks(id,source_id,index_id,person_model_id,face_model_id,cache_key,result_json) VALUES(?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET result_json=excluded.result_json",params![track.id,track.source_id,track.index_generation,person,face,track.cache_key,serde_json::to_string(track).map_err(err)?]).map_err(err)?;
+        for o in &track.observations {
+            tx.execute("INSERT OR IGNORE INTO track_observations(track_id,region_id,person_feature_id,person_index) VALUES(?,?,?,?)",params![track.id,o.region_id,o.subject.person_feature_id,o.subject.person_index]).map_err(err)?;
+        }
+        tx.commit().map_err(err)
+    }
+    pub fn save_preset_result(&self, result: &PresetResultV1) -> AppResult<()> {
+        self.conn
+            .execute(
+                "INSERT OR REPLACE INTO preset_results(job_id,track_id,result_json) VALUES(?,?,?)",
+                params![
+                    result.job_id,
+                    result.track.id,
+                    serde_json::to_string(result).map_err(err)?
+                ],
+            )
+            .map_err(err)?;
+        Ok(())
+    }
+    pub fn preset_result(&self, job: &str) -> AppResult<Option<PresetResultV1>> {
+        let value: Option<String> = self
+            .conn
+            .query_row(
+                "SELECT result_json FROM preset_results WHERE job_id=?",
+                [job],
+                |r| r.get(0),
+            )
+            .optional()
+            .map_err(err)?;
+        let result: Option<PresetResultV1> = value
+            .map(|v| serde_json::from_str(&v).map_err(err))
+            .transpose()?;
+        if let Some(r) = &result {
+            let count: i64 = self
+                .conn
+                .query_row(
+                    "SELECT COUNT(*) FROM track_observations WHERE track_id=?",
+                    [&r.track.id],
+                    |row| row.get(0),
+                )
+                .map_err(err)?;
+            if count != r.track.observations.len() as i64 {
+                return Ok(None);
+            }
+        }
+        Ok(result)
     }
 }

@@ -2,6 +2,7 @@ mod ai;
 mod body;
 mod cpu;
 mod model_recovery;
+mod preset_execution;
 use frameiq_contracts::*;
 use frameiq_persistence::Database;
 use sha2::{Digest, Sha256};
@@ -53,6 +54,7 @@ struct Inner {
     ai: Arc<Mutex<Option<ai::AiProcess>>>,
     _ai_idle: ai::IdleMonitor,
     body: Mutex<()>,
+    presets_lane: Mutex<()>,
     cpu: cpu::Budget,
 }
 #[derive(Clone)]
@@ -114,6 +116,7 @@ impl Application {
                 ai,
                 _ai_idle: ai_idle,
                 body: Mutex::new(()),
+                presets_lane: Mutex::new(()),
                 cpu: cpu::Budget::new(
                     (std::thread::available_parallelism()
                         .map(|n| n.get())

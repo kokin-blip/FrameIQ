@@ -184,6 +184,14 @@ fn measure_region(
     app.measure_region(&source, &ordinal, &preset, rectangle)
 }
 #[tauri::command]
+fn execute_preset(app: State<Application>, request: PresetExecutionV1) -> AppResult<JobEvent> {
+    app.execute_preset(request)
+}
+#[tauri::command]
+fn preset_result(app: State<Application>, job: String) -> AppResult<Option<PresetResultV1>> {
+    app.preset_result(&job)
+}
+#[tauri::command]
 fn detect_faces(
     app: State<Application>,
     source: String,
@@ -421,6 +429,8 @@ fn main() {
             regions,
             remove_region,
             measure_region,
+            execute_preset,
+            preset_result,
             choose_subject,
             subject_choice,
             clear_subject,

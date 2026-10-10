@@ -1,3 +1,4 @@
+import { PresetExecutionPanel } from "./PresetExecutionPanel";
 import { SubjectPanel } from "./SubjectPanel";
 import { useEffect, useRef, useState } from "react";
 import { api, message, timestamp } from "../client";
@@ -157,6 +158,9 @@ export function PresetPanel({ w }: { w: Workspace }) {
             Save custom preset
           </button>
         </>
+      )}
+      {selected && (
+        <PresetExecutionPanel w={w} preset={selected} rectangle={rectangle} />
       )}
       <h3>Guided region</h3>
       <p>

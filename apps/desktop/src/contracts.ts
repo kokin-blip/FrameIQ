@@ -86,3 +86,7 @@ export type PersonFrameV1 = { id: string, modelId: string, frame: Selection, col
 export type PoseFrameV1 = { id: string, modelId: string, personFeatureId: string, personIndex: number, frame: Selection, colorPolicy: string, result: PoseResultV1, };
 export type SubjectReferenceV1 = { personFeatureId: string, personIndex: number, };
 export type SubjectChoiceV1 = { modelId: string, subject: SubjectReferenceV1, frame: Selection, };
+export type PresetExecutionV1 = { sourceId: string, preset: PresetV1, anchorOrdinal: string, personModelId: string, personIndex: number, faceModelId: string | null, customRectangle: RegionRectV1 | null, experimental: boolean, };
+export type TrackObservationV1 = { frame: Selection, subject: SubjectReferenceV1, rectangle: RegionRectV1, regionId: string, };
+export type SubjectTrackV1 = { id: string, sourceId: string, indexGeneration: string, algorithm: string, cacheKey: string, observations: Array<TrackObservationV1>, coverageComplete: boolean, stopReason: string | null, };
+export type PresetResultV1 = { jobId: string, track: SubjectTrackV1, preset: PresetV1, frames: Array<RecommendationV1>, validationStatus: string, limitations: Array<string>, };
