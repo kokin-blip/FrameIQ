@@ -45,7 +45,13 @@ jobs:
       - run: rustup update stable --no-self-update
       - run: rustup default stable
       - run: brew install pkg-config gnupg llvm autoconf automake libtool
+      - uses: actions/cache@v4
+        id: native-cache
+        with:
+          path: .native/ffmpeg
+          key: native-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tools/build-ffmpeg.sh') }}
       - run: bash tools/build-ffmpeg.sh
+        if: steps.native-cache.outputs.cache-hit != 'true'
       - name: Native fidelity and offline integration
         shell: bash
         run: |
@@ -77,9 +83,26 @@ jobs:
         with:
           arch: x64
       - run: npm ci
+      - uses: actions/cache@v4
+        id: native-cache
+        with:
+          path: .native/ffmpeg
+          key: native-${{ runner.os }}-${{ runner.arch }}-${{ env.VCToolsVersion }}-${{ env.UCRTVersion }}-${{ hashFiles('tools/build-windows.ps1', 'tools/vcpkg-overlay/**') }}
       - name: Build pinned MSVC media engine and native fidelity fixtures
         shell: pwsh
         run: ./tools/build-windows.ps1
+        if: steps.native-cache.outputs.cache-hit != 'true'
+      - name: Native regression tests with cached engine
+        if: steps.native-cache.outputs.cache-hit == 'true'
+        shell: pwsh
+        run: |
+          $env:FFMPEG_DIR = "$pwd/.native/ffmpeg"
+          $env:LIBCLANG_PATH = 'C:\Program Files\LLVM\bin'
+          $env:PATH = "$pwd/.native/ffmpeg/bin;$env:PATH"
+          cargo build --locked -p frameiq-worker -p frameiq-ai-worker
+          if($LASTEXITCODE){throw 'Cached-engine worker build failed'}
+          cargo test --locked --workspace --exclude frameiq-desktop --features frameiq-application/fault-injection
+          if($LASTEXITCODE){throw 'Cached-engine regression failed'}
       - name: Measured backend resource smoke
         shell: pwsh
         run: |

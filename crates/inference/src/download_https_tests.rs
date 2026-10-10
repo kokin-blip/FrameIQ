@@ -408,6 +408,8 @@ fn process_crashes_do_not_associate_old_bytes_with_new_validators() {
     for point in [
         "before_reset",
         "after_reset",
+        "during_metadata_write",
+        "before_metadata_commit",
         "after_metadata",
         "after_body_write",
         "before_verification",
@@ -456,5 +458,32 @@ fn process_crashes_do_not_associate_old_bytes_with_new_validators() {
         )
         .unwrap();
         assert_eq!(std::fs::read(path).unwrap(), b, "{point}");
+        assert!(
+            !std::fs::read_dir(d.path())
+                .unwrap()
+                .flatten()
+                .any(|entry| entry
+                    .file_name()
+                    .to_string_lossy()
+                    .starts_with(".frameiq-resume-")),
+            "checkpoint orphan at {point}"
+        );
     }
+}
+
+#[test]
+fn checkpoint_cleanup_preserves_unknown_files_and_partial_bodies() {
+    let d = tempfile::tempdir().unwrap();
+    let owned = d
+        .path()
+        .join(format!(".frameiq-resume-{}-ABC123", "a".repeat(64)));
+    std::fs::write(&owned, b"orphan").unwrap();
+    let unknown = d.path().join(".frameiq-resume-user-notes");
+    std::fs::write(&unknown, b"preserve").unwrap();
+    let partial = d.path().join(format!("{}.partial", "a".repeat(64)));
+    std::fs::write(&partial, b"resume").unwrap();
+    cleanup_owned_checkpoints(d.path());
+    assert!(!owned.exists());
+    assert_eq!(std::fs::read(unknown).unwrap(), b"preserve");
+    assert_eq!(std::fs::read(partial).unwrap(), b"resume");
 }

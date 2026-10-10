@@ -122,6 +122,7 @@ pub(super) fn recover(data: &Path, db: &Database) -> AppResult<()> {
     }
     let downloads = data.join("model-downloads");
     if real_directory(&downloads) {
+        frameiq_inference::download::cleanup_owned_checkpoints(&downloads);
         for model in models.iter().filter(|m| m.status == "ready") {
             if frameiq_inference::validate_manifest(&model.manifest).is_err()
                 || model.manifest.sha256.len() != 64
@@ -204,6 +205,10 @@ mod tests {
         fs::write(duplicate.with_extension("json"), b"retained metadata").unwrap();
         let resumable = downloads.join(format!("{}.partial", "a".repeat(64)));
         fs::write(&resumable, b"cancelled download").unwrap();
+        let checkpoint = downloads.join(format!(".frameiq-resume-{}-ABC123", "b".repeat(64)));
+        fs::write(&checkpoint, b"interrupted metadata").unwrap();
+        let notes = downloads.join(".frameiq-resume-notes");
+        fs::write(&notes, b"unknown original").unwrap();
         recover(data.path(), &db).unwrap();
         assert!(Path::new(&installed.path).exists());
         assert!(!orphan.exists());
@@ -213,6 +218,8 @@ mod tests {
         assert!(!duplicate.exists());
         assert!(!duplicate.with_extension("json").exists());
         assert!(resumable.exists());
+        assert!(!checkpoint.exists());
+        assert!(notes.exists());
         assert_eq!(db.model_installations().unwrap().len(), 1);
         // A damaged installation is never grounds for discarding its retained copy.
         fs::write(&duplicate, b"validated fixture").unwrap();

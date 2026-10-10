@@ -149,6 +149,7 @@ async fn download_async(
         return Err(error("Model download storage cannot be a symlink."));
     }
     std::fs::create_dir_all(directory).map_err(error)?;
+    cleanup_owned_checkpoints(directory);
     let path = directory.join(format!("{}.partial", manifest.sha256));
     let metadata = path.with_extension("json");
     retained_file(&path)?;
@@ -248,9 +249,14 @@ async fn download_async(
     // leave an empty file with old state, never old bytes with a new validator.
     output.sync_all().map_err(error)?;
     checkpoint("after_reset");
-    let mut checkpoint_file = tempfile::NamedTempFile::new_in(directory).map_err(error)?;
+    let mut checkpoint_file = tempfile::Builder::new()
+        .prefix(&format!(".frameiq-resume-{}-", manifest.sha256))
+        .tempfile_in(directory)
+        .map_err(error)?;
     serde_json::to_writer(&mut checkpoint_file, &state).map_err(error)?;
+    checkpoint("during_metadata_write");
     checkpoint_file.as_file().sync_all().map_err(error)?;
+    checkpoint("before_metadata_commit");
     checkpoint_file.persist(&metadata).map_err(error)?;
     checkpoint("after_metadata");
     loop {
@@ -398,5 +404,42 @@ fn checkpoint(_point: &str) {
     #[cfg(test)]
     if std::env::var("FRAMEIQ_TEST_DOWNLOAD_CRASH").ok().as_deref() == Some(_point) {
         std::process::exit(91);
+    }
+}
+
+/// Recover only reserved, regular checkpoint files while the caller owns the
+/// application's instance/download lane. Completed and partial bodies are retained.
+pub fn cleanup_owned_checkpoints(directory: &Path) {
+    if directory.is_symlink() {
+        return;
+    }
+    let Ok(entries) = std::fs::read_dir(directory) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let Some(tail) = name
+            .to_str()
+            .and_then(|n| n.strip_prefix(".frameiq-resume-"))
+        else {
+            continue;
+        };
+        let (Some(hash), Some(random)) = (tail.get(..64), tail.get(65..)) else {
+            continue;
+        };
+        if tail.as_bytes().get(64) != Some(&b'-')
+            || random.len() != 6
+            || !hash
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+            || !random.bytes().all(|b| b.is_ascii_alphanumeric())
+        {
+            continue;
+        }
+        if std::fs::symlink_metadata(entry.path())
+            .is_ok_and(|m| m.is_file() && !m.file_type().is_symlink())
+        {
+            let _ = std::fs::remove_file(entry.path());
+        }
     }
 }
