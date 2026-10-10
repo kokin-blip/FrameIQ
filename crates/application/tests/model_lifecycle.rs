@@ -283,3 +283,64 @@ fn activation_crash_matrix_retains_only_committed_installations() {
         assert_eq!(std::fs::read(&original).unwrap(), b"protocol fixture");
     }
 }
+
+#[test]
+fn idle_worker_unloads_and_restarts_without_orphans() {
+    let root = tempfile::tempdir().unwrap();
+    let status = std::process::Command::new(std::env::current_exe().unwrap())
+        .args(["--ignored", "--exact", "idle_worker_helper"])
+        .env("FRAMEIQ_TEST_MODEL_ROOT", root.path())
+        .env("FRAMEIQ_TEST_IDLE_MS", "100")
+        .status()
+        .unwrap();
+    assert!(status.success());
+}
+
+fn worker_exists(pid: u32) -> bool {
+    let mut system = sysinfo::System::new();
+    let pid = sysinfo::Pid::from_u32(pid);
+    system.refresh_processes(sysinfo::ProcessesToUpdate::Some(&[pid]), true);
+    system.process(pid).is_some()
+}
+fn wait_stopped(pid: u32) {
+    let start = Instant::now();
+    while worker_exists(pid) {
+        assert!(
+            start.elapsed() < Duration::from_secs(5),
+            "orphan worker {pid}"
+        );
+        std::thread::sleep(Duration::from_millis(20));
+    }
+}
+#[test]
+#[ignore = "Invoked in a subprocess with test-only idle timing"]
+fn idle_worker_helper() {
+    let root = PathBuf::from(std::env::var_os("FRAMEIQ_TEST_MODEL_ROOT").unwrap());
+    let (worker, original, manifest) = setup(&root);
+    let data = root.join("data");
+    let app = Application::new(&data, worker.clone(), Arc::new(|_| {})).unwrap();
+    let first = app.import_model(&original, manifest.clone()).unwrap();
+    assert!(matches!(
+        terminal(&app, &first.job_id).status,
+        JobStatus::Succeeded
+    ));
+    let pid = std::fs::read_to_string(root.join("ai-worker.pid"))
+        .unwrap()
+        .parse()
+        .unwrap();
+    wait_stopped(pid);
+    let second = app.import_model(&original, manifest).unwrap();
+    assert!(matches!(
+        terminal(&app, &second.job_id).status,
+        JobStatus::Succeeded
+    ));
+    let next = std::fs::read_to_string(root.join("ai-worker.pid"))
+        .unwrap()
+        .parse()
+        .unwrap();
+    assert_ne!(pid, next);
+    drop(app);
+    wait_stopped(next);
+    // The monitor must not retain the application or its instance lock.
+    drop(Application::new(&data, worker, Arc::new(|_| {})).unwrap());
+}

@@ -50,7 +50,8 @@ struct Inner {
     background: Mutex<()>,
     interactive: Mutex<()>,
     preview_generation: AtomicU64,
-    ai: Mutex<Option<ai::AiProcess>>,
+    ai: Arc<Mutex<Option<ai::AiProcess>>>,
+    _ai_idle: ai::IdleMonitor,
     body: Mutex<()>,
     cpu: cpu::Budget,
 }
@@ -97,6 +98,8 @@ impl Application {
         let db = Database::open(&data.join("frameiq.db"))?;
         body::recover_mask_orphans(&cache, &db)?;
         model_recovery::recover(data, &db)?;
+        let ai = Arc::new(Mutex::new(None));
+        let ai_idle = ai::IdleMonitor::start(&ai)?;
         Ok(Self {
             inner: Arc::new(Inner {
                 _instance_lock: instance_lock,
@@ -108,7 +111,8 @@ impl Application {
                 background: Mutex::new(()),
                 interactive: Mutex::new(()),
                 preview_generation: AtomicU64::new(0),
-                ai: Mutex::new(None),
+                ai,
+                _ai_idle: ai_idle,
                 body: Mutex::new(()),
                 cpu: cpu::Budget::new(
                     (std::thread::available_parallelism()

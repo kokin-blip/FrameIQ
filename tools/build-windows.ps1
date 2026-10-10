@@ -22,7 +22,7 @@ $restricted = '--disable-gpl --disable-nonfree --disable-network --disable-every
 $port = $port.Replace('set(OPTIONS_RELEASE "--enable-optimizations")', 'string(APPEND OPTIONS " ' + $restricted + '")' + "`n" + 'set(OPTIONS_RELEASE "--enable-optimizations")')
 Set-Content "$overlay/portfile.cmake" $port
 $manifest = Get-Content "$overlay/vcpkg.json" -Raw | ConvertFrom-Json
-$manifest.version = '8.0.3'; $manifest.'port-version' = 0
+$manifest.version = '8.0.3'; $manifest | Add-Member -NotePropertyName 'port-version' -NotePropertyValue 0 -Force
 $manifest.dependencies += 'zimg'
 $manifest | ConvertTo-Json -Depth 50 | Set-Content "$overlay/vcpkg.json"
 $triplets = Join-Path $BuildRoot 'triplets'

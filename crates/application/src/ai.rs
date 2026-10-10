@@ -1,9 +1,74 @@
 use super::*;
 use std::process::{Child, ChildStdin};
 pub(super) struct AiProcess {
+    last_used: Instant,
     child: Child,
     stdin: ChildStdin,
     rx: mpsc::Receiver<AppResult<InferenceResponseV1>>,
+}
+/// Drops the managed process after five idle minutes, without touching an active request.
+/// The monitor owns no Application reference and joins immediately on application shutdown.
+pub(super) struct IdleMonitor {
+    stop: Arc<(Mutex<bool>, std::sync::Condvar)>,
+    thread: Option<std::thread::JoinHandle<()>>,
+}
+impl IdleMonitor {
+    pub(super) fn start(ai: &Arc<Mutex<Option<AiProcess>>>) -> AppResult<Self> {
+        let stop = Arc::new((Mutex::new(false), std::sync::Condvar::new()));
+        let signal = stop.clone();
+        let weak = Arc::downgrade(ai);
+        let idle = Duration::from_secs(300);
+        #[cfg(feature = "fault-injection")]
+        let idle = std::env::var("FRAMEIQ_TEST_IDLE_MS")
+            .ok()
+            .and_then(|s| s.parse::<u64>().ok())
+            .map(Duration::from_millis)
+            .unwrap_or(idle);
+        let tick = idle
+            .min(Duration::from_secs(30))
+            .max(Duration::from_millis(10));
+        let thread = std::thread::Builder::new()
+            .name("frameiq-ai-idle".into())
+            .spawn(move || {
+                let (mutex, wake) = &*signal;
+                let mut stopped = mutex.lock().unwrap_or_else(|e| e.into_inner());
+                loop {
+                    let (guard, _) = wake
+                        .wait_timeout(stopped, tick)
+                        .unwrap_or_else(|e| e.into_inner());
+                    stopped = guard;
+                    if *stopped {
+                        break;
+                    }
+                    let Some(ai) = weak.upgrade() else {
+                        break;
+                    };
+                    if let Ok(mut worker) = ai.try_lock() {
+                        if worker
+                            .as_ref()
+                            .is_some_and(|w| w.last_used.elapsed() >= idle)
+                        {
+                            *worker = None;
+                        }
+                    };
+                }
+            })
+            .map_err(error)?;
+        Ok(Self {
+            stop,
+            thread: Some(thread),
+        })
+    }
+}
+impl Drop for IdleMonitor {
+    fn drop(&mut self) {
+        let (mutex, wake) = &*self.stop;
+        *mutex.lock().unwrap_or_else(|e| e.into_inner()) = true;
+        wake.notify_one();
+        if let Some(thread) = self.thread.take() {
+            let _ = thread.join();
+        }
+    }
 }
 impl Drop for AiProcess {
     fn drop(&mut self) {
@@ -58,7 +123,12 @@ impl AiProcess {
                 }
             }
         });
-        Ok(Self { child, stdin, rx })
+        Ok(Self {
+            last_used: Instant::now(),
+            child,
+            stdin,
+            rx,
+        })
     }
     fn request(
         &mut self,
@@ -166,6 +236,8 @@ impl Application {
             InferenceRequestV1::Validate { .. }
                 | InferenceRequestV1::Run { .. }
                 | InferenceRequestV1::DetectFaces { .. }
+                | InferenceRequestV1::DetectPersons { .. }
+                | InferenceRequestV1::EstimatePose { .. }
                 | InferenceRequestV1::Benchmark { .. }
         ) {
             Some(self.inner.cpu.acquire(false, &cancel)?)
@@ -183,6 +255,8 @@ impl Application {
         let result = ai.as_mut().unwrap().request(&request, cancel, progress);
         if result.is_err() {
             *ai = None;
+        } else if let Some(worker) = ai.as_mut() {
+            worker.last_used = Instant::now();
         }
         result
     }

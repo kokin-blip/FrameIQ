@@ -137,6 +137,16 @@ impl Server {
         let origin = self.url.clone();
         let mut builder = reqwest::Client::builder()
             .no_proxy()
+            // Bind the test name to the IPv4 listener; avoid platform DNS/IPv6 fallback timing.
+            .resolve(
+                "localhost",
+                format!(
+                    "127.0.0.1:{}",
+                    reqwest::Url::parse(&self.url).unwrap().port().unwrap()
+                )
+                .parse()
+                .unwrap(),
+            )
             .connect_timeout(Duration::from_secs(1))
             .read_timeout(timeout)
             .redirect(reqwest::redirect::Policy::custom(move |attempt| {

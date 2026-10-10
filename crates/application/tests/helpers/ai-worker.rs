@@ -3,6 +3,11 @@ use std::io::{BufRead, Write};
 fn main() {
     let exe = std::env::current_exe().unwrap();
     let directory = exe.parent().unwrap();
+    std::fs::write(
+        directory.join("ai-worker.pid"),
+        std::process::id().to_string(),
+    )
+    .unwrap();
     for line in std::io::stdin().lock().lines() {
         if line.is_err() {
             break;

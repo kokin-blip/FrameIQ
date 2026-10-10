@@ -21,7 +21,7 @@ curl --fail --location "https://ffmpeg.org/releases/ffmpeg-$VERSION.tar.xz.asc" 
 curl --fail --location https://ffmpeg.org/ffmpeg-devel.asc -o ffmpeg-devel.asc
 gpg --homedir "$BASE/gnupg" --import ffmpeg-devel.asc
 gpg --homedir "$BASE/gnupg" --status-fd 1 --verify "ffmpeg-$VERSION.tar.xz.asc" "ffmpeg-$VERSION.tar.xz" > signature-status.txt
-rg -q 'VALIDSIG FCF986EA15E6E293A5644F10B4322F04D67658D8' signature-status.txt
+grep -q 'VALIDSIG FCF986EA15E6E293A5644F10B4322F04D67658D8' signature-status.txt
 if [[ ! -d "ffmpeg-$VERSION" ]]; then tar -xf "ffmpeg-$VERSION.tar.xz"; fi
 cd "ffmpeg-$VERSION"
 ./configure --prefix="$PREFIX" --enable-shared --disable-static --enable-libzimg --disable-autodetect --disable-network --disable-doc --disable-debug --disable-everything --enable-avdevice --enable-indev=lavfi --enable-avcodec --enable-avformat --enable-avfilter --enable-swscale --enable-swresample --enable-ffmpeg --enable-ffprobe --enable-decoder=wrapped_avframe,h264,hevc,vp8,vp9,av1,mpeg4,mpeg2video,mjpeg,png,ffv1,rawvideo --enable-parser=h264,hevc,vp8,vp9,av1,mpeg4video,mpegvideo --enable-demuxer=mov,matroska,avi,mpegts,ogg,image2,concat --enable-protocol=file,pipe --enable-encoder=png,mjpeg,ffv1,mpeg4,rawvideo,wrapped_avframe --enable-muxer=image2,matroska,null,rawvideo --enable-filter=testsrc2,setpts,select,scale,format,color,buffer,buffersink,zscale,tonemap,geq,setparams
