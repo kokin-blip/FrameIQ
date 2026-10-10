@@ -1,0 +1,1492 @@
+{
+  "analysisMs": 4688.33375,
+  "buildProfile": "debug",
+  "cachedDisplayP95Ms": 0.7765,
+  "cancellation": {
+    "acknowledgementMs": 0.176375,
+    "scope": "Cached analysis cancellation; a succeeded race does not establish cancellation latency.",
+    "status": "cancelled",
+    "terminalMs": 31.934833
+  },
+  "frames": "30",
+  "hardware": {
+    "aiBudgetBytes": "1879048192",
+    "architecture": "aarch64",
+    "availableMemoryBytes": "3257483264",
+    "logicalCores": 3,
+    "os": "macos",
+    "totalMemoryBytes": "7516192768",
+    "workerThreads": 1
+  },
+  "importMs": 71.364417,
+  "measuredCandidateCount": 30,
+  "memory": {
+    "childMemoryCoverage": "Live descendants sampled; short-lived peaks may be missed.",
+    "firstObservedTreeRssBytes": 4112384,
+    "lastObservedTreeRssBytes": 13107200,
+    "maximumObservedDescendants": 1,
+    "peakObservedTreeRssBytes": 27426816,
+    "sampleCount": 4726,
+    "samplePeriodMs": 50,
+    "scope": "Coordinator and live descendant RSS; sampled, shared pages can be double counted; not an OS high-water mark."
+  },
+  "processCheckpoints": [
+    {
+      "cpuPercent": 0.0,
+      "descendantCount": 0,
+      "elapsedMs": 20,
+      "rssBytes": 4112384
+    },
+    {
+      "cpuPercent": 38.90964126586914,
+      "descendantCount": 1,
+      "elapsedMs": 2340,
+      "rssBytes": 22970368
+    },
+    {
+      "cpuPercent": 30.936105728149414,
+      "descendantCount": 1,
+      "elapsedMs": 4907,
+      "rssBytes": 27426816
+    },
+    {
+      "cpuPercent": 3.8468687534332275,
+      "descendantCount": 0,
+      "elapsedMs": 7471,
+      "rssBytes": 11517952
+    },
+    {
+      "cpuPercent": 5.171724796295166,
+      "descendantCount": 0,
+      "elapsedMs": 10475,
+      "rssBytes": 12419072
+    },
+    {
+      "cpuPercent": 2.6470096111297607,
+      "descendantCount": 0,
+      "elapsedMs": 13244,
+      "rssBytes": 12484608
+    },
+    {
+      "cpuPercent": 5.757638931274414,
+      "descendantCount": 0,
+      "elapsedMs": 15925,
+      "rssBytes": 12484608
+    },
+    {
+      "cpuPercent": 5.404470443725586,
+      "descendantCount": 0,
+      "elapsedMs": 18437,
+      "rssBytes": 12517376
+    },
+    {
+      "cpuPercent": 6.843327522277832,
+      "descendantCount": 0,
+      "elapsedMs": 21011,
+      "rssBytes": 12517376
+    },
+    {
+      "cpuPercent": 3.591477155685425,
+      "descendantCount": 0,
+      "elapsedMs": 23602,
+      "rssBytes": 12517376
+    },
+    {
+      "cpuPercent": 1.9593390226364136,
+      "descendantCount": 0,
+      "elapsedMs": 25720,
+      "rssBytes": 12517376
+    },
+    {
+      "cpuPercent": 8.9826021194458,
+      "descendantCount": 0,
+      "elapsedMs": 28216,
+      "rssBytes": 12517376
+    },
+    {
+      "cpuPercent": 5.07952880859375,
+      "descendantCount": 0,
+      "elapsedMs": 30877,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 3.6642134189605713,
+      "descendantCount": 0,
+      "elapsedMs": 33163,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 6.4571967124938965,
+      "descendantCount": 0,
+      "elapsedMs": 36122,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 8.290044784545898,
+      "descendantCount": 0,
+      "elapsedMs": 38571,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 5.033588886260986,
+      "descendantCount": 0,
+      "elapsedMs": 41475,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 4.72601842880249,
+      "descendantCount": 0,
+      "elapsedMs": 43971,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 5.859891414642334,
+      "descendantCount": 0,
+      "elapsedMs": 47021,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 5.3234453201293945,
+      "descendantCount": 0,
+      "elapsedMs": 49680,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 8.019604682922363,
+      "descendantCount": 0,
+      "elapsedMs": 52500,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 6.653977394104004,
+      "descendantCount": 0,
+      "elapsedMs": 55192,
+      "rssBytes": 12550144
+    },
+    {
+      "cpuPercent": 2.9234464168548584,
+      "descendantCount": 0,
+      "elapsedMs": 57840,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 9.950428009033203,
+      "descendantCount": 0,
+      "elapsedMs": 60277,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 7.074090003967285,
+      "descendantCount": 0,
+      "elapsedMs": 63013,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 6.562137126922607,
+      "descendantCount": 0,
+      "elapsedMs": 65659,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 5.373569011688232,
+      "descendantCount": 0,
+      "elapsedMs": 68170,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 2.599945545196533,
+      "descendantCount": 0,
+      "elapsedMs": 70280,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 6.671562671661377,
+      "descendantCount": 0,
+      "elapsedMs": 73042,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 3.819417715072632,
+      "descendantCount": 0,
+      "elapsedMs": 75655,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 8.054983139038086,
+      "descendantCount": 0,
+      "elapsedMs": 78389,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 5.803565502166748,
+      "descendantCount": 0,
+      "elapsedMs": 80983,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 4.063697338104248,
+      "descendantCount": 0,
+      "elapsedMs": 83419,
+      "rssBytes": 12566528
+    },
+    {
+      "cpuPercent": 5.1658854484558105,
+      "descendantCount": 0,
+      "elapsedMs": 86215,
+      "rssBytes": 12582912
+    },
+    {
+      "cpuPercent": 5.018750190734863,
+      "descendantCount": 0,
+      "elapsedMs": 88502,
+      "rssBytes": 12582912
+    },
+    {
+      "cpuPercent": 2.8966188430786133,
+      "descendantCount": 0,
+      "elapsedMs": 91111,
+      "rssBytes": 12582912
+    },
+    {
+      "cpuPercent": 5.061990261077881,
+      "descendantCount": 0,
+      "elapsedMs": 93626,
+      "rssBytes": 12582912
+    },
+    {
+      "cpuPercent": 3.7576591968536377,
+      "descendantCount": 0,
+      "elapsedMs": 96056,
+      "rssBytes": 12582912
+    },
+    {
+      "cpuPercent": 2.092890739440918,
+      "descendantCount": 0,
+      "elapsedMs": 98226,
+      "rssBytes": 12582912
+    },
+    {
+      "cpuPercent": 2.1185662746429443,
+      "descendantCount": 0,
+      "elapsedMs": 100476,
+      "rssBytes": 12615680
+    },
+    {
+      "cpuPercent": 6.597206115722656,
+      "descendantCount": 0,
+      "elapsedMs": 102821,
+      "rssBytes": 12615680
+    },
+    {
+      "cpuPercent": 2.7520289421081543,
+      "descendantCount": 0,
+      "elapsedMs": 105210,
+      "rssBytes": 12615680
+    },
+    {
+      "cpuPercent": 2.093801975250244,
+      "descendantCount": 0,
+      "elapsedMs": 107715,
+      "rssBytes": 12615680
+    },
+    {
+      "cpuPercent": 1.6012357473373413,
+      "descendantCount": 0,
+      "elapsedMs": 110623,
+      "rssBytes": 12615680
+    },
+    {
+      "cpuPercent": 1.8494572639465332,
+      "descendantCount": 0,
+      "elapsedMs": 112747,
+      "rssBytes": 12615680
+    },
+    {
+      "cpuPercent": 3.2371811866760254,
+      "descendantCount": 0,
+      "elapsedMs": 114950,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 3.588224411010742,
+      "descendantCount": 0,
+      "elapsedMs": 117258,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 1.6620755195617676,
+      "descendantCount": 0,
+      "elapsedMs": 119346,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 5.13448429107666,
+      "descendantCount": 0,
+      "elapsedMs": 121874,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 2.96490216255188,
+      "descendantCount": 0,
+      "elapsedMs": 124715,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 2.094325304031372,
+      "descendantCount": 0,
+      "elapsedMs": 126871,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 4.660550594329834,
+      "descendantCount": 0,
+      "elapsedMs": 128932,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 2.3736884593963623,
+      "descendantCount": 0,
+      "elapsedMs": 131340,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 4.043109893798828,
+      "descendantCount": 0,
+      "elapsedMs": 133862,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 1.576653242111206,
+      "descendantCount": 0,
+      "elapsedMs": 136733,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 7.468288421630859,
+      "descendantCount": 0,
+      "elapsedMs": 139438,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 2.2839999198913574,
+      "descendantCount": 0,
+      "elapsedMs": 142215,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 3.151585817337036,
+      "descendantCount": 0,
+      "elapsedMs": 144776,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 1.9729112386703491,
+      "descendantCount": 0,
+      "elapsedMs": 147414,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 5.56948184967041,
+      "descendantCount": 0,
+      "elapsedMs": 149804,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 3.8730814456939697,
+      "descendantCount": 0,
+      "elapsedMs": 152471,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 5.575061321258545,
+      "descendantCount": 0,
+      "elapsedMs": 154966,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 6.728880882263184,
+      "descendantCount": 0,
+      "elapsedMs": 157482,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 5.446726322174072,
+      "descendantCount": 0,
+      "elapsedMs": 160074,
+      "rssBytes": 12648448
+    },
+    {
+      "cpuPercent": 5.00048828125,
+      "descendantCount": 0,
+      "elapsedMs": 162477,
+      "rssBytes": 12664832
+    },
+    {
+      "cpuPercent": 4.498147487640381,
+      "descendantCount": 0,
+      "elapsedMs": 165024,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 5.497676372528076,
+      "descendantCount": 0,
+      "elapsedMs": 167473,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 2.270684242248535,
+      "descendantCount": 0,
+      "elapsedMs": 170405,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 7.979698657989502,
+      "descendantCount": 0,
+      "elapsedMs": 173018,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 5.55593729019165,
+      "descendantCount": 0,
+      "elapsedMs": 175474,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 6.1151041984558105,
+      "descendantCount": 0,
+      "elapsedMs": 177618,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 8.902056694030762,
+      "descendantCount": 0,
+      "elapsedMs": 180288,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 6.5345778465271,
+      "descendantCount": 0,
+      "elapsedMs": 183163,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 6.247481346130371,
+      "descendantCount": 0,
+      "elapsedMs": 185122,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 5.511281490325928,
+      "descendantCount": 0,
+      "elapsedMs": 187662,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 2.383821487426758,
+      "descendantCount": 0,
+      "elapsedMs": 189845,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 2.7661006450653076,
+      "descendantCount": 0,
+      "elapsedMs": 192382,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 1.7081676721572876,
+      "descendantCount": 0,
+      "elapsedMs": 195104,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 3.457427978515625,
+      "descendantCount": 0,
+      "elapsedMs": 197886,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 5.68905782699585,
+      "descendantCount": 0,
+      "elapsedMs": 200172,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 5.607649803161621,
+      "descendantCount": 0,
+      "elapsedMs": 202878,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 2.3958802223205566,
+      "descendantCount": 0,
+      "elapsedMs": 205348,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 5.242182731628418,
+      "descendantCount": 0,
+      "elapsedMs": 207819,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 3.322885513305664,
+      "descendantCount": 0,
+      "elapsedMs": 210465,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 8.996601104736328,
+      "descendantCount": 0,
+      "elapsedMs": 212725,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 3.713557720184326,
+      "descendantCount": 0,
+      "elapsedMs": 215657,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 3.2750630378723145,
+      "descendantCount": 0,
+      "elapsedMs": 218244,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 1.424776315689087,
+      "descendantCount": 0,
+      "elapsedMs": 221000,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 3.2281405925750732,
+      "descendantCount": 0,
+      "elapsedMs": 223494,
+      "rssBytes": 12681216
+    },
+    {
+      "cpuPercent": 2.122676134109497,
+      "descendantCount": 0,
+      "elapsedMs": 226211,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 3.7622499465942383,
+      "descendantCount": 0,
+      "elapsedMs": 228594,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 5.384121417999268,
+      "descendantCount": 0,
+      "elapsedMs": 231306,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 3.746039390563965,
+      "descendantCount": 0,
+      "elapsedMs": 234150,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 8.004422187805176,
+      "descendantCount": 0,
+      "elapsedMs": 237158,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 5.325396537780762,
+      "descendantCount": 0,
+      "elapsedMs": 239818,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 2.1331896781921387,
+      "descendantCount": 0,
+      "elapsedMs": 242295,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 5.382461071014404,
+      "descendantCount": 0,
+      "elapsedMs": 245107,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 2.4641857147216797,
+      "descendantCount": 0,
+      "elapsedMs": 247454,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 2.3295633792877197,
+      "descendantCount": 0,
+      "elapsedMs": 249909,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 4.2586212158203125,
+      "descendantCount": 0,
+      "elapsedMs": 252489,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 4.424149513244629,
+      "descendantCount": 0,
+      "elapsedMs": 254902,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 3.242824077606201,
+      "descendantCount": 0,
+      "elapsedMs": 256991,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 5.349610805511475,
+      "descendantCount": 0,
+      "elapsedMs": 259998,
+      "rssBytes": 12713984
+    },
+    {
+      "cpuPercent": 2.6769182682037354,
+      "descendantCount": 0,
+      "elapsedMs": 262520,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 4.8877272605896,
+      "descendantCount": 0,
+      "elapsedMs": 265360,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 3.9451987743377686,
+      "descendantCount": 0,
+      "elapsedMs": 267467,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 10.043352127075195,
+      "descendantCount": 0,
+      "elapsedMs": 270098,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 4.595821857452393,
+      "descendantCount": 0,
+      "elapsedMs": 272966,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 6.365324020385742,
+      "descendantCount": 0,
+      "elapsedMs": 275235,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 2.764650821685791,
+      "descendantCount": 0,
+      "elapsedMs": 277567,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 3.9172680377960205,
+      "descendantCount": 0,
+      "elapsedMs": 280030,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 2.3182921409606934,
+      "descendantCount": 0,
+      "elapsedMs": 282701,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 3.5626630783081055,
+      "descendantCount": 0,
+      "elapsedMs": 285042,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 2.6028788089752197,
+      "descendantCount": 0,
+      "elapsedMs": 287567,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 4.816249847412109,
+      "descendantCount": 0,
+      "elapsedMs": 290089,
+      "rssBytes": 12730368
+    },
+    {
+      "cpuPercent": 5.081078052520752,
+      "descendantCount": 0,
+      "elapsedMs": 292675,
+      "rssBytes": 12746752
+    },
+    {
+      "cpuPercent": 2.439631223678589,
+      "descendantCount": 0,
+      "elapsedMs": 294634,
+      "rssBytes": 12746752
+    },
+    {
+      "cpuPercent": 2.440422773361206,
+      "descendantCount": 0,
+      "elapsedMs": 297341,
+      "rssBytes": 12746752
+    },
+    {
+      "cpuPercent": 4.680233478546143,
+      "descendantCount": 0,
+      "elapsedMs": 299793,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 1.8797004222869873,
+      "descendantCount": 0,
+      "elapsedMs": 302032,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 5.040104389190674,
+      "descendantCount": 0,
+      "elapsedMs": 304139,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 2.0765624046325684,
+      "descendantCount": 0,
+      "elapsedMs": 306456,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 4.711340427398682,
+      "descendantCount": 0,
+      "elapsedMs": 309045,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 6.1315813064575195,
+      "descendantCount": 0,
+      "elapsedMs": 311691,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 7.148859977722168,
+      "descendantCount": 0,
+      "elapsedMs": 314353,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 4.439448356628418,
+      "descendantCount": 0,
+      "elapsedMs": 316897,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 2.342329502105713,
+      "descendantCount": 0,
+      "elapsedMs": 319563,
+      "rssBytes": 12795904
+    },
+    {
+      "cpuPercent": 13.063981056213379,
+      "descendantCount": 0,
+      "elapsedMs": 322083,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 2.436676025390625,
+      "descendantCount": 0,
+      "elapsedMs": 324820,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 15.511305809020996,
+      "descendantCount": 0,
+      "elapsedMs": 327358,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 5.688770294189453,
+      "descendantCount": 0,
+      "elapsedMs": 329824,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 4.266856670379639,
+      "descendantCount": 0,
+      "elapsedMs": 331773,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 5.18369722366333,
+      "descendantCount": 0,
+      "elapsedMs": 334481,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 0.18211600184440613,
+      "descendantCount": 0,
+      "elapsedMs": 336497,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 3.537987470626831,
+      "descendantCount": 0,
+      "elapsedMs": 339351,
+      "rssBytes": 12812288
+    },
+    {
+      "cpuPercent": 6.940480709075928,
+      "descendantCount": 0,
+      "elapsedMs": 341978,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 2.6872646808624268,
+      "descendantCount": 0,
+      "elapsedMs": 344745,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 5.248528003692627,
+      "descendantCount": 0,
+      "elapsedMs": 347514,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 6.3195481300354,
+      "descendantCount": 0,
+      "elapsedMs": 349881,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 3.2535157203674316,
+      "descendantCount": 0,
+      "elapsedMs": 352346,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 4.008095741271973,
+      "descendantCount": 0,
+      "elapsedMs": 354782,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 0.06400100141763687,
+      "descendantCount": 0,
+      "elapsedMs": 356927,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 2.736741781234741,
+      "descendantCount": 0,
+      "elapsedMs": 359716,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 10.195616722106934,
+      "descendantCount": 0,
+      "elapsedMs": 362091,
+      "rssBytes": 12845056
+    },
+    {
+      "cpuPercent": 5.651724338531494,
+      "descendantCount": 0,
+      "elapsedMs": 364656,
+      "rssBytes": 12894208
+    },
+    {
+      "cpuPercent": 5.548454761505127,
+      "descendantCount": 0,
+      "elapsedMs": 367283,
+      "rssBytes": 12894208
+    },
+    {
+      "cpuPercent": 3.4322879314422607,
+      "descendantCount": 0,
+      "elapsedMs": 369666,
+      "rssBytes": 12894208
+    },
+    {
+      "cpuPercent": 1.5747777223587036,
+      "descendantCount": 0,
+      "elapsedMs": 372322,
+      "rssBytes": 12894208
+    },
+    {
+      "cpuPercent": 5.155895709991455,
+      "descendantCount": 0,
+      "elapsedMs": 375087,
+      "rssBytes": 12894208
+    },
+    {
+      "cpuPercent": 6.388266086578369,
+      "descendantCount": 0,
+      "elapsedMs": 377654,
+      "rssBytes": 12894208
+    },
+    {
+      "cpuPercent": 5.970108509063721,
+      "descendantCount": 0,
+      "elapsedMs": 380216,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 1.5612037181854248,
+      "descendantCount": 0,
+      "elapsedMs": 383071,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 2.6744539737701416,
+      "descendantCount": 0,
+      "elapsedMs": 385613,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 1.8339999914169312,
+      "descendantCount": 0,
+      "elapsedMs": 388231,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 4.917594909667969,
+      "descendantCount": 0,
+      "elapsedMs": 391090,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 1.465964913368225,
+      "descendantCount": 0,
+      "elapsedMs": 393842,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 3.7123863697052,
+      "descendantCount": 0,
+      "elapsedMs": 396352,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 3.5269079208374023,
+      "descendantCount": 0,
+      "elapsedMs": 398984,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 5.153104782104492,
+      "descendantCount": 0,
+      "elapsedMs": 401717,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 3.0800881385803223,
+      "descendantCount": 0,
+      "elapsedMs": 404662,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 4.336166858673096,
+      "descendantCount": 0,
+      "elapsedMs": 407340,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 4.323314189910889,
+      "descendantCount": 0,
+      "elapsedMs": 409632,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 2.3125782012939453,
+      "descendantCount": 0,
+      "elapsedMs": 412202,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 1.8117343187332153,
+      "descendantCount": 0,
+      "elapsedMs": 414788,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 12.70977783203125,
+      "descendantCount": 0,
+      "elapsedMs": 417349,
+      "rssBytes": 12926976
+    },
+    {
+      "cpuPercent": 3.639892816543579,
+      "descendantCount": 0,
+      "elapsedMs": 419677,
+      "rssBytes": 12959744
+    },
+    {
+      "cpuPercent": 2.5044336318969727,
+      "descendantCount": 0,
+      "elapsedMs": 421838,
+      "rssBytes": 12992512
+    },
+    {
+      "cpuPercent": 4.6311235427856445,
+      "descendantCount": 0,
+      "elapsedMs": 424258,
+      "rssBytes": 12992512
+    },
+    {
+      "cpuPercent": 6.063109397888184,
+      "descendantCount": 0,
+      "elapsedMs": 426465,
+      "rssBytes": 12992512
+    },
+    {
+      "cpuPercent": 4.671339511871338,
+      "descendantCount": 0,
+      "elapsedMs": 429276,
+      "rssBytes": 12992512
+    },
+    {
+      "cpuPercent": 2.958750009536743,
+      "descendantCount": 0,
+      "elapsedMs": 432086,
+      "rssBytes": 12992512
+    },
+    {
+      "cpuPercent": 2.022599935531616,
+      "descendantCount": 0,
+      "elapsedMs": 435097,
+      "rssBytes": 12992512
+    },
+    {
+      "cpuPercent": 7.658699989318848,
+      "descendantCount": 0,
+      "elapsedMs": 437631,
+      "rssBytes": 12992512
+    },
+    {
+      "cpuPercent": 6.160139083862305,
+      "descendantCount": 0,
+      "elapsedMs": 440001,
+      "rssBytes": 13025280
+    },
+    {
+      "cpuPercent": 3.5231637954711914,
+      "descendantCount": 0,
+      "elapsedMs": 442727,
+      "rssBytes": 13025280
+    },
+    {
+      "cpuPercent": 3.0576865673065186,
+      "descendantCount": 0,
+      "elapsedMs": 445086,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 5.889040470123291,
+      "descendantCount": 0,
+      "elapsedMs": 447979,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 3.1377084255218506,
+      "descendantCount": 0,
+      "elapsedMs": 450042,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 1.594353437423706,
+      "descendantCount": 0,
+      "elapsedMs": 452487,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 4.805654048919678,
+      "descendantCount": 0,
+      "elapsedMs": 455095,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 4.82207727432251,
+      "descendantCount": 0,
+      "elapsedMs": 458051,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 3.5460567474365234,
+      "descendantCount": 0,
+      "elapsedMs": 461059,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 2.9833197593688965,
+      "descendantCount": 0,
+      "elapsedMs": 463740,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 1.7986781597137451,
+      "descendantCount": 0,
+      "elapsedMs": 466464,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 5.0460357666015625,
+      "descendantCount": 0,
+      "elapsedMs": 468769,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 1.3991738557815552,
+      "descendantCount": 0,
+      "elapsedMs": 471721,
+      "rssBytes": 13058048
+    },
+    {
+      "cpuPercent": 6.493479251861572,
+      "descendantCount": 0,
+      "elapsedMs": 474241,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 1.95854651927948,
+      "descendantCount": 0,
+      "elapsedMs": 476729,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 8.420849800109863,
+      "descendantCount": 0,
+      "elapsedMs": 479386,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 5.612590312957764,
+      "descendantCount": 0,
+      "elapsedMs": 482220,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 8.628908157348633,
+      "descendantCount": 0,
+      "elapsedMs": 484843,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 7.858002185821533,
+      "descendantCount": 0,
+      "elapsedMs": 487577,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 8.180872917175293,
+      "descendantCount": 0,
+      "elapsedMs": 490656,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 4.194296836853027,
+      "descendantCount": 0,
+      "elapsedMs": 493426,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 1.4713983535766602,
+      "descendantCount": 0,
+      "elapsedMs": 496606,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 2.4363300800323486,
+      "descendantCount": 0,
+      "elapsedMs": 499617,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 8.080696105957031,
+      "descendantCount": 0,
+      "elapsedMs": 501739,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 4.0586042404174805,
+      "descendantCount": 0,
+      "elapsedMs": 504358,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 3.01332426071167,
+      "descendantCount": 0,
+      "elapsedMs": 507364,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 8.000564575195312,
+      "descendantCount": 0,
+      "elapsedMs": 510121,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 10.246147155761719,
+      "descendantCount": 0,
+      "elapsedMs": 512774,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 3.384535789489746,
+      "descendantCount": 0,
+      "elapsedMs": 515446,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 1.9845224618911743,
+      "descendantCount": 0,
+      "elapsedMs": 518592,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 5.340539455413818,
+      "descendantCount": 0,
+      "elapsedMs": 521658,
+      "rssBytes": 13074432
+    },
+    {
+      "cpuPercent": 5.622414588928223,
+      "descendantCount": 0,
+      "elapsedMs": 524341,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 4.970227241516113,
+      "descendantCount": 0,
+      "elapsedMs": 527092,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 4.470677375793457,
+      "descendantCount": 0,
+      "elapsedMs": 529696,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 3.8954787254333496,
+      "descendantCount": 0,
+      "elapsedMs": 532530,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 4.271823883056641,
+      "descendantCount": 0,
+      "elapsedMs": 534930,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 4.492341995239258,
+      "descendantCount": 0,
+      "elapsedMs": 537360,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 9.830201148986816,
+      "descendantCount": 0,
+      "elapsedMs": 539715,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 8.29582691192627,
+      "descendantCount": 0,
+      "elapsedMs": 541843,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 6.805422306060791,
+      "descendantCount": 0,
+      "elapsedMs": 544051,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 1.3556026220321655,
+      "descendantCount": 0,
+      "elapsedMs": 546872,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 2.473928689956665,
+      "descendantCount": 0,
+      "elapsedMs": 549538,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 5.823670864105225,
+      "descendantCount": 0,
+      "elapsedMs": 552302,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 6.80003547668457,
+      "descendantCount": 0,
+      "elapsedMs": 555012,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 9.427947998046875,
+      "descendantCount": 0,
+      "elapsedMs": 557221,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 12.207670211791992,
+      "descendantCount": 0,
+      "elapsedMs": 559652,
+      "rssBytes": 13090816
+    },
+    {
+      "cpuPercent": 6.931265354156494,
+      "descendantCount": 0,
+      "elapsedMs": 562304,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 3.5989339351654053,
+      "descendantCount": 0,
+      "elapsedMs": 564571,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 1.8268589973449707,
+      "descendantCount": 0,
+      "elapsedMs": 566866,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 2.9725236892700195,
+      "descendantCount": 0,
+      "elapsedMs": 569402,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 2.2315962314605713,
+      "descendantCount": 0,
+      "elapsedMs": 571928,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 4.951906204223633,
+      "descendantCount": 0,
+      "elapsedMs": 574427,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 7.228183269500732,
+      "descendantCount": 0,
+      "elapsedMs": 577081,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 2.2462191581726074,
+      "descendantCount": 0,
+      "elapsedMs": 579359,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 1.6708247661590576,
+      "descendantCount": 0,
+      "elapsedMs": 582465,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 11.283270835876465,
+      "descendantCount": 0,
+      "elapsedMs": 585283,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 1.9376006126403809,
+      "descendantCount": 0,
+      "elapsedMs": 587464,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 2.0554604530334473,
+      "descendantCount": 0,
+      "elapsedMs": 590131,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 4.616666793823242,
+      "descendantCount": 0,
+      "elapsedMs": 592572,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 4.483386516571045,
+      "descendantCount": 0,
+      "elapsedMs": 594846,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 2.208214282989502,
+      "descendantCount": 0,
+      "elapsedMs": 597431,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 2.256415367126465,
+      "descendantCount": 0,
+      "elapsedMs": 599962,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 4.789093971252441,
+      "descendantCount": 0,
+      "elapsedMs": 602470,
+      "rssBytes": 13107200
+    },
+    {
+      "cpuPercent": 4.5173234939575195,
+      "descendantCount": 0,
+      "elapsedMs": 605122,
+      "rssBytes": 13107200
+    }
+  ],
+  "rank2000P95Ms": null,
+  "recommendationCount": 8,
+  "rerankP95Ms": 7.565042,
+  "schemaVersion": 3,
+  "scope": "Backend timings on supplied media; no UI latency or accuracy claim. rank2000 is null unless 2000 real cached measurements exist. Sustained duration is reported rather than assumed to be a long-run test.",
+  "sourceMetadata": {
+    "durationSeconds": 3.0,
+    "selectedStream": 0,
+    "streams": [
+      {
+        "bitDepth": 8,
+        "codec": "ffv1",
+        "colorPrimaries": "Unspecified",
+        "colorRange": "MPEG",
+        "colorSpace": "Unspecified",
+        "colorTransfer": "Unspecified",
+        "durationSeconds": null,
+        "height": 360,
+        "index": 0,
+        "rotation": 0,
+        "sampleAspectRatio": "0:1",
+        "timeBaseDenominator": 1000,
+        "timeBaseNumerator": 1,
+        "width": 640
+      }
+    ]
+  },
+  "sustained": {
+    "durationMs": 600098.853042,
+    "iterationP95Ms": 16.300584,
+    "iterations": 3499,
+    "requestedMinimumSeconds": 600
+  },
+  "uncachedSeekP95Ms": 148.890875,
+  "workerBuildProfile": "Not asserted; supplied worker binary is independent of coordinator profile"
+}
