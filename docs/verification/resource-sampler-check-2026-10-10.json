@@ -1,0 +1,88 @@
+{
+  "analysisMs": 267.10825,
+  "buildProfile": "debug",
+  "cachedDisplayP95Ms": 0.234166,
+  "cancellation": {
+    "acknowledgementMs": 0.104958,
+    "scope": "Cached analysis cancellation; a succeeded race does not establish cancellation latency.",
+    "status": "cancelled",
+    "terminalMs": 5.869666
+  },
+  "frames": "2",
+  "hardware": {
+    "aiBudgetBytes": "4294967296",
+    "architecture": "aarch64",
+    "availableMemoryBytes": "4940431360",
+    "logicalCores": 12,
+    "os": "macos",
+    "totalMemoryBytes": "25769803776",
+    "workerThreads": 4
+  },
+  "importMs": 73.75941599999999,
+  "measuredCandidateCount": 2,
+  "memory": {
+    "childMemoryCoverage": "Live descendants sampled; short-lived peaks may be missed.",
+    "firstObservedTreeRssBytes": 6717440,
+    "lastObservedTreeRssBytes": 13500416,
+    "maximumObservedDescendants": 1,
+    "peakObservedTreeRssBytes": 31703040,
+    "sampleCount": 49,
+    "samplePeriodMs": 50,
+    "scope": "Coordinator and live descendant RSS; sampled, shared pages can be double counted; not an OS high-water mark."
+  },
+  "processCheckpoints": [
+    {
+      "cpuPercent": 0.0,
+      "descendantCount": 0,
+      "elapsedMs": 8,
+      "rssBytes": 6717440
+    },
+    {
+      "cpuPercent": 3.4483721256256104,
+      "descendantCount": 0,
+      "elapsedMs": 1279,
+      "rssBytes": 13369344
+    },
+    {
+      "cpuPercent": 3.641819715499878,
+      "descendantCount": 0,
+      "elapsedMs": 2535,
+      "rssBytes": 13467648
+    }
+  ],
+  "rank2000P95Ms": null,
+  "recommendationCount": 1,
+  "rerankP95Ms": 0.851042,
+  "schemaVersion": 3,
+  "scope": "Backend timings on supplied media; no UI latency or accuracy claim. rank2000 is null unless 2000 real cached measurements exist. Sustained duration is reported rather than assumed to be a long-run test.",
+  "sourceMetadata": {
+    "durationSeconds": 0.4,
+    "selectedStream": 0,
+    "streams": [
+      {
+        "bitDepth": 8,
+        "codec": "ffv1",
+        "colorPrimaries": "Unspecified",
+        "colorRange": "JPEG",
+        "colorSpace": "RGB",
+        "colorTransfer": "Unspecified",
+        "durationSeconds": null,
+        "height": 512,
+        "index": 0,
+        "rotation": 0,
+        "sampleAspectRatio": "0:1",
+        "timeBaseDenominator": 1000,
+        "timeBaseNumerator": 1,
+        "width": 512
+      }
+    ]
+  },
+  "sustained": {
+    "durationMs": 2061.7945,
+    "iterationP95Ms": 1.4363329999999999,
+    "iterations": 20,
+    "requestedMinimumSeconds": 1
+  },
+  "uncachedSeekP95Ms": 317.85575,
+  "workerBuildProfile": "Not asserted; supplied worker binary is independent of coordinator profile"
+}

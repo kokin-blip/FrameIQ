@@ -3,7 +3,7 @@ use frameiq_contracts::*;
 use std::{
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicUsize, Ordering},
         Arc, Mutex,
     },
     time::{Duration, Instant},
@@ -40,12 +40,15 @@ struct MemorySampler {
     stop: Arc<AtomicBool>,
     values: Arc<Mutex<Vec<u64>>>,
     checkpoints: Arc<Mutex<Vec<serde_json::Value>>>,
+    maximum_descendants: Arc<AtomicUsize>,
     thread: Option<std::thread::JoinHandle<()>>,
 }
 impl MemorySampler {
     fn start() -> Self {
         let stop = Arc::new(AtomicBool::new(false));
         let values = Arc::new(Mutex::new(Vec::new()));
+        let maximum_descendants = Arc::new(AtomicUsize::new(0));
+        let maximum = maximum_descendants.clone();
         let checkpoints = Arc::new(Mutex::new(Vec::new()));
         let points = checkpoints.clone();
         let sampled_start = Instant::now();
@@ -68,6 +71,7 @@ impl MemorySampler {
                         break;
                     }
                 }
+                maximum.fetch_max(tree.len().saturating_sub(1), Ordering::Relaxed);
                 let sum = tree
                     .iter()
                     .filter_map(|id| system.process(*id))
@@ -91,6 +95,7 @@ impl MemorySampler {
             stop,
             values,
             checkpoints,
+            maximum_descendants,
             thread: Some(thread),
         }
     }
@@ -229,14 +234,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if samples.iter().max().copied().unwrap_or(0) == 0 {
         return Err("Process-tree memory sampling unavailable; allow native process inspection before claiming resource results".into());
     }
-    let observed_descendants = memory
-        .checkpoints
-        .lock()
-        .unwrap()
-        .iter()
-        .filter_map(|p| p["descendantCount"].as_u64())
-        .max()
-        .unwrap_or(0);
+    let observed_descendants = memory.maximum_descendants.load(Ordering::Relaxed);
     let report = serde_json::json!({
         "schemaVersion":3,"buildProfile":if cfg!(debug_assertions){"debug"}else{"release"},
         "hardware":app.hardware(),"sourceMetadata":source.metadata,"frames":source.frame_count,
