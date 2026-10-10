@@ -34,6 +34,7 @@ set(VCPKG_LIBRARY_LINKAGE dynamic)
 set(VCPKG_BUILD_TYPE release)
 '@ | Set-Content "$triplets/x64-frameiq.cmake"
 $overlayRoot = Split-Path $overlay -Parent
+Copy-Item "$repo/tools/vcpkg-overlay/zimg" $overlayRoot -Recurse -Force
 & "$vc/vcpkg.exe" install 'ffmpeg[avcodec,avdevice,avfilter,avformat,swresample,swscale,ffmpeg,ffprobe]:x64-frameiq' "--overlay-ports=$overlayRoot" "--overlay-triplets=$triplets" --disable-metrics
 if($LASTEXITCODE){throw 'Restricted FFmpeg native build failed'}
 $prefix = "$vc/installed/x64-frameiq"
