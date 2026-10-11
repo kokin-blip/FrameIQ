@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "mediaPassed": true,
+  "architecture": "arm64",
+  "scope": "Packaged workers with development library paths removed",
+  "indexedFrames": 4,
+  "exportOrdinal": "2",
+  "exportHash": "e3c0fe19250522ee143f5b89eb20da761151a06b7aea7cdb155c55fd204dcbad",
+  "inferenceStatus": "blocked_memory_reserve",
+  "inferenceError": {
+    "code": "MEMORY_LIMIT",
+    "message": "Available memory: 2.59 GiB; required system reserve: 3.60 GiB. Model load estimate: 0.04 GiB; managed budget: 4.00 GiB."
+  },
+  "limitations": [
+    "Not a new UI acceptance test",
+    "Not a completed inference soak",
+    "Not Apple notarized"
+  ]
+}
