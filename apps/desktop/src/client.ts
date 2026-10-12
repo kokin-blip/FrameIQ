@@ -1,6 +1,12 @@
 import { invoke, convertFileSrc, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type {
+  CloudReviewRequestV1,
+  CloudReviewV1,
+  CloudAnalysisResultV1,
+  CloudProviderV1,
+  CloudCredentialStatusV1,
+  CloudConnectionV1,
   PresetV1,
   PresetExecutionV1,
   PresetResultV1,
@@ -37,10 +43,36 @@ function call<T>(name: string, args?: Record<string, unknown>): Promise<T> {
   return invoke<T>(name, args);
 }
 export const api = {
+  renameProject: (id: string, name: string) =>
+    call<void>("rename_project", { id, name }),
+  renameSource: (id: string, name: string) =>
+    call<void>("rename_source", { id, name }),
+  markProjectOpened: (id: string) => call<void>("mark_project_opened", { id }),
+  projectActivity: () => call<Record<string, string>>("project_activity"),
+  modelCatalog: () => call<ModelManifestV1[]>("model_catalog"),
+  prepareCloudReview: (request: CloudReviewRequestV1) =>
+    call<JobEvent>("prepare_cloud_review", { request }),
+  cloudReview: (id: string) => call<CloudReviewV1>("cloud_review", { id }),
+  discardCloudReview: (id: string) =>
+    call<void>("discard_cloud_review", { id }),
+  analyzeCloudReview: (id: string, consent: boolean) =>
+    call<JobEvent>("analyze_cloud_review", { id, consent }),
+  cloudResult: (id: string) =>
+    call<CloudAnalysisResultV1 | null>("cloud_result", { id }),
+  cloudKeyStatus: (provider: CloudProviderV1) =>
+    call<CloudCredentialStatusV1>("cloud_key_status", { provider }),
+  saveCloudKey: (provider: CloudProviderV1, apiKey: string) =>
+    call<void>("save_cloud_key", { provider, apiKey }),
+  removeCloudKey: (provider: CloudProviderV1) =>
+    call<void>("remove_cloud_key", { provider }),
+  testCloudConnection: (provider: CloudProviderV1) =>
+    call<CloudConnectionV1>("test_cloud_connection", { provider }),
   readModelManifest: (path: string) =>
     call<ModelManifestV1>("read_model_manifest", { path }),
   executePreset: (request: PresetExecutionV1) =>
     call<JobEvent>("execute_preset", { request }),
+  selectPresetFrames: (request: PresetExecutionV1) =>
+    call<JobEvent>("select_preset_frames", { request }),
   presetResult: (job: string) =>
     call<PresetResultV1 | null>("preset_result", { job }),
   presets: () => call<PresetV1[]>("presets"),
@@ -100,6 +132,11 @@ export const api = {
   selections: (project: string) => call<Selection[]>("selections", { project }),
   select: (source: string, ordinal: string, selected: boolean) =>
     call<void>("select_frame", { source, ordinal, selected }),
+  selectAll: (source: string) => call<void>("select_all_frames", { source }),
+  clearSelections: (project: string) =>
+    call<void>("clear_selections", { project }),
+  addSelections: (project: string, frames: Selection[]) =>
+    call<void>("add_selections", { project, frames }),
   jobs: () => (desktop ? call<JobEvent[]>("list_jobs") : Promise.resolve([])),
   cancel: (id: string) => call<void>("cancel_job", { id }),
   import: (project: string, path: string) =>

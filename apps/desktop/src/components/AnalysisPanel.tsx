@@ -37,9 +37,18 @@ export function AnalysisPanel({
       j.resultIds.includes(w.sourceId ?? "") &&
       ["queued", "running", "cancelling"].includes(j.status),
   );
-  const analysisState=Object.values(jobs).filter(j=>j.stage==="analyzing"&&j.resultIds.includes(w.sourceId??"")).map(j=>`${j.jobId}:${j.status}`).join("|");
-  const [poll,setPoll]=useState(0);
-  useEffect(()=>{if(!active)return;const timer=setInterval(()=>setPoll(n=>n+1),2500);return()=>clearInterval(timer);},[active?.jobId]);
+  const analysisState = Object.values(jobs)
+    .filter(
+      (j) => j.stage === "analyzing" && j.resultIds.includes(w.sourceId ?? ""),
+    )
+    .map((j) => `${j.jobId}:${j.status}`)
+    .join("|");
+  const [poll, setPoll] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const timer = setInterval(() => setPoll((n) => n + 1), 2500);
+    return () => clearInterval(timer);
+  }, [active?.jobId]);
   useEffect(() => {
     setChosen([]);
     setResult(null);
@@ -113,33 +122,37 @@ export function AnalysisPanel({
           </Button>
         </div>
       )}
-      <fieldset>
-        <legend>Ranking</legend>
-        {(
-          [
-            ["count", "Frame count"],
-            ["sharpnessWeight", "Sharpness"],
-            ["exposureWeight", "Exposure"],
-            ["blurWeight", "Blur estimate"],
-          ] as const
-        ).map(([key, label]) => (
-          <label key={key}>
-            {label}
-            <input
-              type="number"
-              min={key === "count" ? 1 : 0}
-              max={key === "count" ? 50 : 100}
-              value={config[key]}
-              onChange={(e) =>
-                setConfig((c) => ({ ...c, [key]: Number(e.target.value) }))
-              }
-            />
-          </label>
-        ))}
-      </fieldset>
-      <p className="analysis-note">
-        Weights reuse saved measurements. Scores are quality estimates.
-      </p>
+      <details className="advanced-options">
+        <summary>Ranking settings</summary>
+        <fieldset>
+          <legend>Ranking</legend>
+          {(
+            [
+              ["count", "Frame count"],
+              ["sharpnessWeight", "Sharpness"],
+              ["exposureWeight", "Exposure"],
+              ["blurWeight", "Blur estimate"],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key}>
+              {label}
+              <input
+                type="number"
+                min={key === "count" ? 1 : 0}
+                max={key === "count" ? 50 : 100}
+                value={config[key]}
+                onChange={(e) =>
+                  setConfig((c) => ({ ...c, [key]: Number(e.target.value) }))
+                }
+              />
+            </label>
+          ))}
+        </fieldset>
+        <p className="analysis-note">
+          Weights reuse saved measurements. Scores are quality estimates.
+        </p>
+      </details>
+      <p>Choose 2–4 recommended frames to compare.</p>
       {result && !result.coverageComplete && (
         <p role="status">Partial results · analysis {result.status}</p>
       )}

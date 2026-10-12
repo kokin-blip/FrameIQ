@@ -31,6 +31,7 @@ export function useWorkspace() {
     [colorMode, setColorMode] = useState<ColorMode>("sdr"),
     [sourceColor, setSourceColor] = useState(""),
     [zoom, setZoom] = useState(1),
+    [zoomMode, setZoomMode] = useState<"fit" | "pixels">("fit"),
     [pan, setPan] = useState({ x: 0, y: 0 }),
     [thumbs, setThumbs] = useState<{ frame: IndexedFrame; url: string }[]>([]),
     [newProject, setNewProject] = useState("");
@@ -85,6 +86,10 @@ export function useWorkspace() {
     };
   }, [setJob]);
   useEffect(() => {
+    if (project && view === "extract")
+      void api.markProjectOpened(project.id).catch((e) => setError(message(e)));
+  }, [project?.id, view]);
+  useEffect(() => {
     if (!project) return;
     reload(project).catch((e) => setError(message(e)));
     const id = window.setInterval(
@@ -127,6 +132,7 @@ export function useWorkspace() {
     setFrame(null);
     setPlaying(false);
     setZoom(1);
+    setZoomMode("fit");
     setPan({ x: 0, y: 0 });
     setThumbs([]);
     desired.current = pendingFocus.current ?? "0";
@@ -187,6 +193,49 @@ export function useWorkspace() {
     },
     [activeSource, show],
   );
+  const [selectionBusy, setSelectionBusy] = useState(false);
+  const selectionLock = useRef(false);
+  const mutateSelections = useCallback(
+    async (operation: () => Promise<void>) => {
+      if (!project || selectionLock.current)
+        throw new Error("Wait for the current selection operation.");
+      selectionLock.current = true;
+      setSelectionBusy(true);
+      try {
+        await operation();
+        await reload(project);
+      } catch (e) {
+        setError(message(e));
+        throw e;
+      } finally {
+        selectionLock.current = false;
+        setSelectionBusy(false);
+      }
+    },
+    [project, reload],
+  );
+  const addSelections = useCallback(
+    async (frames: Selection[]) => {
+      if (!project) return;
+      await mutateSelections(() => api.addSelections(project.id, frames));
+    },
+    [project, mutateSelections],
+  );
+  const removeSelection = useCallback(
+    async (s: Selection) => {
+      await mutateSelections(() =>
+        api.select(s.sourceId, s.frameRef.presentationOrdinal, false),
+      );
+    },
+    [mutateSelections],
+  );
+  const selectAll = useCallback(async () => {
+    if (activeSource)
+      await mutateSelections(() => api.selectAll(activeSource.id));
+  }, [activeSource, mutateSelections]);
+  const clearSelections = useCallback(async () => {
+    if (project) await mutateSelections(() => api.clearSelections(project.id));
+  }, [project, mutateSelections]);
   const toggleSelection = useCallback(async () => {
     if (!project || !activeSource || !frame) return;
     const exists = selected.some(
@@ -195,12 +244,13 @@ export function useWorkspace() {
         s.frameRef.presentationOrdinal === frame.ordinal,
     );
     try {
-      await api.select(activeSource.id, frame.ordinal, !exists);
-      await reload(project);
+      await mutateSelections(() =>
+        api.select(activeSource.id, frame.ordinal, !exists),
+      );
     } catch (e) {
       setError(message(e));
     }
-  }, [project, activeSource, frame, selected, reload]);
+  }, [project, activeSource, frame, selected, mutateSelections]);
   useEffect(() => {
     function key(e: KeyboardEvent) {
       if (
@@ -373,6 +423,18 @@ export function useWorkspace() {
     (s) => s.index === activeSource.metadata?.selectedStream,
   );
 
+  async function renameProject(id: string, name: string) {
+    await api.renameProject(id, name);
+    const list = await api.projects();
+    setProjects(list);
+    if (project?.id === id)
+      setProject(list.find((p) => p.id === id) ?? project);
+  }
+  async function renameSource(id: string, name: string) {
+    await api.renameSource(id, name);
+    if (project) await reload(project);
+    setProjects(await api.projects());
+  }
   function openProject(p: Project) {
     setSources([]);
     setSelected([]);
@@ -419,6 +481,10 @@ export function useWorkspace() {
     setQuality,
     zoom,
     setZoom,
+    zoomMode,
+    setZoomMode,
+    renameProject,
+    renameSource,
     pan,
     setPan,
     thumbs,
@@ -429,6 +495,14 @@ export function useWorkspace() {
     seek,
     show,
     toggleSelection,
+    selectionBusy,
+    refreshSelections: async () => {
+      if (project) await reload(project);
+    },
+    addSelections,
+    removeSelection,
+    selectAll,
+    clearSelections,
     importVideo,
     createProject,
     exportFrames,

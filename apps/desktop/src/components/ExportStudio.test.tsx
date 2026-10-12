@@ -34,6 +34,7 @@ function workspace(id: string) {
   return {
     project: { id },
     selected: [],
+    sources: [],
     format: "png",
     quality: 95,
     colorMode: "sdr",

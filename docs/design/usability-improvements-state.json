@@ -1,0 +1,15 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "pageId": "20:2",
+  "date": "2026-10-11",
+  "authority": "Approved Fluent editor; usability refinements preserve previous iterations",
+  "compositions": {
+    "libraryManagement": "42:183",
+    "exportActions": "42:214",
+    "settingsSections": "42:251",
+    "precisionInspection": "42:277",
+    "recommendationSettings": "42:336",
+    "canvasCrop": "42:395"
+  },
+  "note": "Editable interaction compositions, not a claim of pixel-identical native rendering. Library post-adjustment screenshot reviewed. Imported runtime images replace placeholders."
+}

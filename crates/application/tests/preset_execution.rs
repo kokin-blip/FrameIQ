@@ -93,8 +93,19 @@ fn tracked_presets_rerank_reopen_invalidate_and_cancel_children() {
         custom_rectangle: None,
         experimental: true,
     };
-    let job = success(&app, app.execute_preset(request.clone()).unwrap());
+    app.select(&source.id, "19", true).unwrap();
+    let job = success(&app, app.select_preset_frames(request.clone()).unwrap());
     let result = app.preset_result(&job.job_id).unwrap().unwrap();
+    let selected = app.selections(&project.id).unwrap();
+    assert!(selected
+        .iter()
+        .any(|f| f.frame_ref.presentation_ordinal == "19"));
+    for f in &result.frames {
+        assert!(selected
+            .iter()
+            .any(|s| s.frame_ref.presentation_ordinal
+                == f.quality.frame.frame_ref.presentation_ordinal));
+    }
     assert!(result.track.observations.len() >= 2);
     assert!(result.track.coverage_complete);
     assert_eq!(result.validation_status, "experimental_unvalidated");
@@ -115,6 +126,7 @@ fn tracked_presets_rerank_reopen_invalidate_and_cancel_children() {
     drop(app);
     let app = Application::new(&appdata, worker, Arc::new(|_| {})).unwrap();
     assert!(app.preset_result(&job.job_id).unwrap().is_some());
+    assert_eq!(app.selections(&project.id).unwrap().len(), selected.len());
     request.preset.required_capabilities = vec!["hair_mask".into()];
     assert_eq!(
         app.execute_preset(request.clone()).unwrap_err().code,
@@ -143,7 +155,9 @@ fn tracked_presets_rerank_reopen_invalidate_and_cancel_children() {
         success(&app, app.import_model(&original, fresh_manifest).unwrap()).result_ids[0].clone();
     request.person_model_id = fresh_model.clone();
     std::fs::write(data.path().join("ai-worker-mode.txt"), "cancelled").unwrap();
-    let cancelled = app.execute_preset(request).unwrap();
+    app.clear_selections(&project.id).unwrap();
+    app.select(&source.id, "19", true).unwrap();
+    let cancelled = app.select_preset_frames(request).unwrap();
     let started = Instant::now();
     while !data.path().join("frameiq-ai-worker.started").exists() {
         assert!(started.elapsed() < Duration::from_secs(10));
@@ -155,6 +169,11 @@ fn tracked_presets_rerank_reopen_invalidate_and_cancel_children() {
         matches!(cancelled_result.status, JobStatus::Cancelled),
         "{:?}",
         cancelled_result
+    );
+    assert_eq!(
+        app.selections(&project.id).unwrap().len(),
+        1,
+        "Cancelled runs must not add selections"
     );
     assert!(app.list_jobs().unwrap().iter().all(|e| !matches!(
         e.status,

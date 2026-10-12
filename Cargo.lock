@@ -1156,7 +1156,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-ai-worker"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frameiq-contracts",
  "frameiq-inference",
@@ -1165,7 +1165,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-analysis"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frameiq-contracts",
  "image",
@@ -1173,7 +1173,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-application"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frameiq-analysis",
  "frameiq-contracts",
@@ -1190,7 +1190,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-contracts"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -1200,7 +1200,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-desktop"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frameiq-application",
  "frameiq-contracts",
@@ -1215,15 +1215,16 @@ dependencies = [
 
 [[package]]
 name = "frameiq-domain"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frameiq-contracts",
 ]
 
 [[package]]
 name = "frameiq-inference"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
+ "base64 0.22.1",
  "frameiq-contracts",
  "image",
  "libc",
@@ -1242,7 +1243,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-media"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bindgen",
  "ffmpeg-next",
@@ -1258,7 +1259,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-persistence"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frameiq-contracts",
  "frameiq-domain",
@@ -1271,7 +1272,7 @@ dependencies = [
 
 [[package]]
 name = "frameiq-worker"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "frameiq-contracts",
  "frameiq-media",
@@ -4642,7 +4643,19 @@ dependencies = [
  "mio",
  "pin-project-lite",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.6",
 ]
 
 [[package]]

@@ -1,5 +1,6 @@
 mod ai;
 mod body;
+mod cloud;
 mod cpu;
 mod model_recovery;
 mod preset_execution;
@@ -55,6 +56,8 @@ struct Inner {
     _ai_idle: ai::IdleMonitor,
     body: Mutex<()>,
     presets_lane: Mutex<()>,
+    cloud_lane: Mutex<()>,
+    cloud_reviews: Mutex<HashMap<String, cloud::Prepared>>,
     cpu: cpu::Budget,
 }
 #[derive(Clone)]
@@ -98,6 +101,7 @@ impl Application {
             ));
         }
         let db = Database::open(&data.join("frameiq.db"))?;
+        cloud::recover(&cache)?;
         body::recover_mask_orphans(&cache, &db)?;
         model_recovery::recover(data, &db)?;
         let ai = Arc::new(Mutex::new(None));
@@ -117,6 +121,8 @@ impl Application {
                 _ai_idle: ai_idle,
                 body: Mutex::new(()),
                 presets_lane: Mutex::new(()),
+                cloud_lane: Mutex::new(()),
+                cloud_reviews: Mutex::new(HashMap::new()),
                 cpu: cpu::Budget::new(
                     (std::thread::available_parallelism()
                         .map(|n| n.get())
@@ -242,6 +248,28 @@ impl Application {
     pub fn create_project(&self, name: &str) -> AppResult<Project> {
         lock(&self.inner.db)?.create_project(name)
     }
+    pub fn rename_project(&self, id: &str, name: &str) -> AppResult<()> {
+        lock(&self.inner.db)?.rename_project(id, name)
+    }
+    pub fn rename_source(&self, id: &str, name: &str) -> AppResult<()> {
+        lock(&self.inner.db)?.rename_source(id, name)
+    }
+    pub fn mark_project_opened(&self, id: &str) -> AppResult<()> {
+        lock(&self.inner.db)?.mark_project_opened(id)
+    }
+    pub fn project_activity(&self) -> AppResult<std::collections::HashMap<String, String>> {
+        lock(&self.inner.db)?.project_activity()
+    }
+    pub fn model_catalog(&self) -> AppResult<Vec<ModelManifestV1>> {
+        [
+            include_str!("../../../models/manifests/yunet-2023mar.json"),
+            include_str!("../../../models/manifests/person_detection_mediapipe-2023mar.json"),
+            include_str!("../../../models/manifests/pose_estimation_mediapipe-2023mar.json"),
+        ]
+        .into_iter()
+        .map(|s| serde_json::from_str(s).map_err(error))
+        .collect()
+    }
     pub fn sources(&self, project: &str) -> AppResult<Vec<SourceSummary>> {
         lock(&self.inner.db)?.sources(project)
     }
@@ -262,6 +290,16 @@ impl Application {
         let db = lock(&self.inner.db)?;
         let s = db.source(source)?;
         db.select(&s, n, selected)
+    }
+    pub fn select_all(&self, source: &str) -> AppResult<()> {
+        let db = lock(&self.inner.db)?;
+        db.select_all(&db.source(source)?)
+    }
+    pub fn clear_selections(&self, project: &str) -> AppResult<()> {
+        lock(&self.inner.db)?.clear_selections(project)
+    }
+    pub fn add_selections(&self, project: &str, frames: &[Selection]) -> AppResult<()> {
+        lock(&self.inner.db)?.add_selections(project, frames)
     }
     pub fn list_jobs(&self) -> AppResult<Vec<JobEvent>> {
         lock(&self.inner.db)?.list_jobs()

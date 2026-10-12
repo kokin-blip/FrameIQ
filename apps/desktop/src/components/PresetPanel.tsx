@@ -72,8 +72,7 @@ export function PresetPanel({ w }: { w: Workspace }) {
   }
   return (
     <aside className="analysis-panel" aria-label="Intelligent presets">
-      <h2>Presets and regions</h2>
-      <SubjectPanel w={w} />
+      <h2>Preset settings</h2>
       <label>
         Preset
         <select value={id} onChange={(e) => setId(e.target.value)}>
@@ -84,79 +83,85 @@ export function PresetPanel({ w }: { w: Workspace }) {
           ))}
         </select>
       </label>
+      <SubjectPanel w={w} />
       {selected && (
         <>
           <p role="status">{selected.unavailableReason}</p>
-          <p>Required: {selected.requiredCapabilities.join(", ")}</p>
-          <fieldset>
-            <legend>Preset weights</legend>
-            {[
-              "Sharpness",
-              "Lighting",
-              "Target visibility",
-              "Coverage",
-              "Composition",
-            ].map((label, i) => (
-              <label key={label}>
-                {label}
+          <details>
+            <summary>Weights and custom presets</summary>
+            <p>Required: {selected.requiredCapabilities.join(", ")}</p>
+            <fieldset>
+              <legend>Preset weights</legend>
+              {[
+                "Sharpness",
+                "Lighting",
+                "Target visibility",
+                "Coverage",
+                "Composition",
+              ].map((label, i) => (
+                <label key={label}>
+                  {label}
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={selected.weights[i]}
+                    onChange={(e) =>
+                      setPresets((s) =>
+                        s.map((p) =>
+                          p.id === id
+                            ? {
+                                ...p,
+                                weights: p.weights.map((n, j) =>
+                                  j === i ? Number(e.target.value) : n,
+                                ) as PresetV1["weights"],
+                              }
+                            : p,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+              ))}
+              <label>
+                Frame count
                 <input
                   type="number"
-                  min="0"
-                  max="100"
-                  value={selected.weights[i]}
+                  min="1"
+                  max="50"
+                  value={selected.count}
                   onChange={(e) =>
                     setPresets((s) =>
                       s.map((p) =>
                         p.id === id
-                          ? {
-                              ...p,
-                              weights: p.weights.map((n, j) =>
-                                j === i ? Number(e.target.value) : n,
-                              ) as PresetV1["weights"],
-                            }
+                          ? { ...p, count: Number(e.target.value) }
                           : p,
                       ),
                     )
                   }
                 />
               </label>
-            ))}
+            </fieldset>
             <label>
-              Frame count
-              <input
-                type="number"
-                min="1"
-                max="50"
-                value={selected.count}
-                onChange={(e) =>
-                  setPresets((s) =>
-                    s.map((p) =>
-                      p.id === id ? { ...p, count: Number(e.target.value) } : p,
-                    ),
-                  )
-                }
-              />
+              Custom preset name
+              <input value={name} onChange={(e) => setName(e.target.value)} />
             </label>
-          </fieldset>
-          <label>
-            Custom preset name
-            <input value={name} onChange={(e) => setName(e.target.value)} />
-          </label>
-          <button
-            disabled={!name.trim()}
-            onClick={() =>
-              void api
-                .savePreset({ ...selected, name: name.trim() })
-                .then((p) => {
-                  setPresets((s) => [...s, p]);
-                  setId(p.id);
-                  setName("");
-                })
-                .catch((e) => w.setError(message(e)))
-            }
-          >
-            Save custom preset
-          </button>
+            <button
+              disabled={!name.trim()}
+              onClick={() =>
+                void api
+                  .savePreset({ ...selected, name: name.trim() })
+                  .then((p) => {
+                    setPresets((s) => [...s, p]);
+                    setId(p.id);
+                    setName("");
+                  })
+                  .catch((e) => w.setError(message(e)))
+              }
+            >
+              Save custom preset
+            </button>
+          </details>
         </>
       )}
       {selected && (

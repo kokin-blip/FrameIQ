@@ -1,3 +1,4 @@
+mod cloud;
 use frameiq_application::Application;
 use frameiq_contracts::*;
 use std::path::PathBuf;
@@ -5,6 +6,28 @@ use tauri::{Emitter, Manager, State};
 #[tauri::command]
 fn projects(app: State<Application>) -> AppResult<Vec<Project>> {
     app.projects()
+}
+#[tauri::command]
+fn rename_project(app: State<Application>, id: String, name: String) -> AppResult<()> {
+    app.rename_project(&id, &name)
+}
+#[tauri::command]
+fn rename_source(app: State<Application>, id: String, name: String) -> AppResult<()> {
+    app.rename_source(&id, &name)
+}
+#[tauri::command]
+fn mark_project_opened(app: State<Application>, id: String) -> AppResult<()> {
+    app.mark_project_opened(&id)
+}
+#[tauri::command]
+fn project_activity(
+    app: State<Application>,
+) -> AppResult<std::collections::HashMap<String, String>> {
+    app.project_activity()
+}
+#[tauri::command]
+fn model_catalog(app: State<Application>) -> AppResult<Vec<ModelManifestV1>> {
+    app.model_catalog()
 }
 #[tauri::command]
 fn create_project(app: State<Application>, name: String) -> AppResult<Project> {
@@ -34,8 +57,11 @@ fn resolve_frame(app: State<Application>, source: String, time: f64) -> AppResul
     app.resolve(&source, time)
 }
 #[tauri::command]
-fn selections(app: State<Application>, project: String) -> AppResult<Vec<Selection>> {
-    app.selections(&project)
+async fn selections(app: State<'_, Application>, project: String) -> AppResult<Vec<Selection>> {
+    let app = app.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || app.selections(&project))
+        .await
+        .map_err(|_| AppError::new("SELECTION_FAILED", "Selection loading interrupted."))?
 }
 #[tauri::command]
 fn select_frame(
@@ -45,6 +71,31 @@ fn select_frame(
     selected: bool,
 ) -> AppResult<()> {
     app.select(&source, &ordinal, selected)
+}
+#[tauri::command]
+async fn select_all_frames(app: State<'_, Application>, source: String) -> AppResult<()> {
+    let app = app.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || app.select_all(&source))
+        .await
+        .map_err(|_| AppError::new("SELECTION_FAILED", "Selection operation interrupted."))?
+}
+#[tauri::command]
+async fn clear_selections(app: State<'_, Application>, project: String) -> AppResult<()> {
+    let app = app.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || app.clear_selections(&project))
+        .await
+        .map_err(|_| AppError::new("SELECTION_FAILED", "Selection operation interrupted."))?
+}
+#[tauri::command]
+async fn add_selections(
+    app: State<'_, Application>,
+    project: String,
+    frames: Vec<Selection>,
+) -> AppResult<()> {
+    let app = app.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || app.add_selections(&project, &frames))
+        .await
+        .map_err(|_| AppError::new("SELECTION_FAILED", "Selection operation interrupted."))?
 }
 #[tauri::command]
 fn list_jobs(app: State<Application>) -> AppResult<Vec<JobEvent>> {
@@ -186,6 +237,13 @@ fn measure_region(
 #[tauri::command]
 fn execute_preset(app: State<Application>, request: PresetExecutionV1) -> AppResult<JobEvent> {
     app.execute_preset(request)
+}
+#[tauri::command]
+fn select_preset_frames(
+    app: State<Application>,
+    request: PresetExecutionV1,
+) -> AppResult<JobEvent> {
+    app.select_preset_frames(request)
 }
 #[tauri::command]
 fn preset_result(app: State<Application>, job: String) -> AppResult<Option<PresetResultV1>> {
@@ -405,11 +463,19 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             projects,
             create_project,
+            rename_project,
+            rename_source,
+            mark_project_opened,
+            project_activity,
+            model_catalog,
             sources,
             frames,
             resolve_frame,
             selections,
             select_frame,
+            select_all_frames,
+            clear_selections,
+            add_selections,
             list_jobs,
             get_job,
             cancel_job,
@@ -430,6 +496,7 @@ fn main() {
             remove_region,
             measure_region,
             execute_preset,
+            select_preset_frames,
             preset_result,
             choose_subject,
             subject_choice,
@@ -448,6 +515,15 @@ fn main() {
             download_model,
             benchmark_model,
             remove_model,
+            cloud::prepare_cloud_review,
+            cloud::cloud_review,
+            cloud::discard_cloud_review,
+            cloud::analyze_cloud_review,
+            cloud::cloud_result,
+            cloud::cloud_key_status,
+            cloud::save_cloud_key,
+            cloud::remove_cloud_key,
+            cloud::test_cloud_connection,
             save_runtime_token,
             discover_runtime,
             probe_runtime

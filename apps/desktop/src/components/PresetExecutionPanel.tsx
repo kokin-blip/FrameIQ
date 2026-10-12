@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@frameiq/ui";
 import { api, message, timestamp } from "../client";
 import { useJobs } from "../store";
@@ -27,6 +27,8 @@ export function PresetExecutionPanel({
   const [task, setTask] = useState<string>();
   const [result, setResult] = useState<PresetResultV1 | null>(null);
   const [starting, setStarting] = useState(false);
+  const [selectionStatus, setSelectionStatus] = useState("");
+  const applied = useRef(new Set<string>());
   const jobs = useJobs((s) => s.jobs),
     setJob = useJobs((s) => s.setJob);
   const ordinal = w.image?.frameRef.presentationOrdinal;
@@ -62,6 +64,7 @@ export function PresetExecutionPanel({
     setTask(undefined);
     setResult(null);
     setExperimental(false);
+    setSelectionStatus("");
   }, [source, preset.id]);
   useEffect(() => {
     let live = true;
@@ -72,8 +75,29 @@ export function PresetExecutionPanel({
     )
       void api
         .presetResult(task)
-        .then((r) => {
-          if (live) setResult(r);
+        .then(async (r) => {
+          if (!live) return;
+          setResult(r);
+          if (
+            r?.frames.length &&
+            active.status === "succeeded" &&
+            !applied.current.has(task)
+          ) {
+            applied.current.add(task);
+            try {
+              await w.refreshSelections();
+              if (live) setSelectionStatus("Preset results selected.");
+            } catch (e) {
+              if (live)
+                setSelectionStatus(
+                  "Could not refresh Selections. Reopen the project or retry below.",
+                );
+            }
+          } else if (r && active.status === "cancelled") {
+            setSelectionStatus(
+              "Execution cancelled. Results were not added automatically.",
+            );
+          }
         })
         .catch((e) => {
           if (live) w.setError(message(e));
@@ -88,7 +112,7 @@ export function PresetExecutionPanel({
     if (!source || !ordinal || !choice || !experimental) return;
     setStarting(true);
     try {
-      const job = await api.executePreset({
+      const job = await api.selectPresetFrames({
         sourceId: source,
         preset,
         anchorOrdinal: ordinal,
@@ -100,6 +124,7 @@ export function PresetExecutionPanel({
         experimental,
       });
       setResult(null);
+      setSelectionStatus("");
       setTask(job.jobId);
       setJob(job);
     } catch (e) {
@@ -110,10 +135,11 @@ export function PresetExecutionPanel({
   }
   return (
     <section aria-label="Experimental preset execution">
-      <h3>Experimental preset execution</h3>
+      <h3>Automatic frame selection</h3>
       <p>
         Choose the anchor subject above. Tracking stops at cuts, lost subjects,
-        or ambiguity. Accuracy is not yet validated.
+        or ambiguity. Accuracy is not yet validated. Results are added to
+        Selections; existing frames are kept.
       </p>
       <label>
         <input
@@ -150,6 +176,7 @@ export function PresetExecutionPanel({
         variant="primary"
         disabled={
           running ||
+          w.selectionBusy ||
           !supported ||
           !experimental ||
           !choice ||
@@ -158,7 +185,7 @@ export function PresetExecutionPanel({
         }
         onClick={() => void run()}
       >
-        Run from current frame
+        Auto-select frames
       </Button>
       {running && active && (
         <>
@@ -179,6 +206,24 @@ export function PresetExecutionPanel({
       {active?.error && <p role="alert">{active.error.message}</p>}
       {result && (
         <>
+          {selectionStatus && <p role="status">{selectionStatus}</p>}
+          {result.frames.length > 0 && (
+            <Button
+              disabled={w.selectionBusy || running}
+              onClick={() =>
+                void w
+                  .addSelections(result.frames.map((f) => f.quality.frame))
+                  .then(() => setSelectionStatus("Preset results selected."))
+                  .catch(() =>
+                    setSelectionStatus(
+                      "Could not add preset results. Retry below.",
+                    ),
+                  )
+              }
+            >
+              Add preset results
+            </Button>
+          )}
           <p role="status">
             {result.track.coverageComplete
               ? "Sampled coverage complete"

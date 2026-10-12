@@ -13,7 +13,13 @@ import {
 import { parseTimestamp } from "../client";
 import type { Workspace } from "../workspace/useWorkspace";
 
-export function StudioToolbar({ w }: { w: Workspace }) {
+export function StudioToolbar({
+  w,
+  cropEditing = false,
+}: {
+  w: Workspace;
+  cropEditing?: boolean;
+}) {
   return (
     <div className="studio-toolbar" aria-label="Precision frame controls">
       <div className="playback-controls">
@@ -64,7 +70,7 @@ export function StudioToolbar({ w }: { w: Workspace }) {
       </span>
       <Button
         variant={w.isSelected ? "secondary" : "primary"}
-        disabled={!w.frame || w.busy}
+        disabled={!w.frame || w.busy || w.selectionBusy}
         onClick={() => void w.toggleSelection()}
       >
         {w.isSelected ? <Check size={16} /> : <Plus size={16} />}
@@ -73,23 +79,48 @@ export function StudioToolbar({ w }: { w: Workspace }) {
       <div className="zoom-controls" aria-label="Image view controls">
         <Button
           aria-label="Zoom out"
-          disabled={!w.image || w.zoom <= 1}
-          onClick={() => w.setZoom((z) => Math.max(1, z - 0.5))}
+          disabled={
+            cropEditing ||
+            !w.image ||
+            w.zoom <= (w.zoomMode === "pixels" ? 0.25 : 1)
+          }
+          onClick={() =>
+            w.setZoom((z) =>
+              Math.max(w.zoomMode === "pixels" ? 0.25 : 1, z - 0.5),
+            )
+          }
         >
           <ZoomOut size={18} />
         </Button>
-        <span>{Math.round(w.zoom * 100)}%</span>
+        <span>
+          {w.zoomMode !== "pixels" && w.zoom === 1
+            ? "Fit"
+            : `${Math.round(w.zoom * 100)}%${w.zoomMode !== "pixels" ? " of fit" : ""}`}
+        </span>
+        <Button
+          aria-label="Actual pixels"
+          disabled={cropEditing || !w.image}
+          onClick={() => {
+            w.setZoomMode("pixels");
+            w.setZoom(1);
+            w.setPan({ x: 0, y: 0 });
+          }}
+        >
+          1:1
+        </Button>
         <Button
           aria-label="Zoom in"
-          disabled={!w.image || w.zoom >= 8}
+          disabled={cropEditing || !w.image || w.zoom >= 8}
           onClick={() => w.setZoom((z) => Math.min(8, z + 0.5))}
         >
           <ZoomIn size={18} />
         </Button>
         <Button
           aria-label="Reset zoom and pan"
-          disabled={!w.image}
+          title="Fit image to viewer"
+          disabled={cropEditing || !w.image}
           onClick={() => {
+            w.setZoomMode("fit");
             w.setZoom(1);
             w.setPan({ x: 0, y: 0 });
           }}

@@ -52,6 +52,16 @@ impl Application {
         Ok(result)
     }
     pub fn execute_preset(&self, request: PresetExecutionV1) -> AppResult<JobEvent> {
+        self.execute_preset_mode(request, false)
+    }
+    pub fn select_preset_frames(&self, request: PresetExecutionV1) -> AppResult<JobEvent> {
+        self.execute_preset_mode(request, true)
+    }
+    fn execute_preset_mode(
+        &self,
+        request: PresetExecutionV1,
+        select_results: bool,
+    ) -> AppResult<JobEvent> {
         frameiq_analysis::presets::validate(&request.preset)?;
         if request.preset.weights[0] + request.preset.weights[1] <= 0. {
             return Err(AppError::new("INVALID_RANKING","Give sharpness or lighting a positive weight; other features are not validated yet."));
@@ -427,6 +437,29 @@ impl Application {
                 }
                 result
             })();
+            // Selection belongs to the background job, so closing a panel does not lose it.
+            let outcome = outcome.and_then(|()| {
+                if cancel.load(Ordering::SeqCst) {
+                    return Err(AppError::new("CANCELLED", "Preset selection cancelled."));
+                }
+                if select_results {
+                    let db = lock(&app.inner.db)?;
+                    let current = db.source(&source.id)?;
+                    db.validate_source(&current)?;
+                    if let Some(result) = db.preset_result(&event.job_id)? {
+                        let frames = result
+                            .frames
+                            .into_iter()
+                            .map(|f| f.quality.frame)
+                            .collect::<Vec<_>>();
+                        if cancel.load(Ordering::SeqCst) {
+                            return Err(AppError::new("CANCELLED", "Preset selection cancelled."));
+                        }
+                        db.add_selections(&source.project_id, &frames)?;
+                    }
+                }
+                Ok(())
+            });
             app.finish_job(&mut event, outcome, "PRESET_RESULTS_READY");
         });
         Ok(first)

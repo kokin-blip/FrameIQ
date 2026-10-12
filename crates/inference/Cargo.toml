@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 publish = false
 [dependencies]
+base64 = "0.22"
 libc = "0.2"
 frameiq-contracts = { path = "../contracts" }
 serde.workspace = true
@@ -16,7 +17,7 @@ ort = { version = "=2.0.0-rc.13", default-features = false, features = ["std", "
 prost = "0.14"
 sysinfo = "0.37"
 reqwest = { version = "=0.12.28", default-features = false, features = ["blocking", "json", "rustls-tls"] }
-tokio = { version = "1", features = ["rt", "time", "net"] }
+tokio = { version = "1", features = ["rt", "time", "net", "macros"] }
 
 [dev-dependencies]
 rustls = { version = "0.23", default-features = false, features = ["std", "ring", "tls12"] }

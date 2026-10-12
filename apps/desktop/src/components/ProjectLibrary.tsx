@@ -8,6 +8,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { api, message } from "../client";
+import type { SourceSummary } from "../contracts";
 import type { Workspace } from "../workspace/useWorkspace";
 
 type Cover = {
@@ -16,8 +17,81 @@ type Cover = {
   error?: string;
   loading?: boolean;
   sourceId?: string;
+  sources?: SourceSummary[];
 };
+function Rename({
+  name,
+  label,
+  save,
+  onError,
+}: {
+  name: string;
+  label: string;
+  save: (name: string) => Promise<void>;
+  onError: (message: string) => void;
+}) {
+  const [editing, setEditing] = useState(false),
+    [value, setValue] = useState(name),
+    [busy, setBusy] = useState(false);
+  return editing ? (
+    <form
+      className="rename-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setBusy(true);
+        void save(value.trim())
+          .then(() => setEditing(false))
+          .catch((e) => onError(message(e)))
+          .finally(() => setBusy(false));
+      }}
+    >
+      <label>
+        {label}
+        <input
+          autoFocus
+          value={value}
+          maxLength={120}
+          onChange={(e) => setValue(e.target.value)}
+        />
+      </label>
+      <Button disabled={busy || !value.trim()}>Save</Button>
+      <Button type="button" disabled={busy} onClick={() => setEditing(false)}>
+        Cancel
+      </Button>
+    </form>
+  ) : (
+    <Button
+      aria-label={`${label}: ${name}`}
+      onClick={() => {
+        setValue(name);
+        setEditing(true);
+      }}
+    >
+      {label}
+    </Button>
+  );
+}
 export function ProjectLibrary({ w }: { w: Workspace }) {
+  const [query, setQuery] = useState(""),
+    [sort, setSort] = useState("recent"),
+    [activity, setActivity] = useState<Record<string, string>>({});
+  useEffect(() => {
+    void api
+      .projectActivity()
+      .then(setActivity)
+      .catch((e) => w.setError(message(e)));
+  }, [w.projects]);
+  const projects = w.projects
+    .filter((p) =>
+      p.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+    )
+    .sort((a, b) =>
+      sort === "name"
+        ? a.name.localeCompare(b.name)
+        : (activity[b.id] ?? b.createdAt).localeCompare(
+            activity[a.id] ?? a.createdAt,
+          ),
+    );
   const [covers, setCovers] = useState<Record<string, Cover>>({});
   useEffect(() => {
     let alive = true;
@@ -31,6 +105,7 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
           );
           let cover: Cover = {
             sourceCount: sources.length,
+            sources,
             sourceId: source?.id,
           };
           if (source) {
@@ -93,9 +168,26 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
           </Button>
         </div>
       </form>
+      <div className="library-tools">
+        <label>
+          Search projects
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <label>
+          Sort by
+          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="recent">Last opened</option>
+            <option value="name">Name</option>
+          </select>
+        </label>
+      </div>
       {w.projects.length ? (
         <div className="project-grid">
-          {w.projects.map((p) => {
+          {projects.map((p) => {
             const cover = covers[p.id];
             return (
               <article className="project-card" key={p.id}>
@@ -134,6 +226,34 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
                     <ArrowUpRight size={18} />
                   </div>
                 </button>
+                <div className="project-management">
+                  <p>
+                    {activity[p.id]
+                      ? `Last opened ${new Date(activity[p.id]).toLocaleString()}`
+                      : "Last opened: not recorded"}
+                  </p>
+                  <Rename
+                    name={p.name}
+                    label="Rename project"
+                    save={(name) => w.renameProject(p.id, name)}
+                    onError={w.setError}
+                  />
+                  <details>
+                    <summary>Sources ({cover?.sourceCount ?? 0})</summary>
+                    {cover?.sources?.map((source) => (
+                      <div className="source-alias" key={source.id}>
+                        <strong>{source.name}</strong>
+                        <small>File: {source.path.split(/[\\/]/).pop()}</small>
+                        <Rename
+                          name={source.name}
+                          label="Rename source"
+                          save={(name) => w.renameSource(source.id, name)}
+                          onError={w.setError}
+                        />
+                      </div>
+                    ))}
+                  </details>
+                </div>
                 {cover?.error && (
                   <div className="project-recovery">
                     <p>{cover.error}</p>
@@ -152,6 +272,7 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
               </article>
             );
           })}
+          {!projects.length && <p>No matching projects.</p>}
         </div>
       ) : (
         <EmptyState

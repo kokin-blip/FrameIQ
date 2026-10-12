@@ -55,6 +55,8 @@ vi.mock("./client", async (original) => {
     ...actual,
     desktop: true,
     api: {
+      projectActivity: async () => ({}),
+      markProjectOpened: async () => {},
       projects: async () => [
         { id: "project", name: "Fixture project", createdAt: "" },
       ],
@@ -93,6 +95,38 @@ vi.mock("./client", async (original) => {
             frameRef: ref(source, ordinal),
             timeSeconds: Number(ordinal) / 10,
           });
+      },
+      selectAll: async (source: string) => {
+        for (let i = 0; i < 20; i++) {
+          const ordinal = String(i);
+          if (
+            !test.selected.some(
+              (s) =>
+                s.sourceId === source &&
+                s.frameRef.presentationOrdinal === ordinal,
+            )
+          )
+            test.selected.push({
+              sourceId: source,
+              frameRef: ref(source, ordinal),
+              timeSeconds: i / 10,
+            });
+        }
+      },
+      clearSelections: async () => {
+        test.selected = [];
+      },
+      addSelections: async (_project: string, frames: Selection[]) => {
+        for (const f of frames)
+          if (
+            !test.selected.some(
+              (s) =>
+                s.sourceId === f.sourceId &&
+                s.frameRef.presentationOrdinal ===
+                  f.frameRef.presentationOrdinal,
+            )
+          )
+            test.selected.push(f);
       },
       jobs: async () => [],
       onJob: async () => () => {},
@@ -207,7 +241,11 @@ describe("Canvas Studio feature parity", () => {
         format: "jpeg",
         jpegQuality: 90,
         colorMode: "sdr",
-        colorPolicy: { schemaVersion: 2, sourcePeakNits: null, sourceInterpretation: undefined },
+        colorPolicy: {
+          schemaVersion: 2,
+          sourcePeakNits: null,
+          sourceInterpretation: undefined,
+        },
       }),
     );
     for (const format of ["png", "webp"]) {
@@ -215,14 +253,12 @@ describe("Canvas Studio feature parity", () => {
         (j) => j.stage === "exporting" && j.status === "queued",
       )!;
       act(() =>
-        useJobs
-          .getState()
-          .setJob({
-            ...priorJob,
-            status: "succeeded",
-            completedUnits: "2",
-            sequence: priorJob.sequence + 1,
-          }),
+        useJobs.getState().setJob({
+          ...priorJob,
+          status: "succeeded",
+          completedUnits: "2",
+          sequence: priorJob.sequence + 1,
+        }),
       );
       test.export.mockResolvedValue({
         ...priorJob,
@@ -241,7 +277,16 @@ describe("Canvas Studio feature parity", () => {
         expect(test.export).toHaveBeenLastCalledWith(
           "project",
           "/fixture/export",
-          { format, jpegQuality: 90, colorMode: "sdr", colorPolicy: {schemaVersion: 2, sourcePeakNits: null, sourceInterpretation: undefined} },
+          {
+            format,
+            jpegQuality: 90,
+            colorMode: "sdr",
+            colorPolicy: {
+              schemaVersion: 2,
+              sourcePeakNits: null,
+              sourceInterpretation: undefined,
+            },
+          },
         ),
       );
     }
@@ -297,4 +342,34 @@ describe("Canvas Studio feature parity", () => {
       await screen.findByRole("button", { name: "Cancelling…" }),
     ).toHaveProperty("disabled", true);
   });
+});
+
+it("adds/removes current and row frames, selects the current source, and clears across sources", async () => {
+  const user = userEvent.setup();
+  render(<App />);
+  await waitFor(() =>
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Add current frame",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(false),
+  );
+  await user.click(screen.getByRole("button", { name: "Add current frame" }));
+  await screen.findByRole("button", { name: "Remove current frame" });
+  expect(test.selected).toHaveLength(1);
+  await user.click(
+    screen.getByRole("button", { name: /Remove frame 0 from front.mkv/ }),
+  );
+  await screen.findByRole("button", { name: "Add current frame" });
+  expect(test.selected).toHaveLength(0);
+  await user.click(screen.getByRole("button", { name: "Select all" }));
+  await waitFor(() => expect(test.selected).toHaveLength(20));
+  expect(test.selected.every((f) => f.sourceId === "front")).toBe(true);
+  await user.click(screen.getByRole("button", { name: "Remove all" }));
+  await waitFor(() => expect(test.selected).toHaveLength(0));
+  await screen.findByRole("button", { name: "Add current frame" });
+  expect(screen.queryByRole("button", { name: "Presets" })).toBeNull();
+  expect(screen.getByText("Auto-select with a preset")).toBeTruthy();
 });

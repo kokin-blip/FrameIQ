@@ -24,13 +24,18 @@ export function Inspector({ w }: { w: Workspace }) {
         </dd>
         <dt>Presentation time</dt>
         <dd>{w.frame ? timestamp(w.frame.timeSeconds) : "—"}</dd>
-        <dt>PTS ticks</dt>
-        <dd>{w.frame?.ptsTicks ?? "Unknown"}</dd>
-        <dt>Timestamp origin</dt>
-        <dd>{w.frame?.timestampOrigin ?? "—"}</dd>
-        <dt>Index</dt>
-        <dd>{w.activeSource?.status ?? "No source"}</dd>
       </dl>
+      <details>
+        <summary>Frame metadata</summary>
+        <dl>
+          <dt>PTS ticks</dt>
+          <dd>{w.frame?.ptsTicks ?? "Unknown"}</dd>
+          <dt>Timestamp origin</dt>
+          <dd>{w.frame?.timestampOrigin ?? "—"}</dd>
+          <dt>Index</dt>
+          <dd>{w.activeSource?.status ?? "No source"}</dd>
+        </dl>
+      </details>
     </section>
   );
 }

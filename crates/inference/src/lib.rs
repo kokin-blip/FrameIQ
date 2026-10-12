@@ -1,3 +1,5 @@
+pub mod cloud;
+pub mod cloud_vision;
 pub mod download;
 pub mod face;
 pub mod graph;

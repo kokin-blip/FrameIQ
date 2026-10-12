@@ -1,0 +1,15 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "pageId": "20:2",
+  "states": {
+    "setup": "36:119",
+    "review": "36:173",
+    "running": "36:227",
+    "results": "36:281",
+    "error": "36:335",
+    "noKey": "36:389"
+  },
+  "component": "20:15",
+  "tokens": "FrameIQ Fluent Docked",
+  "status": "Editable cloud analysis compositions created before production controls; earlier screens preserved; previews illustrate placement rather than provider accuracy"
+}

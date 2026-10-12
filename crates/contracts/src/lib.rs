@@ -724,3 +724,86 @@ pub struct PresetResultV1 {
     pub validation_status: String,
     pub limitations: Vec<String>,
 }
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum CloudProviderV1 {
+    Openai,
+    Gemini,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CloudCredentialStatusV1 {
+    pub provider: CloudProviderV1,
+    pub saved: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CloudConnectionV1 {
+    pub provider: CloudProviderV1,
+    pub model_count: u32,
+    pub more_available: bool,
+    pub models: Vec<String>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum CloudTaskV1 {
+    Describe,
+    Rank,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CloudImageInputV1 {
+    pub frame: Selection,
+    pub region: Option<RegionRectV1>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CloudReviewRequestV1 {
+    pub provider: CloudProviderV1,
+    pub model: String,
+    pub task: CloudTaskV1,
+    pub goal: String,
+    pub images: Vec<CloudImageInputV1>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CloudReviewImageV1 {
+    pub id: String,
+    pub input: CloudImageInputV1,
+    pub path: String,
+    pub sha256: String,
+    pub width: u32,
+    pub height: u32,
+    pub bytes: u32,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CloudReviewV1 {
+    pub id: String,
+    pub provider: CloudProviderV1,
+    pub model: String,
+    pub task: CloudTaskV1,
+    pub goal: String,
+    pub images: Vec<CloudReviewImageV1>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CloudAssessmentV1 {
+    pub image_id: String,
+    pub rank: u32,
+    pub observed: Vec<String>,
+    pub uncertain: Vec<String>,
+    pub reason: String,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct CloudAnalysisResultV1 {
+    pub job_id: String,
+    pub review: CloudReviewV1,
+    pub assessments: Vec<CloudAssessmentV1>,
+    pub actual_model: Option<String>,
+    pub input_tokens: Option<u32>,
+    pub output_tokens: Option<u32>,
+}

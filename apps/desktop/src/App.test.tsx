@@ -24,8 +24,6 @@ describe("empty workspace keyboard behavior", () => {
     const settings = screen.getByRole("button", { name: "Settings" });
     settings.focus();
     await user.keyboard("[Space]");
-    expect(
-      screen.getByRole("heading", { name: "Settings and models" }),
-    ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Settings" })).toBeTruthy();
   });
 });

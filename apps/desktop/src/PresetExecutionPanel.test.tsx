@@ -9,7 +9,7 @@ import type { Workspace } from "./workspace/useWorkspace";
 const mock = vi.hoisted(() => ({
   models: vi.fn(),
   subjectChoice: vi.fn(),
-  executePreset: vi.fn(),
+  selectPresetFrames: vi.fn(),
   presetResult: vi.fn(),
   cancel: vi.fn(),
 }));
@@ -30,6 +30,8 @@ const w = {
   sourceId: "source",
   image: frame,
   openSelection: vi.fn(),
+  addSelections: vi.fn(),
+  refreshSelections: vi.fn(),
   setError: vi.fn(),
 } as unknown as Workspace;
 const preset = {
@@ -57,13 +59,15 @@ const job: JobEvent = {
 beforeEach(() => {
   vi.resetAllMocks();
   useJobs.setState({ jobs: {}, order: [] });
+  vi.mocked(w.addSelections).mockResolvedValue(undefined);
+  vi.mocked(w.refreshSelections).mockResolvedValue(undefined);
   mock.models.mockResolvedValue([]);
   mock.subjectChoice.mockResolvedValue({
     modelId: "person",
     subject: { personFeatureId: "feature", personIndex: 1 },
     frame,
   });
-  mock.executePreset.mockResolvedValue(job);
+  mock.selectPresetFrames.mockResolvedValue(job);
   mock.cancel.mockResolvedValue(undefined);
 });
 afterEach(cleanup);
@@ -72,13 +76,13 @@ it("requires explicit opt-in and sends the exact anchor and chosen subject", asy
   render(<PresetExecutionPanel w={w} preset={preset} />);
   await waitFor(() => expect(mock.subjectChoice).toHaveBeenCalled());
   const button = screen.getByRole("button", {
-    name: "Run from current frame",
+    name: "Auto-select frames",
   }) as HTMLButtonElement;
   expect(button.disabled).toBe(true);
   await user.click(screen.getByRole("checkbox"));
   await waitFor(() => expect(button.disabled).toBe(false));
   await user.click(button);
-  expect(mock.executePreset).toHaveBeenCalledWith(
+  expect(mock.selectPresetFrames).toHaveBeenCalledWith(
     expect.objectContaining({
       experimental: true,
       personModelId: "person",
@@ -100,14 +104,12 @@ it("restores an exact recommended frame and explains partial coverage", async ()
     expect(
       (
         screen.getByRole("button", {
-          name: "Run from current frame",
+          name: "Auto-select frames",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(false),
   );
-  await user.click(
-    screen.getByRole("button", { name: "Run from current frame" }),
-  );
+  await user.click(screen.getByRole("button", { name: "Auto-select frames" }));
   mock.presetResult.mockResolvedValue({
     track: { coverageComplete: false, stopReason: "ambiguous_subjects" },
     frames: [
@@ -120,6 +122,11 @@ it("restores an exact recommended frame and explains partial coverage", async ()
   expect(
     await screen.findByText(/Partial coverage · ambiguous subjects/),
   ).toBeTruthy();
+  await waitFor(() => expect(w.refreshSelections).toHaveBeenCalled());
+  act(() =>
+    useJobs.getState().setJob({ ...job, sequence: 2, status: "succeeded" }),
+  );
+  expect(w.refreshSelections).toHaveBeenCalledTimes(1);
   await user.click(
     screen.getByRole("button", { name: /Frame 9007199254740993/ }),
   );
@@ -138,8 +145,28 @@ it("keeps a missing automatic capability unavailable", async () => {
   expect(
     (
       screen.getByRole("button", {
-        name: "Run from current frame",
+        name: "Auto-select frames",
       }) as HTMLButtonElement
     ).disabled,
   ).toBe(true);
+});
+
+it("does not auto-add cancelled preset results", async () => {
+  const user = userEvent.setup();
+  render(<PresetExecutionPanel w={w} preset={preset} />);
+  await user.click(screen.getByRole("checkbox"));
+  const button = screen.getByRole("button", {
+    name: "Auto-select frames",
+  }) as HTMLButtonElement;
+  await waitFor(() => expect(button.disabled).toBe(false));
+  await user.click(button);
+  mock.presetResult.mockResolvedValue({
+    track: { coverageComplete: false, stopReason: "cancelled" },
+    frames: [{ quality: { frame }, score: 70, reasons: [] }],
+  } as unknown as PresetResultV1);
+  act(() =>
+    useJobs.getState().setJob({ ...job, sequence: 1, status: "cancelled" }),
+  );
+  await screen.findByText(/Results were not added automatically/);
+  expect(w.addSelections).not.toHaveBeenCalled();
 });

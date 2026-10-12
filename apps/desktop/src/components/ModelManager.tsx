@@ -1,3 +1,4 @@
+import { Button } from "@frameiq/ui";
 import { useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { api, desktop, message } from "../client";
@@ -11,6 +12,7 @@ import type {
 
 const gib = (bytes: string) => `${(Number(bytes) / 1073741824).toFixed(1)} GiB`;
 export function ModelManager() {
+  const [catalog, setCatalog] = useState<ModelManifestV1[]>([]);
   const [hardware, setHardware] = useState<HardwareProfileV1>();
   const [models, setModels] = useState<ModelInstallationV1[]>([]);
   const [benchmarks, setBenchmarks] = useState<ModelBenchmarkV1[]>([]);
@@ -18,7 +20,7 @@ export function ModelManager() {
   const [reviewed, setReviewed] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [token,setToken]=useState("");
+  const [token, setToken] = useState("");
   const [runtime, setRuntime] = useState("ollama");
   const [port, setPort] = useState(11434);
   const [report, setReport] = useState<LocalRuntimeReportV1>();
@@ -35,6 +37,9 @@ export function ModelManager() {
   }
   useEffect(() => {
     if (!desktop) return;
+    void (async () => setCatalog(await api.modelCatalog()))().catch((e) =>
+      setError(message(e)),
+    );
     void refresh().catch((e) => setError(message(e)));
     const listener = api.onJob((e) => {
       if (
@@ -76,34 +81,73 @@ export function ModelManager() {
         detection accuracy.
       </p>
       {hardware && (
-        <dl className="shortcut-list">
-          <dt>Computer</dt>
-          <dd>
-            {hardware.architecture} · {hardware.logicalCores} cores
-          </dd>
-          <dt>Memory / available</dt>
-          <dd>
-            {gib(hardware.totalMemoryBytes)} /{" "}
-            {gib(hardware.availableMemoryBytes)}
-          </dd>
-          <dt>Managed AI budget</dt>
-          <dd>
-            {gib(hardware.aiBudgetBytes)} · {hardware.workerThreads} shared CPU
-            slots · one AI operation
-          </dd>
-        </dl>
+        <p role="status">
+          {BigInt(hardware.availableMemoryBytes) * 100n <
+          BigInt(hardware.totalMemoryBytes) * 15n
+            ? "Low available memory. Free memory before starting inference."
+            : "Memory admission available; each model still requires compatibility checks."}
+        </p>
+      )}
+      {hardware && (
+        <details>
+          <summary>Hardware and resource limits</summary>
+          <dl className="shortcut-list">
+            <dt>Computer</dt>
+            <dd>
+              {hardware.architecture} · {hardware.logicalCores} cores
+            </dd>
+            <dt>Memory / available</dt>
+            <dd>
+              {gib(hardware.totalMemoryBytes)} /{" "}
+              {gib(hardware.availableMemoryBytes)}
+            </dd>
+            <dt>Managed AI budget</dt>
+            <dd>
+              {gib(hardware.aiBudgetBytes)} · {hardware.workerThreads} shared
+              CPU slots · one AI operation
+            </dd>
+          </dl>
+          <Button disabled={busy} onClick={() => void action(refresh)}>
+            Refresh hardware status
+          </Button>
+        </details>
       )}
       {error && (
         <p role="alert" className="error-banner">
           {error}
         </p>
       )}
-      <button
-        disabled={!desktop || busy}
-        onClick={() => void action(chooseManifest)}
-      >
-        Open model manifest
-      </button>
+      <label className="model-picker">
+        Available model pack
+        <select
+          value={catalog.some((m) => m.id === manifest?.id) ? manifest!.id : ""}
+          disabled={busy}
+          onChange={(e) => {
+            setManifest(catalog.find((m) => m.id === e.target.value));
+            setReviewed(false);
+          }}
+        >
+          <option value="">Choose a model</option>
+          {catalog.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name} · experimental
+            </option>
+          ))}
+        </select>
+      </label>
+      <p>
+        These packs support experimental face, person, or pose workflows.
+        Listing a pack does not establish preset accuracy.
+      </p>
+      <details>
+        <summary>Advanced model import</summary>
+        <Button
+          disabled={!desktop || busy}
+          onClick={() => void action(chooseManifest)}
+        >
+          Open model manifest
+        </Button>
+      </details>
       {manifest && (
         <section className="model-review">
           <h3>{manifest.name}</h3>
@@ -123,7 +167,7 @@ export function ModelManager() {
             I reviewed the source, size, license, and checksum.
           </label>
           <div className="model-actions">
-            <button
+            <Button
               disabled={busy || !reviewed}
               onClick={() =>
                 void action(async () => {
@@ -132,8 +176,8 @@ export function ModelManager() {
               }
             >
               Download and validate
-            </button>
-            <button
+            </Button>
+            <Button
               disabled={busy}
               onClick={() =>
                 void action(async () => {
@@ -147,7 +191,7 @@ export function ModelManager() {
               }
             >
               Import matching ONNX file
-            </button>
+            </Button>
           </div>
           <p>
             Progress and cancellation are in Activity. A previous installation
@@ -175,7 +219,7 @@ export function ModelManager() {
                 </p>
               )}
               <div className="model-actions">
-                <button
+                <Button
                   disabled={busy}
                   onClick={() =>
                     void action(async () => {
@@ -184,8 +228,8 @@ export function ModelManager() {
                   }
                 >
                   Benchmark
-                </button>
-                <button
+                </Button>
+                <Button
                   disabled={busy}
                   onClick={() =>
                     void action(async () => {
@@ -195,7 +239,7 @@ export function ModelManager() {
                   }
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             </section>
           );
@@ -236,7 +280,7 @@ export function ModelManager() {
             }}
           />
         </label>
-        <button
+        <Button
           disabled={busy || !desktop}
           onClick={() =>
             void action(async () =>
@@ -245,11 +289,32 @@ export function ModelManager() {
           }
         >
           Connect and list models
-        </button>
+        </Button>
       </div>
-      <label>Optional runtime token<input type="password" autoComplete="off" value={token} onChange={e=>setToken(e.target.value)} /></label>
-      <button disabled={busy || !desktop} onClick={()=>void action(async()=>{await api.saveRuntimeToken(runtime,token);setToken("");})}>Save token in OS credential storage</button>
-      <p>An empty token removes the saved credential. Tokens are never stored in projects or exported files.</p>
+      <label className="runtime-token">
+        Optional runtime token
+        <input
+          type="password"
+          autoComplete="off"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+        />
+      </label>
+      <Button
+        disabled={busy || !desktop}
+        onClick={() =>
+          void action(async () => {
+            await api.saveRuntimeToken(runtime, token);
+            setToken("");
+          })
+        }
+      >
+        Save token in OS credential storage
+      </Button>
+      <p>
+        An empty token removes the saved credential. Tokens are never stored in
+        projects or exported files.
+      </p>
       {report &&
         report.models.map((m) => (
           <div className="model-review" key={m.id}>
@@ -257,7 +322,7 @@ export function ModelManager() {
               {m.id} · {m.local ? "local" : "remote"} ·{" "}
               {m.vision ? "image input" : "text only"}
             </span>
-            <button
+            <Button
               disabled={busy || !m.local || !m.vision}
               onClick={() =>
                 void action(async () =>
@@ -268,7 +333,7 @@ export function ModelManager() {
               }
             >
               Test image input
-            </button>
+            </Button>
           </div>
         ))}
       <p role="status">{probe}</p>

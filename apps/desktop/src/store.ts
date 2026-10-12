@@ -18,3 +18,8 @@ export const useJobs = create<State>((set) => ({
       };
     }),
 }));
+
+export const useSettingsTab = create<{
+  tab: "models" | "cloud" | "general";
+  setTab: (tab: "models" | "cloud" | "general") => void;
+}>((set) => ({ tab: "models", setTab: (tab) => set({ tab }) }));

@@ -1,0 +1,15 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "pageId": "20:2",
+  "states": {
+    "notSaved": "32:77",
+    "saved": "32:131",
+    "testing": "32:185",
+    "authenticationError": "32:239",
+    "credentialStoreError": "32:293",
+    "keyboardFocus": "34:112"
+  },
+  "component": "20:15",
+  "tokens": "FrameIQ Fluent Docked",
+  "status": "Editable cloud credential Settings compositions created before production controls; earlier screens preserved"
+}

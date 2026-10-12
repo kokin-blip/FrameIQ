@@ -1,14 +1,15 @@
-import { useRef, useState } from "react";
+import { RegionEditor } from "./RegionEditor";
+import { CloudAnalysisPanel } from "./CloudAnalysisPanel";
+import { useRef, useState, useEffect } from "react";
 import { Button } from "@frameiq/ui";
 import { FileVideo } from "lucide-react";
 import { api, timestamp } from "../client";
 import type { Workspace } from "../workspace/useWorkspace";
 import { StudioToolbar } from "./StudioToolbar";
 import { Timeline } from "./Timeline";
-import { PresetPanel } from "./PresetPanel";
 import { AnalysisPanel } from "./AnalysisPanel";
 import { FrameComparison } from "./FrameComparison";
-import type { Selection, QualityMetricsV1 } from "../contracts";
+import type { Selection, QualityMetricsV1, RegionRectV1 } from "../contracts";
 import { FrameCollection } from "./FrameCollection";
 
 export function Studio({
@@ -18,6 +19,20 @@ export function Studio({
   w: Workspace;
   images: Record<string, string>;
 }) {
+  const [cropActive, setCropActive] = useState(false);
+  const [cropRectangle, setCropRectangle] = useState<RegionRectV1>({
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+  });
+  useEffect(() => {
+    if (cropActive) {
+      w.setZoomMode("fit");
+      w.setZoom(1);
+      w.setPan({ x: 0, y: 0 });
+    }
+  }, [cropActive]);
   const [precision, setPrecision] = useState(false);
   const [panel, setPanel] = useState("selections");
   const [comparisonMetrics, setComparisonMetrics] = useState<
@@ -29,7 +44,7 @@ export function Studio({
   );
   return (
     <div className="studio">
-      <StudioToolbar w={w} />
+      <StudioToolbar w={w} cropEditing={cropActive && panel === "cloud"} />
       <div className="editor-layout">
         <div className="viewer-column">
           {comparison.length > 0 ? (
@@ -47,9 +62,10 @@ export function Studio({
               aria-label="Video frame canvas"
             >
               <div
-                className={`image-viewport ${w.zoom > 1 ? "can-pan" : ""}`}
+                className={`image-viewport ${w.zoom > 1 || w.zoomMode === "pixels" ? "can-pan" : ""}`}
                 onPointerDown={(e) => {
-                  if (w.zoom <= 1) return;
+                  if (cropActive || (w.zoom <= 1 && w.zoomMode !== "pixels"))
+                    return;
                   drag.current = {
                     x: e.clientX,
                     y: e.clientY,
@@ -73,14 +89,34 @@ export function Studio({
                 }}
               >
                 {w.image ? (
-                  <img
-                    src={api.image(w.image.imagePath)}
-                    alt={`Frame ${w.image.frameRef.presentationOrdinal} at ${timestamp(w.image.timeSeconds)}`}
-                    style={{
-                      transform: `translate(${w.pan.x}px,${w.pan.y}px) scale(${w.zoom})`,
-                    }}
-                    draggable={false}
-                  />
+                  cropActive && panel === "cloud" ? (
+                    <RegionEditor
+                      src={api.image(w.image.imagePath)}
+                      width={w.image.width}
+                      height={w.image.height}
+                      rectangle={cropRectangle}
+                      onChange={setCropRectangle}
+                    />
+                  ) : (
+                    <img
+                      src={api.image(w.image.imagePath)}
+                      alt={`Frame ${w.image.frameRef.presentationOrdinal} at ${timestamp(w.image.timeSeconds)}`}
+                      style={{
+                        ...(w.zoomMode === "pixels"
+                          ? {
+                              width:
+                                w.image.width / (window.devicePixelRatio || 1),
+                              height:
+                                w.image.height / (window.devicePixelRatio || 1),
+                              maxWidth: "none",
+                              maxHeight: "none",
+                            }
+                          : {}),
+                        transform: `translate(${w.pan.x}px,${w.pan.y}px) scale(${w.zoom})`,
+                      }}
+                      draggable={false}
+                    />
+                  )
                 ) : (
                   <button
                     className="attach-zone"
@@ -135,15 +171,22 @@ export function Studio({
               Analysis
             </Button>
             <Button
-              aria-pressed={panel === "presets"}
-              onClick={() => setPanel("presets")}
+              aria-pressed={panel === "cloud"}
+              onClick={() => setPanel("cloud")}
             >
-              Presets
+              Cloud AI
             </Button>
           </div>
-          {panel === "selections" ? (
+          {panel === "cloud" ? (
+            <CloudAnalysisPanel
+              key={w.project?.id ?? "no-project"}
+              w={w}
+              region={[cropRectangle, setCropRectangle]}
+              onCropChange={setCropActive}
+            />
+          ) : panel === "selections" ? (
             <FrameCollection w={w} images={images} />
-          ) : panel === "analysis" ? (
+          ) : (
             <AnalysisPanel
               w={w}
               onCompare={(frames, metrics) => {
@@ -151,8 +194,6 @@ export function Studio({
                 setComparisonMetrics(metrics);
               }}
             />
-          ) : (
-            <PresetPanel w={w} />
           )}
         </div>
       </div>

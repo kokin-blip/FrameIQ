@@ -1,0 +1,68 @@
+{
+  "version": "0.1.1",
+  "platform": "aarch64-apple-darwin",
+  "developmentLibraryPathsRemoved": true,
+  "cases": [
+    {
+      "fixture": "sdr",
+      "mode": "sdr",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 8,
+      "sha256": "25831d7fe9c3de8f5b7fa2f7a80f97d7f8178e0bbcc17d8189e8c1522930c291",
+      "status": "passed"
+    },
+    {
+      "fixture": "pq",
+      "mode": "sdr",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 8,
+      "sha256": "8e5bfd759e62a629a5a2c1eba671dd9f179fb93a038e0557e4b7260fb0472506",
+      "status": "passed"
+    },
+    {
+      "fixture": "pq",
+      "mode": "preserve16_bit",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 16,
+      "sha256": "77176090cab540e0b4d1b5a7f734f07e212f2b03f42f8a4a4e404e18daf3d72d",
+      "status": "passed"
+    },
+    {
+      "fixture": "hlg",
+      "mode": "sdr",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 8,
+      "sha256": "8e9c28e33a4718e78eb6dbf0726a98eec052cca528ded443fd3a7d70ee4aa2ae",
+      "status": "passed"
+    },
+    {
+      "fixture": "hlg",
+      "mode": "preserve16_bit",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 16,
+      "sha256": "9f33b38c6cb40edbbfcf1c8faf6a4db10bdff4c4e8257c487a9c918ae54aa568",
+      "status": "passed"
+    }
+  ],
+  "aiInference": "Not part of this packaged media smoke; real-model resource/accuracy gates remain open."
+}

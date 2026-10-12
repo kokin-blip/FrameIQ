@@ -41,3 +41,41 @@ Browser captures: `review/fluent/` at both required sizes. Tests and native-buil
 ## Experimental preset execution
 
 `preset-execution-state.json` records editable ready, running, stopped, and unavailable compositions on the existing Fluent page. `PresetExecutionPanel` reuses the shared Fluent Button and existing panel/row styles. Explicit opt-in is required; automatic validation status remains separate from experimental execution. The selected subject/current frame anchors each run. Stopped tracks report partial coverage, and a corrected subject on another anchor starts a new track. Accuracy-gated features remain unavailable rather than displaying illustrative detections.
+
+## Cloud AI extension (2026-10-11)
+
+`CloudProviders` adds OpenAI/Gemini credentials in Settings using the shared Fluent Button and inherited graphite field tokens. Save, remove, and connection testing are explicit actions. Keys use OS credential storage and are excluded from projects and exports. Connection testing lists provider models without sending media; saved-key status is distinct from a successful connection or compatible image model. Editable credential, testing, error, and focus states are recorded in `cloud-connections-state.json`.
+
+`CloudAnalysisPanel` occupies the existing Studio dock. Its four navigation buttons use a two-by-two grid so labels remain visible in the 300px and compact 260px dock. The viewer, timeline, toolbar, selections, and local analysis retain their existing roles; no tokens or visual direction change.
+
+Users choose a provider, an image-capable model ID, and either a description of the current exact frame/optional rectangular crop or an advisory ranking of 2–8 explicitly chosen saved frames. Preset goals guide the cloud request; cloud output does not overwrite local measurements, rankings, or automatic-preset validation status.
+
+Review preparation happens locally. The panel displays the exact metadata-stripped JPEGs, dimensions, and sizes before transmission. All previews must load and the user must approve those images before the provider-specific Send action becomes available. Changing the request clears approval. Discard, progress, cancellation, actionable errors, and charge/data-use disclosures remain in the dock. Cancellation cannot recall data already sent.
+
+Results retain the transmitted previews and exact-frame actions. They separate AI-observed descriptions from uncertain suggestions and label the response unverified. Open exact frame restores its source and identity; Add frame uses the existing selection collection. Reported model and token usage are shown when supplied. The images contain actual imported media at runtime; Figma placeholders are illustrative.
+
+Editable analysis compositions on page `20:2` of the existing Figma file are setup `36:119`, review `36:173`, running `36:227`, results `36:281`, error `36:335`, and no-key `36:389`. Earlier iterations remain preserved. These compositions map to `CloudAnalysisPanel`, `.cloud-analysis`, `.cloud-region`, and `.cloud-candidates`; Settings maps to `CloudProviders`, `.cloud-providers`, and `.cloud-provider`.
+
+Live provider authentication/generation and populated native review/result workflows still require real API keys and test media. Fixture tests and no-key native captures do not close those acceptance gates or establish cloud accuracy.
+
+## Selection controls and presets — 2026-10-11
+
+Presets move into the Selections panel under “Auto-select with a preset”; the separate Presets tab is removed. The accordion keeps frame collection actions directly accessible. Preset selection precedes subject controls; scoring/custom configuration is collapsed under “Weights and custom presets.” Existing model requirements and experimental opt-in remain factual.
+
+Add/remove current frame reuses the exact-frame toggle. Each frame row has a separate Remove button with its source/ordinal in the accessible name. Select all covers the current fully indexed source; Remove all clears the current project's cross-source collection. Mutating controls show a busy state. Existing manual frames remain when Auto-select frames finishes; adding results belongs to the background job, so closing the panel does not prevent persistence. Cancelled/failed runs do not automatically alter selections.
+
+FrameCards renders at most 100 rows per page with Previous/Next controls and bounded thumbnail generation for later pages. This also keeps Export Studio's frame list bounded. Native keyboard/focus styles and the approved graphite/Inter tokens remain in use. `selection-actions-state.json` records editable empty, ready, running, results, and error compositions. Native visual/interaction acceptance awaits a Mac unlock and Windows access; fixture tests are recorded separately.
+
+## Approved usability refinements — 2026-10-11
+
+`usability-improvements-state.json` records editable library, export, settings, precision, recommendations, and canvas-crop compositions. Prior Fluent iterations remain references. Refinements retain the docked structure, bundled Inter, neutral image surface, and shared Button/focus tokens.
+
+Essential frame metadata stays visible; technical PTS/provenance/indexing fields are in Frame metadata. Fit is explicitly labeled and 1:1 is true source pixels per physical display pixels. Expanded precision shows nine indexed neighbors, with full timestamps available through accessible titles and global scrubbing retained.
+
+Library offers search, recent/name sorting, display-name editing, and actual recorded activity. Export uses independent scrolling plus a persistent action footer; color interpretation is Advanced. Settings uses Local models / Cloud AI / General & shortcuts, with three experimental pack choices and advanced manifest import. Model selection does not bypass license/hash review or accuracy gates.
+
+Recommendations collapse scoring and explain comparison requirements. Cloud AI offers explicit provider model listing and advanced ID entry. RegionEditor maps main-canvas drawing, moving, and resizing to normalized source coordinates; numeric fields are the keyboard alternative. Review and consent invalidate when these inputs change. Cloud requests retain their explicit approval gate.
+
+Native and automated evidence, including lock/display/platform gaps, is in `docs/verification/usability-improvements-2026-10-11.md`. Earlier statements that metadata is always expanded and zoom is solely relative to fit describe the superseded iteration.
+
+Selection controls received a subsequent synthetic native pass at compact and available large sizes; remaining checks are explicitly listed in the usability report rather than the earlier unlock status.

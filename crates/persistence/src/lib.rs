@@ -27,6 +27,18 @@ pub fn file_stamp(path: &Path) -> AppResult<(u64, String)> {
 pub struct Database {
     conn: Connection,
 }
+fn validate_display_name(name: &str) -> AppResult<()> {
+    if name.trim().is_empty()
+        || name.trim().chars().count() > 120
+        || name.chars().any(char::is_control)
+    {
+        return Err(AppError::new(
+            "INVALID_NAME",
+            "Enter a name of 1–120 characters without control characters.",
+        ));
+    }
+    Ok(())
+}
 impl Database {
     pub fn open(path: &Path) -> AppResult<Self> {
         if let Some(p) = path.parent() {
@@ -58,6 +70,10 @@ impl Database {
             (
                 9i64,
                 include_str!("../../../migrations/009_preset_execution.sql"),
+            ),
+            (
+                10i64,
+                include_str!("../../../migrations/010_project_activity.sql"),
             ),
         ];
         let max: i64 = conn
@@ -175,6 +191,49 @@ impl Database {
                     })
                 },
             )
+            .map_err(err)
+    }
+    pub fn rename_project(&self, id: &str, name: &str) -> AppResult<()> {
+        validate_display_name(name)?;
+        if self
+            .conn
+            .execute(
+                "UPDATE projects SET name=? WHERE id=?",
+                params![name.trim(), id],
+            )
+            .map_err(err)?
+            == 0
+        {
+            return Err(AppError::new("PROJECT_MISSING", "Project unavailable."));
+        }
+        Ok(())
+    }
+    pub fn rename_source(&self, id: &str, name: &str) -> AppResult<()> {
+        validate_display_name(name)?;
+        if self
+            .conn
+            .execute(
+                "UPDATE sources SET name=? WHERE id=?",
+                params![name.trim(), id],
+            )
+            .map_err(err)?
+            == 0
+        {
+            return Err(AppError::new("SOURCE_MISSING", "Source unavailable."));
+        }
+        Ok(())
+    }
+    pub fn mark_project_opened(&self, id: &str) -> AppResult<()> {
+        self.conn.execute("INSERT INTO project_activity(project_id,last_opened_at) VALUES(?,strftime('%Y-%m-%dT%H:%M:%fZ','now')) ON CONFLICT(project_id) DO UPDATE SET last_opened_at=excluded.last_opened_at",[id]).map_err(err)?;
+        Ok(())
+    }
+    pub fn project_activity(&self) -> AppResult<std::collections::HashMap<String, String>> {
+        self.conn
+            .prepare("SELECT project_id,last_opened_at FROM project_activity")
+            .map_err(err)?
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+            .map_err(err)?
+            .collect::<Result<_, _>>()
             .map_err(err)
     }
     pub fn projects(&self) -> AppResult<Vec<Project>> {
@@ -842,20 +901,79 @@ impl Database {
         }
         Ok(())
     }
+    pub fn select_all(&self, source: &SourceSummary) -> AppResult<()> {
+        if source.status != "ready" {
+            return Err(AppError::new(
+                "INDEX_PENDING",
+                "Finish indexing before selecting all frames.",
+            ));
+        }
+        self.conn.execute("INSERT OR IGNORE INTO frame_selections(source_id,index_id,ordinal) SELECT ?,index_id,ordinal FROM frames WHERE index_id=?", params![source.id,source.index_generation]).map_err(err)?;
+        Ok(())
+    }
+    pub fn clear_selections(&self, project: &str) -> AppResult<()> {
+        self.conn.execute("DELETE FROM frame_selections WHERE source_id IN (SELECT id FROM sources WHERE project_id=?)", [project]).map_err(err)?;
+        Ok(())
+    }
+    pub fn add_selections(&self, project: &str, frames: &[Selection]) -> AppResult<()> {
+        if frames.len() > 50 {
+            return Err(AppError::new(
+                "SELECTION_LIMIT",
+                "Add at most 50 recommended frames at once.",
+            ));
+        }
+        // Validate the entire immutable batch before writing any selections.
+        for selection in frames {
+            let source = self.source(&selection.source_id)?;
+            let frame = self.frame(
+                &source.index_generation,
+                &selection.frame_ref.presentation_ordinal,
+            )?;
+            if source.project_id != project
+                || serde_json::to_value(self.frame_ref(&source, &frame)?).map_err(err)?
+                    != serde_json::to_value(&selection.frame_ref).map_err(err)?
+            {
+                return Err(AppError::new(
+                    "SOURCE_CHANGED",
+                    "Restore the current project and indexed frames before adding results.",
+                ));
+            }
+        }
+        let tx = self.conn.unchecked_transaction().map_err(err)?;
+        for selection in frames {
+            tx.execute(
+                "INSERT OR IGNORE INTO frame_selections(source_id,index_id,ordinal) VALUES(?,?,?)",
+                params![
+                    selection.source_id,
+                    selection.frame_ref.index_generation,
+                    ordinal(&selection.frame_ref.presentation_ordinal)?
+                ],
+            )
+            .map_err(err)?;
+        }
+        tx.commit().map_err(err)
+    }
     pub fn selections(&self, project: &str) -> AppResult<Vec<Selection>> {
-        let rows=self.conn.prepare("SELECT q.source_id,q.index_id,q.ordinal FROM frame_selections q JOIN sources s ON s.id=q.source_id WHERE s.project_id=? ORDER BY q.created_at,q.ordinal").map_err(err)?.query_map([project],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,i64>(2)?))).map_err(err)?.collect::<Result<Vec<_>,_>>().map_err(err)?;
+        let rows = self.conn.prepare("SELECT f.ordinal,f.pts_ticks,f.time_seconds,f.duration_seconds,f.timestamp_origin,f.key_frame,q.source_id FROM frame_selections q JOIN sources s ON s.id=q.source_id JOIN frames f ON f.index_id=q.index_id AND f.ordinal=q.ordinal WHERE s.project_id=? ORDER BY q.created_at,q.ordinal").map_err(err)?.query_map([project], |r| Ok((r.get::<_,String>(6)?, Self::read_frame(r)?))).map_err(err)?.collect::<Result<Vec<_>,_>>().map_err(err)?;
+        let sources = self
+            .sources(project)?
+            .into_iter()
+            .map(|s| (s.id.clone(), s))
+            .collect::<std::collections::HashMap<_, _>>();
         rows.into_iter()
-            .map(|(id, index, n)| {
-                let s = self.source(&id)?;
-                let f = self.frame(&index, &n.to_string())?;
+            .map(|(id, f)| {
+                let s = sources.get(&id).ok_or_else(|| {
+                    AppError::new("SOURCE_MISSING", "Selection source unavailable.")
+                })?;
                 Ok(Selection {
                     source_id: id,
-                    frame_ref: self.frame_ref(&s, &f)?,
+                    frame_ref: self.frame_ref(s, &f)?,
                     time_seconds: f.time_seconds,
                 })
             })
             .collect()
     }
+
     pub fn relocate_source(
         &mut self,
         id: &str,
@@ -1191,6 +1309,129 @@ impl Database {
 mod tests {
     use super::*;
     #[test]
+    fn display_names_and_activity_upgrade_preserve_originals_and_selections() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("db.sqlite");
+        let mut db = Database::open(&path).unwrap();
+        let p = db.create_project("Original").unwrap();
+        let file = dir.path().join("original.mkv");
+        std::fs::write(&file, b"fixture").unwrap();
+        let source = db.create_source(&p.id, &file).unwrap();
+        db.append_frames(
+            &source.index_generation,
+            &[IndexedFrame {
+                ordinal: "0".into(),
+                pts_ticks: Some("9007199254740993".into()),
+                time_seconds: 0.,
+                duration_seconds: None,
+                timestamp_origin: TimestampOrigin::Source,
+                key_frame: true,
+            }],
+        )
+        .unwrap();
+        db.select(&source, "0", true).unwrap();
+        assert!(db.project_activity().unwrap().is_empty());
+        assert!(db.rename_project(&p.id, " ").is_err());
+        assert!(db.rename_source(&source.id, "bad\nname").is_err());
+        db.rename_project(&p.id, "New name").unwrap();
+        db.rename_source(&source.id, "Front view").unwrap();
+        let renamed = db.source(&source.id).unwrap();
+        assert_eq!(renamed.path, source.path);
+        assert_eq!(renamed.revision_id, source.revision_id);
+        assert_eq!(renamed.index_generation, source.index_generation);
+        db.mark_project_opened(&p.id).unwrap();
+        assert!(db.project_activity().unwrap()[&p.id].ends_with('Z'));
+        assert!(db.mark_project_opened("unknown").is_err());
+        db.conn
+            .execute_batch(
+                "DROP TABLE project_activity; DELETE FROM schema_migrations WHERE version=10;",
+            )
+            .unwrap();
+        drop(db);
+        let db = Database::open(&path).unwrap();
+        assert_eq!(db.projects().unwrap()[0].name, "New name");
+        assert_eq!(db.source(&source.id).unwrap().name, "Front view");
+        assert!(db.project_activity().unwrap().is_empty());
+        assert_eq!(
+            db.conn
+                .query_row("SELECT COUNT(*) FROM frame_selections", [], |r| r
+                    .get::<_, i64>(0))
+                .unwrap(),
+            1
+        );
+        assert!(path.with_extension("pre-10.backup").exists());
+        assert!(file.exists());
+    }
+    #[test]
+    fn selection_bulk_operations_preserve_exact_identity_and_project_scope() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("db.sqlite");
+        let mut db = Database::open(&path).unwrap();
+        let project = db.create_project("Look").unwrap();
+        let other = db.create_project("Other").unwrap();
+        let file = dir.path().join("source.mkv");
+        std::fs::write(&file, b"fixture").unwrap();
+        let mut make_source = |project: &str| {
+            let distinct = dir.path().join(format!("{}.mkv", Uuid::new_v4()));
+            std::fs::copy(&file, &distinct).unwrap();
+            let source = db.create_source(project, &distinct).unwrap();
+            let metadata: MediaMetadata = serde_json::from_value(serde_json::json!({"selectedStream":0,"durationSeconds":1.0,"streams":[{"index":0,"codec":"fixture","width":640,"height":480,"timeBaseNumerator":1,"timeBaseDenominator":1000,"rotation":0,"sampleAspectRatio":"1:1","colorSpace":"bt709","colorTransfer":"bt709","colorPrimaries":"bt709","durationSeconds":1.0}]})).unwrap();
+            db.set_metadata(&source, &metadata).unwrap();
+            let frames = ["0", "9007199254740993"].map(|n| IndexedFrame {
+                ordinal: n.into(),
+                pts_ticks: Some("500".into()),
+                time_seconds: 0.5,
+                duration_seconds: Some(0.1),
+                timestamp_origin: TimestampOrigin::Source,
+                key_frame: n == "0",
+            });
+            db.append_frames(&source.index_generation, &frames).unwrap();
+            assert!(db.select_all(&db.source(&source.id).unwrap()).is_err());
+            db.finish_index(&source.index_generation, "ready", None)
+                .unwrap();
+            db.source(&source.id).unwrap()
+        };
+        let a = make_source(&project.id);
+        let b = make_source(&project.id);
+        let foreign = make_source(&other.id);
+        db.select(&b, "0", true).unwrap();
+        db.select_all(&a).unwrap();
+        db.select_all(&a).unwrap();
+        db.select_all(&foreign).unwrap();
+        let selected = db.selections(&project.id).unwrap();
+        assert_eq!(selected.len(), 3);
+        let exact = selected
+            .iter()
+            .find(|f| f.frame_ref.presentation_ordinal == "9007199254740993")
+            .unwrap()
+            .clone();
+        assert_eq!(exact.frame_ref.pts_ticks.as_deref(), Some("500"));
+        db.clear_selections(&project.id).unwrap();
+        assert_eq!(db.selections(&other.id).unwrap().len(), 2);
+        let mut stale = exact.clone();
+        stale.frame_ref.index_generation = "stale".into();
+        assert!(db
+            .add_selections(&project.id, &[exact.clone(), stale])
+            .is_err());
+        assert!(db.selections(&project.id).unwrap().is_empty());
+        assert!(db.add_selections(&other.id, &[exact.clone()]).is_err());
+        db.add_selections(&project.id, &[exact.clone(), exact.clone()])
+            .unwrap();
+        assert_eq!(db.selections(&project.id).unwrap().len(), 1);
+        drop(db);
+        let db = Database::open(&path).unwrap();
+        assert_eq!(
+            db.selections(&project.id).unwrap()[0]
+                .frame_ref
+                .presentation_ordinal,
+            exact.frame_ref.presentation_ordinal
+        );
+        db.select(&a, &exact.frame_ref.presentation_ordinal, false)
+            .unwrap();
+        assert!(db.selections(&project.id).unwrap().is_empty());
+        assert!(file.exists());
+    }
+    #[test]
     fn migrations_and_foreign_keys() {
         let t = tempfile::tempdir().unwrap();
         let p = t.path().join("db.sqlite");
@@ -1371,7 +1612,7 @@ mod tests {
         };
         db.save_face_feature(&feature).unwrap();
         // Emulate an existing migration-005 database with preserved detector output.
-        db.conn.execute_batch("DROP TABLE preset_results; DROP TABLE track_observations; DROP TABLE subject_tracks; DROP TABLE export_attempt_items; DROP TABLE region_subjects; DROP TABLE subject_choices; DROP TABLE pose_features; DROP TABLE person_features; DELETE FROM schema_migrations WHERE version>=6;").unwrap();
+        db.conn.execute_batch("DROP TABLE project_activity; DROP TABLE preset_results; DROP TABLE track_observations; DROP TABLE subject_tracks; DROP TABLE export_attempt_items; DROP TABLE region_subjects; DROP TABLE subject_choices; DROP TABLE pose_features; DROP TABLE person_features; DELETE FROM schema_migrations WHERE version>=6;").unwrap();
         drop(db);
         let db = Database::open(&d.path().join("db.sqlite")).unwrap();
         assert!(d.path().join("db.pre-6.backup").exists());

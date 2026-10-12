@@ -1,0 +1,14 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "pageId": "20:2",
+  "states": {
+    "empty": "39:143",
+    "ready": "39:213",
+    "running": "39:283",
+    "results": "39:353",
+    "error": "39:423"
+  },
+  "component": "20:15",
+  "tokens": "FrameIQ Fluent Docked",
+  "status": "Editable selection/preset compositions created before production controls; original iterations retained; Inter verified. Runtime action rows adapt to compact widths."
+}
