@@ -1,0 +1,28 @@
+{
+  "version": "0.1.2",
+  "buildSourceCommit": "b320289e9af75ae8c6bf9e85c09029c00cbf557a",
+  "platform": "aarch64-apple-darwin",
+  "signature": "ad-hoc, not notarized",
+  "assets": [
+    {
+      "name": "FrameIQ-v0.1.2-macos-arm64.zip",
+      "bytes": 23102475,
+      "sha256": "0bce430b4f4ae9765af1d2c221fa5270a2bc488b3bee28d763ef79114f22e979"
+    },
+    {
+      "name": "FrameIQ-v0.1.2-third-party-source.tar.gz",
+      "bytes": 47557061,
+      "sha256": "9a74b71e6af77ffadf40b0a98e65293c5487bbf23091379beae2e5d0a758a55a"
+    },
+    {
+      "name": "dependency-manifest.json",
+      "bytes": 168855,
+      "sha256": "035952d9d52f776c8dd24f2cc3cd917120c902b5ac85da45bbb1f6b8ef575989"
+    },
+    {
+      "name": "packaged-worker-smoke.json",
+      "bytes": 1596,
+      "sha256": "2c136d1fcefc72ff75b64fb47a87f6f4540ef2e0348e47aaf0f697fac3e09223"
+    }
+  ]
+}
