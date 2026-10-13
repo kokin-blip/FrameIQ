@@ -79,3 +79,13 @@ Recommendations collapse scoring and explain comparison requirements. Cloud AI o
 Native and automated evidence, including lock/display/platform gaps, is in `docs/verification/usability-improvements-2026-10-11.md`. Earlier statements that metadata is always expanded and zoom is solely relative to fit describe the superseded iteration.
 
 Selection controls received a subsequent synthetic native pass at compact and available large sizes; remaining checks are explicitly listed in the usability report rather than the earlier unlock status.
+
+## Model onboarding and workspace tutorial — 2026-10-12
+
+`onboarding-state.json` maps editable Choose, Review, Install, failure/cancellation, retention preference, and three workspace tutorial compositions. `ModelSetup` uses actual pinned catalog manifests and installed-model records. Model checkboxes explain purpose, size, and the pose/person dependency. Review exposes sources, licenses, exact byte sizes, and checksums. An explicit review checkbox gates the existing production download command. Downloads are sequential, progress is recoverable from jobs, cancellation stops dispatching the rest, and retry skips already-ready installations.
+
+The setup page is optional and reopens through Local models or the empty subject-detector control. Finishing/skipping begins a three-step, skippable tutorial in the actual editor: attach a video, step/select frames, and open Export Studio. It does not use separate simulated media or silently export. General & shortcuts can replay it. Completion and the selection preference persist per application installation in the WebView's local storage, without credentials.
+
+General & shortcuts adds “Clear selections when switching files or projects”, enabled by default. Explicit source changes, imports of a different source, and opening/creating another project clear the outgoing project collection. Reopening the same project/app and selecting an existing frame are exempt. Disabling it restores cross-source collection behavior. Source assets, analysis, and immutable export plans are retained. Running automatic selection must finish or be cancelled before a clearing switch; in-flight selection mutations and stale reloads cannot refill the cleared UI.
+
+The existing Fluent composition, tokens, shared buttons, focus styles, and neutral canvas remain. Native setup/review and tutorial/retention behavior were reviewed at 1000×700 and the available 1440×889 size. See `docs/verification/onboarding-2026-10-12.md` for evidence and limits.

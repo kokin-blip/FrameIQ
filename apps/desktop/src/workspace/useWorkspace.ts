@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { api, desktop, message, timestamp } from "../client";
-import { useJobs } from "../store";
+import { useJobs, usePreferences } from "../store";
 import type {
   Project,
   SourceSummary,
@@ -12,9 +12,13 @@ import type {
   ExportFormat,
   ColorMode,
 } from "../contracts";
-export type View = "library" | "extract" | "export" | "settings";
+export type View = "library" | "extract" | "export" | "settings" | "setup";
 export function useWorkspace() {
-  const [view, setView] = useState<View>("extract"),
+  const [view, setView] = useState<View>(() =>
+      desktop && !usePreferences.getState().setupCompleted
+        ? "setup"
+        : "extract",
+    ),
     [projects, setProjects] = useState<Project[]>([]),
     [project, setProject] = useState<Project | null>(null),
     [sources, setSources] = useState<SourceSummary[]>([]),
@@ -46,12 +50,18 @@ export function useWorkspace() {
   const currentProject = useRef<string | null>(null);
   currentProject.current = project?.id ?? null;
   const pendingFocus = useRef<string | null>(null);
+  const reloadGeneration = useRef(0);
   const reload = useCallback(async (p: Project) => {
+    const generation = reloadGeneration.current;
     const [s, sel] = await Promise.all([
       api.sources(p.id),
       api.selections(p.id),
     ]);
-    if (currentProject.current !== p.id) return;
+    if (
+      currentProject.current !== p.id ||
+      generation !== reloadGeneration.current
+    )
+      return;
     setSources(s);
     setSelected(sel);
   }, []);
@@ -236,6 +246,27 @@ export function useWorkspace() {
   const clearSelections = useCallback(async () => {
     if (project) await mutateSelections(() => api.clearSelections(project.id));
   }, [project, mutateSelections]);
+  async function prepareSwitch() {
+    if (selectionLock.current)
+      throw new Error("Wait for the current selection operation.");
+    if (!project || !usePreferences.getState().clearSelectionsOnSwitch) return;
+    if (
+      Object.values(useJobs.getState().jobs).some(
+        (j) =>
+          j.stage === "preset_execution" &&
+          ["queued", "running", "cancelling"].includes(j.status),
+      )
+    )
+      throw new Error(
+        "Cancel automatic frame selection before opening another file or project.",
+      );
+    ++reloadGeneration.current;
+    await mutateSelections(async () => {
+      await api.clearSelections(project.id);
+      ++reloadGeneration.current;
+      setSelected([]);
+    });
+  }
   const toggleSelection = useCallback(async () => {
     if (!project || !activeSource || !frame) return;
     const exists = selected.some(
@@ -314,7 +345,8 @@ export function useWorkspace() {
         droppedPath ?? (await open({ multiple: false, directory: false }));
       if (typeof path !== "string") return;
       let p = targetProject ?? project;
-      if (targetProject) {
+      if (targetProject && targetProject.id !== project?.id) {
+        await prepareSwitch();
         setProject(targetProject);
         setSources([]);
         setSourceId(null);
@@ -326,6 +358,8 @@ export function useWorkspace() {
       }
       const job = await api.import(p.id, path);
       setJob(job);
+      if (p.id === project?.id && job.resultIds[0] !== sourceId)
+        await prepareSwitch();
       await reload(p);
       setSourceId(job.resultIds[0] ?? null);
       setView("extract");
@@ -368,6 +402,7 @@ export function useWorkspace() {
   async function createProject() {
     try {
       const p = await api.createProject(newProject);
+      await prepareSwitch();
       setProjects((prev) => [...prev, p]);
       setProject(p);
       setSourceId(null);
@@ -435,12 +470,18 @@ export function useWorkspace() {
     if (project) await reload(project);
     setProjects(await api.projects());
   }
-  function openProject(p: Project) {
-    setSources([]);
-    setSelected([]);
-    setProject(p);
-    setSourceId(null);
-    setView("extract");
+  async function openProject(p: Project) {
+    try {
+      if (p.id !== project?.id) await prepareSwitch();
+      ++reloadGeneration.current;
+      setSources([]);
+      setSelected([]);
+      setProject(p);
+      setSourceId(null);
+      setView("extract");
+    } catch (e) {
+      setError(message(e));
+    }
   }
   function openSelection(s: Selection) {
     setPlaying(false);
@@ -450,9 +491,15 @@ export function useWorkspace() {
       setSourceId(s.sourceId);
     } else void show(s.sourceId, s.frameRef.presentationOrdinal);
   }
-  function chooseSource(id: string) {
-    setPlaying(false);
-    setSourceId(id);
+  async function chooseSource(id: string) {
+    if (id === sourceId) return;
+    try {
+      await prepareSwitch();
+      setPlaying(false);
+      setSourceId(id);
+    } catch (e) {
+      setError(message(e));
+    }
   }
   return {
     view,
@@ -513,6 +560,7 @@ export function useWorkspace() {
     openProject,
     openSelection,
     chooseSource,
+    openModelSetup: () => setView("setup"),
     dropActive,
   };
 }

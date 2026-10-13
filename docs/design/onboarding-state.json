@@ -1,0 +1,18 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "pageId": "20:2",
+  "date": "2026-10-12",
+  "modelSetup": {
+    "choose": "46:202",
+    "review": "46:213",
+    "installing": "46:222",
+    "failedOrCancelled": "46:228",
+    "selectionPreference": "46:235"
+  },
+  "tutorial": {
+    "attach": "47:210",
+    "select": "47:264",
+    "export": "47:318"
+  },
+  "note": "Editable interaction handoff using local Fluent adaptations; previous iterations retained. Native imported imagery and exact metadata replace placeholders."
+}

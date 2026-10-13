@@ -1,11 +1,19 @@
 import { CloudProviders } from "./CloudProviders";
 import { ModelManager } from "./ModelManager";
 import { Button } from "@frameiq/ui";
-import { useSettingsTab } from "../store";
+import { useSettingsTab, usePreferences } from "../store";
 import { Film, Keyboard } from "lucide-react";
 
-export function Settings() {
+export function Settings({
+  onSetup,
+  onTutorial,
+}: {
+  onSetup?: () => void;
+  onTutorial?: () => void;
+}) {
   const { tab, setTab } = useSettingsTab();
+  const { clearSelectionsOnSwitch, setClearSelectionsOnSwitch } =
+    usePreferences();
   return (
     <section className="page settings-page">
       <div className="page-title">
@@ -35,12 +43,37 @@ export function Settings() {
           </Button>
         </nav>
         <div hidden={tab !== "models"}>
+          <Button onClick={onSetup}>Run model setup</Button>
           <ModelManager />
         </div>
         <div hidden={tab !== "cloud"}>
           <CloudProviders />
         </div>
         <div hidden={tab !== "general"}>
+          <section className="settings-section">
+            <div>
+              <h2>Selections</h2>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={clearSelectionsOnSwitch}
+                  onChange={(e) => setClearSelectionsOnSwitch(e.target.checked)}
+                />{" "}
+                Clear selections when switching files or projects
+              </label>
+              <p>
+                Enabled by default. Clears the outgoing project's frame
+                collection when another file or project is opened. Source files
+                and existing export plans are kept. Turn this off to collect
+                frames across files.
+              </p>
+              <p>
+                Reopening the app or jumping to a selected frame does not clear
+                selections.
+              </p>
+              <Button onClick={onTutorial}>Show workspace tutorial</Button>
+            </div>
+          </section>
           <p>
             Extraction stays on this computer. Cloud requests require reviewed
             images and explicit approval. Shopping search is unavailable.

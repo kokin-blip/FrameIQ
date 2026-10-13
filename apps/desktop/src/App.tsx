@@ -7,6 +7,10 @@ import { ProjectLibrary } from "./components/ProjectLibrary";
 import { ExportStudio } from "./components/ExportStudio";
 import { Settings } from "./components/Settings";
 import { Activity } from "./components/Activity";
+import { ModelSetup } from "./components/ModelSetup";
+import { Tutorial } from "./components/Tutorial";
+import { desktop } from "./client";
+import { usePreferences } from "./store";
 
 export default function App() {
   const w = useWorkspace();
@@ -27,11 +31,31 @@ export default function App() {
           </button>
         </div>
       )}
+      {desktop && <Tutorial w={w} />}
       <main>
+        {desktop && (
+          <ModelSetup
+            visible={w.view === "setup"}
+            onFinish={() => {
+              usePreferences.getState().completeSetup();
+              usePreferences.getState().replayTutorial();
+              w.setView("extract");
+            }}
+          />
+        )}
         {w.view === "extract" && <Studio w={w} images={images} />}
         {w.view === "library" && <ProjectLibrary w={w} />}
         {w.view === "export" && <ExportStudio w={w} images={images} />}
-        {w.view === "settings" && <Settings />}
+        {w.view === "settings" && (
+          <Settings
+            onSetup={w.openModelSetup}
+            onTutorial={() => {
+              usePreferences.getState().completeSetup();
+              usePreferences.getState().replayTutorial();
+              w.setView("extract");
+            }}
+          />
+        )}
       </main>
       <Activity w={w} />
     </div>

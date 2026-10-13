@@ -238,9 +238,9 @@ export function SubjectPanel({ w }: { w: Workspace }) {
         </select>
       </label>
       {!model && (
-        <p className="analysis-note">
-          Install a compatible person detector in Settings.
-        </p>
+        <div className="analysis-note"><p>No compatible person detector installed.</p>
+          <Button onClick={w.openModelSetup}>Set up models</Button>
+        </div>
       )}
       <Button
         disabled={!model || !frameKey || w.busy || saving || running}

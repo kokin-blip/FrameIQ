@@ -124,7 +124,7 @@ it("keeps manual workflows available when no compatible model is installed", asy
   render(<SubjectPanel w={workspace()} />);
   expect(
     await screen.findByText(
-      "Install a compatible person detector in Settings.",
+      "No compatible person detector installed.",
     ),
   ).toBeTruthy();
   expect(

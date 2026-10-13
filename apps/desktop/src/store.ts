@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { JobEvent } from "./contracts";
 type State = {
   jobs: Record<string, JobEvent>;
@@ -23,3 +24,38 @@ export const useSettingsTab = create<{
   tab: "models" | "cloud" | "general";
   setTab: (tab: "models" | "cloud" | "general") => void;
 }>((set) => ({ tab: "models", setTab: (tab) => set({ tab }) }));
+
+export const usePreferences = create<{
+  setupCompleted: boolean;
+  tutorialCompleted: boolean;
+  clearSelectionsOnSwitch: boolean;
+  completeSetup: () => void;
+  completeTutorial: () => void;
+  replayTutorial: () => void;
+  setClearSelectionsOnSwitch: (enabled: boolean) => void;
+}>()(
+  persist(
+    (set) => ({
+      setupCompleted: false,
+      tutorialCompleted: false,
+      clearSelectionsOnSwitch: true,
+      completeSetup: () => set({ setupCompleted: true }),
+      completeTutorial: () => set({ tutorialCompleted: true }),
+      replayTutorial: () => set({ tutorialCompleted: false }),
+      setClearSelectionsOnSwitch: (enabled) =>
+        set({ clearSelectionsOnSwitch: enabled }),
+    }),
+    {
+      name: "frameiq-preferences-v1",
+      partialize: ({
+        setupCompleted,
+        tutorialCompleted,
+        clearSelectionsOnSwitch,
+      }) => ({
+        setupCompleted,
+        tutorialCompleted,
+        clearSelectionsOnSwitch,
+      }),
+    },
+  ),
+);

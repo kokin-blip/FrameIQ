@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
-import { useJobs } from "./store";
+import { useJobs, usePreferences } from "./store";
 import type { Selection } from "./contracts";
 
 const test = vi.hoisted(() => ({
@@ -12,6 +12,7 @@ const test = vi.hoisted(() => ({
   cancel: vi.fn(),
   open: vi.fn(),
   import: vi.fn(),
+  clear: vi.fn(),
   drop: null as
     null | ((event: { payload: { type: string; paths: string[] } }) => void),
 }));
@@ -55,10 +56,18 @@ vi.mock("./client", async (original) => {
     ...actual,
     desktop: true,
     api: {
+      modelCatalog: async () => [],
+      models: async () => [],
+      hardware: async () => ({
+        architecture: "aarch64",
+        totalMemoryBytes: "17179869184",
+        aiBudgetBytes: "4294967296",
+      }),
       projectActivity: async () => ({}),
       markProjectOpened: async () => {},
       projects: async () => [
         { id: "project", name: "Fixture project", createdAt: "" },
+        { id: "other", name: "Other project", createdAt: "" },
       ],
       sources: async () =>
         ["front", "back"].map((id) => ({
@@ -113,9 +122,7 @@ vi.mock("./client", async (original) => {
             });
         }
       },
-      clearSelections: async () => {
-        test.selected = [];
-      },
+      clearSelections: test.clear,
       addSelections: async (_project: string, frames: Selection[]) => {
         for (const f of frames)
           if (
@@ -139,7 +146,15 @@ vi.mock("./client", async (original) => {
   };
 });
 beforeEach(() => {
+  usePreferences.setState({
+    setupCompleted: true,
+    tutorialCompleted: true,
+    clearSelectionsOnSwitch: false,
+  });
   test.selected = [];
+  test.clear.mockReset().mockImplementation(async () => {
+    test.selected = [];
+  });
   test.open.mockReset().mockResolvedValue("/fixture/export");
   test.export.mockReset().mockResolvedValue({
     jobId: "export",
@@ -372,4 +387,127 @@ it("adds/removes current and row frames, selects the current source, and clears 
   await screen.findByRole("button", { name: "Add current frame" });
   expect(screen.queryByRole("button", { name: "Presets" })).toBeNull();
   expect(screen.getByText("Auto-select with a preset")).toBeTruthy();
+});
+
+it("clears outgoing selections on file and project changes when enabled, but not reopening", async () => {
+  usePreferences.setState({ clearSelectionsOnSwitch: true });
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByRole("img", { name: "Frame 0 at 00:00:00.000" });
+  await user.click(screen.getByRole("button", { name: "Select frame" }));
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Source video" }),
+    "back",
+  );
+  await waitFor(() => expect(test.clear).toHaveBeenCalledWith("project"));
+  expect(test.selected).toHaveLength(0);
+  await user.click(screen.getByRole("button", { name: "Select frame" }));
+  await user.click(screen.getByRole("button", { name: "Projects" }));
+  await user.click(
+    await screen.findByRole("button", { name: "Open project Fixture project" }),
+  );
+  await screen.findByRole("img", { name: "Frame 0 at 00:00:00.000" });
+  expect(test.selected).toHaveLength(1);
+  expect(test.clear).toHaveBeenCalledTimes(1);
+  await user.click(screen.getByRole("button", { name: "Projects" }));
+  await user.click(
+    await screen.findByRole("button", { name: "Open project Other project" }),
+  );
+  await waitFor(() => expect(test.clear).toHaveBeenCalledTimes(2));
+  expect(test.selected).toHaveLength(0);
+});
+
+it("preserves the current file and collection if clearing fails", async () => {
+  usePreferences.setState({ clearSelectionsOnSwitch: true });
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByRole("img", { name: "Frame 0 at 00:00:00.000" });
+  await user.click(screen.getByRole("button", { name: "Select frame" }));
+  test.clear.mockRejectedValueOnce(new Error("Database unavailable"));
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Source video" }),
+    "back",
+  );
+  await screen.findByText("Database unavailable");
+  expect(screen.getByRole("combobox", { name: "Source video" })).toHaveProperty(
+    "value",
+    "front",
+  );
+  expect(test.selected).toHaveLength(1);
+});
+
+it("clears after a successful import, and preserves selections when the dialog is cancelled", async () => {
+  usePreferences.setState({ clearSelectionsOnSwitch: true });
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByRole("img", { name: "Frame 0 at 00:00:00.000" });
+  await user.click(screen.getByRole("button", { name: "Select frame" }));
+  test.open.mockResolvedValueOnce(null);
+  await user.click(screen.getByRole("button", { name: "Import video" }));
+  expect(test.clear).not.toHaveBeenCalled();
+  test.import.mockResolvedValueOnce({
+    ...(await test.import()),
+    resultIds: ["back"],
+  });
+  await user.click(screen.getByRole("button", { name: "Import video" }));
+  await waitFor(() => expect(test.selected).toHaveLength(0));
+  expect(test.clear).toHaveBeenCalledWith("project");
+});
+
+it("shows skippable setup on first run and offers the workspace tutorial afterwards", async () => {
+  usePreferences.setState({
+    setupCompleted: false,
+    tutorialCompleted: false,
+    clearSelectionsOnSwitch: true,
+  });
+  const user = userEvent.setup();
+  render(<App />);
+  expect(
+    await screen.findByRole("heading", { name: "Set up local models" }),
+  ).toBeTruthy();
+  await user.click(
+    await screen.findByRole("button", { name: "Continue to tutorial" }),
+  );
+  expect(usePreferences.getState().setupCompleted).toBe(true);
+  expect(
+    screen.getByRole("region", { name: "Workspace tutorial" }),
+  ).toBeTruthy();
+  await user.click(screen.getByRole("button", { name: "Skip tutorial" }));
+  expect(usePreferences.getState().tutorialCompleted).toBe(true);
+});
+
+it("defers clearing while automatic selection is running, preventing late results from refilling a cleared collection", async () => {
+  usePreferences.setState({ clearSelectionsOnSwitch: true });
+  const user = userEvent.setup();
+  render(<App />);
+  await screen.findByRole("img", { name: "Frame 0 at 00:00:00.000" });
+  await user.click(screen.getByRole("button", { name: "Select frame" }));
+  act(() =>
+    useJobs.setState({
+      jobs: {
+        preset: {
+          jobId: "preset",
+          status: "running",
+          stage: "preset_execution",
+          schemaVersion: 1,
+          sequence: 1,
+          completedUnits: "0",
+          totalUnits: null,
+          messageCode: "running",
+          resultIds: [],
+          error: null,
+        },
+      },
+      order: ["preset"],
+    }),
+  );
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Source video" }),
+    "back",
+  );
+  await screen.findByText(
+    "Cancel automatic frame selection before opening another file or project.",
+  );
+  expect(test.clear).not.toHaveBeenCalled();
+  expect(test.selected).toHaveLength(1);
 });

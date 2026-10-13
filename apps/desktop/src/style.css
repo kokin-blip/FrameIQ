@@ -1221,3 +1221,18 @@ summary:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2
 .export-page { display: flex; flex-direction: column; overflow: hidden; }
 .export-scroll { min-height: 0; flex: 1; overflow: auto; }
 .export-action-bar { position: static; flex-shrink: 0; margin-top: 10px; }
+
+.model-setup { overflow-y: auto; height: 100%; }
+.setup-content { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.setup-content h1 { margin: 0; }
+.setup-content p { margin: 0; line-height: 1.5; color: var(--color-muted); }
+.setup-model { border-bottom: 1px solid var(--color-border); padding: 14px 0; display: flex; flex-direction: column; gap: 8px; }
+.setup-model h2 { font-size: 16px; margin: 0; }
+.setup-model label { display: flex; align-items: center; gap: 10px; }
+.setup-model details p { overflow-wrap: anywhere; margin-top: 10px; }
+.setup-actions, .tutorial-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.setup-actions { position: sticky; bottom: -24px; padding: 16px 0; background: var(--color-background); border-top: 1px solid var(--color-border); }
+.tutorial-bar { padding: 12px 20px; border-bottom: 1px solid var(--color-border); background: var(--color-surface); display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.tutorial-bar > div:first-child { flex: 1; }
+.tutorial-bar p { margin: 6px 0 0; color: var(--color-muted); line-height: 1.4; max-width: 75ch; }
+@media (max-width: 1100px) { .tutorial-bar { flex-wrap: wrap; gap: 8px; } .tutorial-actions { gap: 6px; } }
