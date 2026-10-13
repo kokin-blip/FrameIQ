@@ -1,37 +1,52 @@
 {
   "version": "0.1.3",
-  "status": "release assets verified",
+  "status": "published; seven GitHub asset digests verified",
   "platform": "macOS Apple Silicon",
   "assets": [
     {
+      "name": "dependency-manifest.json",
+      "size": 168855,
+      "sha256": "17fca9166d50f0e3db9d364d0faea379b696bba0a28d650f1931c9bab58f7a38",
+      "downloadUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/v0.1.3/dependency-manifest.json"
+    },
+    {
       "name": "FrameIQ-v0.1.3-macos-arm64.zip",
       "size": 22592434,
-      "sha256": "234f7c67f53907e0c07aa59bf6e3df4d3dfeef39522f82ec04870b11c97b882d"
+      "sha256": "234f7c67f53907e0c07aa59bf6e3df4d3dfeef39522f82ec04870b11c97b882d",
+      "downloadUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/v0.1.3/FrameIQ-v0.1.3-macos-arm64.zip"
     },
     {
       "name": "FrameIQ-v0.1.3-third-party-source.tar.gz",
       "size": 47557065,
-      "sha256": "3c77280457c0434ca6b74c5c60ac91c66be1bc5e1a27f90e350c374ddd8ebcd1"
-    },
-    {
-      "name": "dependency-manifest.json",
-      "size": 168855,
-      "sha256": "17fca9166d50f0e3db9d364d0faea379b696bba0a28d650f1931c9bab58f7a38"
-    },
-    {
-      "name": "packaged-worker-smoke.json",
-      "size": 4114,
-      "sha256": "cc1389f5ea5afd8e989454871b52a8d0be55fd28c94759810b5a303db2350bed"
+      "sha256": "3c77280457c0434ca6b74c5c60ac91c66be1bc5e1a27f90e350c374ddd8ebcd1",
+      "downloadUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/v0.1.3/FrameIQ-v0.1.3-third-party-source.tar.gz"
     },
     {
       "name": "model-installation-native.json",
       "size": 1853,
-      "sha256": "c347c3e81ca78e688ed76faf87a49a50e916d87ad12406e6ecf7d7a4a7e949be"
+      "sha256": "c347c3e81ca78e688ed76faf87a49a50e916d87ad12406e6ecf7d7a4a7e949be",
+      "downloadUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/v0.1.3/model-installation-native.json"
+    },
+    {
+      "name": "packaged-worker-smoke.json",
+      "size": 4114,
+      "sha256": "cc1389f5ea5afd8e989454871b52a8d0be55fd28c94759810b5a303db2350bed",
+      "downloadUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/v0.1.3/packaged-worker-smoke.json"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 573,
+      "sha256": "77cf8de91a75cd9ae564051e04bed960c70931cbd4e8fe819ec74cec6ee17cae",
+      "downloadUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/v0.1.3/SHA256SUMS.txt"
     },
     {
       "name": "verification-notes.md",
       "size": 5993,
-      "sha256": "1851e572d0ba8712a086ae858fae4d7ebf38dc5d04234f09fe408895ae556365"
+      "sha256": "1851e572d0ba8712a086ae858fae4d7ebf38dc5d04234f09fe408895ae556365",
+      "downloadUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/v0.1.3/verification-notes.md"
     }
-  ]
+  ],
+  "releaseUrl": "https://github.com/kokin-blip/FrameIQ/releases/tag/v0.1.3",
+  "publishedAt": "2026-10-13T01:26:03Z",
+  "releaseCommit": "975ab64298ef04d3961cc108c4d2e7c7ebf0ab75"
 }
