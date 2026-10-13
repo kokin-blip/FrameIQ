@@ -1,3 +1,4 @@
+import { setupLabel, useModelRegistry } from "../workspace/modelRegistry";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@frameiq/ui";
 import { api, message } from "../client";
@@ -26,9 +27,12 @@ export function ModelSetup({
   visible: boolean;
   onFinish: () => void;
 }) {
-  const [catalog, setCatalog] = useState<ModelManifestV1[]>([]);
+  const { catalog, statuses, refresh } = useModelRegistry();
+  const installed = statuses
+    .filter((s) => s.state === "ready")
+    .map((s) => s.manifestId);
   const [chosen, setChosen] = useState<string[]>([]);
-  const [installed, setInstalled] = useState<string[]>([]);
+
   const [hardware, setHardware] = useState<HardwareProfileV1>();
   const [step, setStep] = useState<"choose" | "review" | "install">("choose");
   const [reviewed, setReviewed] = useState(false);
@@ -50,14 +54,13 @@ export function ModelSetup({
     setReviewed(false);
     setError("");
     setLoading(true);
-    void Promise.all([api.modelCatalog(), api.models(), api.hardware()])
-      .then(([packs, models, h]) => {
+    void Promise.all([refresh(), api.hardware()])
+      .then(([, h]) => {
         if (!live) return;
-        const ready = models
-          .filter((m) => m.status === "ready")
-          .map((m) => m.manifest.id);
-        setCatalog(packs);
-        setInstalled(ready);
+        const { catalog: packs, statuses } = useModelRegistry.getState();
+        const ready = statuses
+          .filter((s) => s.state === "ready")
+          .map((s) => s.manifestId);
         setHardware(h);
         setChosen(packs.filter((m) => !ready.includes(m.id)).map((m) => m.id));
       })
@@ -72,22 +75,35 @@ export function ModelSetup({
     };
   }, [visible, loadKey]);
 
-  async function install() {
-    if (!reviewed || busy) return;
+  async function install(validationOnly = false) {
+    if ((!reviewed && !validationOnly) || busy) return;
     cancel.current = false;
     setBusy(true);
     setError("");
     setStep("install");
     try {
       // Recheck installations before retrying; never redownload successful packs.
-      const ready = (await api.models())
-        .filter((m) => m.status === "ready")
-        .map((m) => m.manifest.id);
-      setInstalled(ready);
-      for (const pack of selected.filter((m) => !ready.includes(m.id))) {
+      await refresh(true);
+      const ready = useModelRegistry
+        .getState()
+        .statuses.filter((s) => s.state === "ready")
+        .map((s) => s.manifestId);
+      for (const pack of selected.filter(
+        (m) =>
+          !ready.includes(m.id) &&
+          (!validationOnly ||
+            useModelRegistry
+              .getState()
+              .statuses.find((s) => s.manifestId === m.id)?.downloaded),
+      )) {
         if (cancel.current) break;
         try {
-          const first = await api.downloadModel(pack);
+          const state = useModelRegistry
+            .getState()
+            .statuses.find((s) => s.manifestId === pack.id);
+          const first = state?.downloaded
+            ? await api.retryModelValidation(pack)
+            : await api.downloadModel(pack);
           activeJob.current = first.jobId;
           setJob(first);
           if (cancel.current) await api.cancel(first.jobId);
@@ -104,6 +120,7 @@ export function ModelSetup({
             if (found) {
               job = found;
               setJob(job);
+              await refresh(true);
             }
           }
           setOutcomes((s) => ({
@@ -114,10 +131,8 @@ export function ModelSetup({
               message: job.error?.message,
             },
           }));
-          if (job.status === "succeeded") {
-            ready.push(pack.id);
-            setInstalled([...ready]);
-          }
+          await refresh(true);
+          if (job.error?.code === "MEMORY_LIMIT") break;
         } catch (e) {
           setOutcomes((s) => ({
             ...s,
@@ -132,6 +147,7 @@ export function ModelSetup({
     } catch (e) {
       setError(message(e));
     } finally {
+      await refresh(true).catch((e) => setError(message(e)));
       setBusy(false);
     }
   }
@@ -221,6 +237,19 @@ export function ModelSetup({
                   {ready ? " · installed" : ""}
                 </label>
                 <p>{purpose[m.task] ?? "Optional local analysis model."}</p>
+                {!ready && (
+                  <p>
+                    {setupLabel(statuses.find((s) => s.manifestId === m.id))}
+                  </p>
+                )}
+                {statuses.find((s) => s.manifestId === m.id)?.error && (
+                  <p role="alert">
+                    {
+                      statuses.find((s) => s.manifestId === m.id)?.error
+                        ?.message
+                    }
+                  </p>
+                )}
                 {needsPerson && <p>Select the person detector first.</p>}
               </div>
             );
@@ -266,10 +295,17 @@ export function ModelSetup({
                 <div className="setup-model" key={m.id}>
                   <strong>{m.name}</strong>
                   <p>
-                    {installed.includes(m.id)
-                      ? "Installed and compatibility checked"
-                      : (o?.status ??
-                        (cancel.current ? "Not installed" : "Waiting"))}
+                    {o?.job &&
+                    ["queued", "running", "cancelling"].includes(o.job.status)
+                      ? o.job.status === "cancelling"
+                        ? "Cancelling"
+                        : o.job.stage === "model_install" ||
+                            ["MODEL_VALIDATING", "MODEL_ACTIVATING"].includes(
+                              o.job.messageCode,
+                            )
+                          ? "Validating and activating"
+                          : "Downloading"
+                      : setupLabel(statuses.find((s) => s.manifestId === m.id))}
                   </p>
                   {o?.job &&
                     ["queued", "running", "cancelling"].includes(o.status) && (
@@ -278,7 +314,19 @@ export function ModelSetup({
                         {o.job.totalUnits ?? "unknown"} units
                       </p>
                     )}
-                  {o?.message && <p role="alert">{o.message}</p>}
+                  {!(
+                    o?.job &&
+                    ["queued", "running", "cancelling"].includes(o.job.status)
+                  ) &&
+                    (o?.message ||
+                      statuses.find((s) => s.manifestId === m.id)?.error
+                        ?.message) && (
+                      <p role="alert">
+                        {o?.message ||
+                          statuses.find((s) => s.manifestId === m.id)?.error
+                            ?.message}
+                      </p>
+                    )}
                 </div>
               );
             })}
@@ -294,6 +342,45 @@ export function ModelSetup({
           Settings.
         </p>
         <div className="setup-actions">
+          <Button
+            disabled={busy}
+            onClick={() =>
+              void Promise.all([
+                refresh(),
+                api.hardware().then(setHardware),
+              ]).catch((e) => setError(message(e)))
+            }
+          >
+            Refresh memory status
+          </Button>
+          {hardware && (
+            <span>
+              Available memory:{" "}
+              {(Number(hardware.availableMemoryBytes) / 1073741824).toFixed(2)}{" "}
+              GiB; reserve:{" "}
+              {(
+                (Number(hardware.totalMemoryBytes) * 0.15) /
+                1073741824
+              ).toFixed(2)}{" "}
+              GiB.
+            </span>
+          )}
+          {!busy &&
+            selected.some(
+              (m) =>
+                statuses.find((s) => s.manifestId === m.id)?.downloaded &&
+                !installed.includes(m.id),
+            ) && (
+              <Button
+                onClick={() => {
+                  setReviewed(true);
+                  void install(true);
+                }}
+              >
+                Retry validation
+              </Button>
+            )}
+
           {step === "choose" && (
             <Button
               variant="primary"
@@ -327,7 +414,7 @@ export function ModelSetup({
           )}
           <Button disabled={busy} onClick={onFinish}>
             {step === "install" || pending.length === 0
-              ? "Continue to tutorial"
+              ? "Finish setup"
               : "Skip model setup"}
           </Button>
         </div>

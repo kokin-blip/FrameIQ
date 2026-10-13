@@ -14,6 +14,22 @@ fn main() {
         };
         let mode =
             std::fs::read_to_string(directory.join("ai-worker-mode.txt")).unwrap_or_default();
+        let request: serde_json::Value = serde_json::from_str(&line).unwrap();
+        if request["kind"] == "download" {
+            let folder = std::path::Path::new(request["directory"].as_str().unwrap());
+            std::fs::create_dir_all(folder).unwrap();
+            let path = folder.join(format!(
+                "{}.partial",
+                request["manifest"]["sha256"].as_str().unwrap()
+            ));
+            std::fs::copy(directory.join("original.onnx"), &path).unwrap();
+            println!(
+                "{}",
+                serde_json::json!({"kind":"downloaded", "path":path.to_string_lossy()})
+            );
+            std::io::stdout().flush().unwrap();
+            continue;
+        }
         if mode == "tracking" {
             let request: serde_json::Value = serde_json::from_str(&line).unwrap();
             match request["kind"].as_str().unwrap() {
@@ -45,6 +61,7 @@ fn main() {
                 std::fs::write(directory.join("frameiq-ai-worker.started"), b"started").unwrap();
                 std::thread::sleep(std::time::Duration::from_secs(30));
             }
+            "memory" => println!("{{\"kind\":\"error\",\"error\":{{\"code\":\"MEMORY_LIMIT\",\"message\":\"Injected memory reserve blockage\"}}}}"),
             "rejected" => println!("{{\"kind\":\"error\",\"error\":{{\"code\":\"MODEL_TEMPLATE\",\"message\":\"Injected validation failure\"}}}}"),
             _ => println!("{{\"kind\":\"validated\"}}"),
         }

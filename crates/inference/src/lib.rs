@@ -12,6 +12,26 @@ use ort::{session::Session, value::Tensor};
 use sha2::{Digest, Sha256};
 use std::{io::Read, path::Path, time::Instant};
 pub const RUNTIME_VERSION: &str = "1.22.0";
+/// Stable pack identity; installation UUIDs and display/provenance fields are not identities.
+pub fn model_fingerprint(m: &ModelManifestV1) -> String {
+    let identity = serde_json::json!([
+        m.sha256.to_lowercase(),
+        m.task,
+        m.byte_size,
+        m.input,
+        m.outputs,
+        m.input_layout.as_deref().unwrap_or("nchw"),
+        m.channel_order,
+        m.scale,
+        m.mean,
+        m.labels,
+        m.runtime_version
+    ]);
+    format!(
+        "{:x}",
+        Sha256::digest(serde_json::to_vec(&identity).expect("finite validated model manifest"))
+    )
+}
 fn error(e: impl std::fmt::Display) -> AppError {
     AppError::new("MODEL_INCOMPATIBLE", e.to_string())
 }
@@ -564,5 +584,23 @@ mod tensor_tests {
         assert!(validate_manifest(&m).is_err());
         m.input_layout = Some("unknown".into());
         assert!(validate_manifest(&m).is_err());
+    }
+}
+
+#[cfg(test)]
+mod setup_identity_tests {
+    use super::*;
+    #[test]
+    fn identity_ignores_catalog_ids_names_and_normalizes_default_layout() {
+        let original: ModelManifestV1 =
+            serde_json::from_str(include_str!("../../../models/manifests/yunet-2023mar.json"))
+                .unwrap();
+        let mut installed = original.clone();
+        installed.id = "installation-uuid".into();
+        installed.name = "User display name".into();
+        installed.input_layout = Some("nchw".into());
+        assert_eq!(model_fingerprint(&original), model_fingerprint(&installed));
+        installed.scale *= 2.;
+        assert_ne!(model_fingerprint(&original), model_fingerprint(&installed));
     }
 }

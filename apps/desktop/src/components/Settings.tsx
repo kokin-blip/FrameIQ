@@ -71,7 +71,7 @@ export function Settings({
                 Reopening the app or jumping to a selected frame does not clear
                 selections.
               </p>
-              <Button onClick={onTutorial}>Show workspace tutorial</Button>
+              <Button onClick={onTutorial}>Replay tutorial</Button>
             </div>
           </section>
           <p>

@@ -3,7 +3,15 @@ import { Button } from "@frameiq/ui";
 import { usePreferences } from "../store";
 import type { Workspace } from "../workspace/useWorkspace";
 
-export function Tutorial({ w }: { w: Workspace }) {
+export function Tutorial({
+  w,
+  active = true,
+  onStart,
+}: {
+  w: Workspace;
+  active?: boolean;
+  onStart?: () => void;
+}) {
   const { setupCompleted, tutorialCompleted, completeTutorial } =
     usePreferences();
   const [step, setStep] = useState(0);
@@ -16,6 +24,16 @@ export function Tutorial({ w }: { w: Workspace }) {
     !["extract", "export"].includes(w.view)
   )
     return null;
+  if (!active)
+    return (
+      <section className="tutorial-bar" aria-label="Optional tutorial">
+        <span>Learn frame selection and export.</span>
+        <div className="tutorial-actions">
+          <Button onClick={onStart}>Start tutorial</Button>
+          <Button onClick={completeTutorial}>Skip tutorial</Button>
+        </div>
+      </section>
+    );
   const titles = ["Attach a video", "Choose frames", "Export selected frames"];
   const copy = [
     "Drop a video on the viewer or click Import video. If a video is already open, continue with it.",

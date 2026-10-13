@@ -1,3 +1,4 @@
+import { useModelRegistry } from "../workspace/modelRegistry";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@frameiq/ui";
 import { api, message } from "../client";
@@ -11,7 +12,7 @@ import type {
 import type { Workspace } from "../workspace/useWorkspace";
 
 export function SubjectPanel({ w }: { w: Workspace }) {
-  const [models, setModels] = useState<ModelInstallationV1[]>([]);
+  const models = useModelRegistry((s) => s.models);
   const [model, setModel] = useState("");
   const [poseModel, setPoseModel] = useState("");
   const [peopleCache, setPeople] = useState<PersonFrameV1 | null>(null);
@@ -77,33 +78,23 @@ export function SubjectPanel({ w }: { w: Workspace }) {
       ? poseCache
       : null;
   useEffect(() => {
-    let live = true;
-    void api
-      .models()
-      .then((list) => {
-        if (!live) return;
-        const ready = list.filter((m) => m.status === "ready");
-        setModels(ready);
-        setModel((id) =>
-          ready.some(
-            (m) => m.id === id && m.manifest.task === "person_detector",
-          )
-            ? id
-            : (ready.find((m) => m.manifest.task === "person_detector")?.id ??
-              ""),
-        );
-        setPoseModel((id) =>
-          ready.some((m) => m.id === id && m.manifest.task === "pose")
-            ? id
-            : (ready.find((m) => m.manifest.task === "pose")?.id ?? ""),
-        );
-      })
-      .catch((e) => {
-        if (live) setError(message(e));
-      });
-    return () => {
-      live = false;
-    };
+    const ready = models;
+    setModel((id) =>
+      ready.some((m) => m.id === id && m.manifest.task === "person_detector")
+        ? id
+        : (ready.find((m) => m.manifest.task === "person_detector")?.id ?? ""),
+    );
+    setPoseModel((id) =>
+      ready.some((m) => m.id === id && m.manifest.task === "pose")
+        ? id
+        : (ready.find((m) => m.manifest.task === "pose")?.id ?? ""),
+    );
+  }, [models]);
+  useEffect(() => {
+    void useModelRegistry
+      .getState()
+      .refresh()
+      .catch((e) => setError(message(e)));
   }, [terminal]);
   // Restore this frame's detector choice; an old response must never affect a new frame.
   useEffect(() => {
@@ -216,9 +207,9 @@ export function SubjectPanel({ w }: { w: Workspace }) {
     <section className="subject-panel" aria-label="Subject selection">
       <h3>Subject · current frame</h3>
       <label>
-        Person detector
+        Person detection model
         <select
-          aria-label="Person detector"
+          aria-label="Person detection model"
           value={model}
           disabled={saving || running}
           onChange={(e) => {
@@ -238,7 +229,8 @@ export function SubjectPanel({ w }: { w: Workspace }) {
         </select>
       </label>
       {!model && (
-        <div className="analysis-note"><p>No compatible person detector installed.</p>
+        <div className="analysis-note">
+          <p>No compatible person detector installed.</p>
           <Button onClick={w.openModelSetup}>Set up models</Button>
         </div>
       )}
@@ -329,9 +321,9 @@ export function SubjectPanel({ w }: { w: Workspace }) {
       {selected !== null && (
         <>
           <label>
-            Pose model
+            Body pose model
             <select
-              aria-label="Pose model"
+              aria-label="Body pose model"
               value={poseModel}
               disabled={saving || running}
               onChange={(e) => setPoseModel(e.target.value)}

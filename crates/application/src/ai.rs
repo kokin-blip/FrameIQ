@@ -425,93 +425,249 @@ impl Application {
     pub fn models(&self) -> AppResult<Vec<ModelInstallationV1>> {
         lock(&self.inner.db)?.model_installations()
     }
+    pub fn model_setup_status(&self) -> AppResult<Vec<ModelSetupStatusV1>> {
+        let models = self.models()?;
+        let attempts = lock(&self.inner.db)?.model_setup_attempts()?;
+        self.model_catalog()?
+            .into_iter()
+            .map(|manifest| {
+                let fingerprint = frameiq_inference::model_fingerprint(&manifest);
+                let installation_ids: Vec<_> = models
+                    .iter()
+                    .filter(|m| {
+                        m.status == "ready"
+                            && Path::new(&m.path).is_file()
+                            && frameiq_inference::model_fingerprint(&m.manifest) == fingerprint
+                    })
+                    .map(|m| m.id.clone())
+                    .collect();
+                let attempt = attempts
+                    .iter()
+                    .find(|(m, _, _)| frameiq_inference::model_fingerprint(m) == fingerprint);
+                let path = self
+                    .inner
+                    .cache
+                    .parent()
+                    .unwrap()
+                    .join("model-downloads")
+                    .join(format!("{}.partial", manifest.sha256));
+                let downloaded = fs::symlink_metadata(&path).is_ok_and(|m| m.is_file())
+                    && frameiq_inference::verify_model(&path, &manifest).is_ok();
+                let job = attempt.map(|(_, j, _)| j.clone());
+                let error = job.as_ref().and_then(|j| j.error.clone());
+                let state = if !installation_ids.is_empty() {
+                    "ready"
+                } else if let Some(j) = &job {
+                    match j.status {
+                        JobStatus::Queued | JobStatus::Running | JobStatus::Cancelling => {
+                            if j.message_code == "MODEL_VALIDATING"
+                                || j.message_code == "MODEL_ACTIVATING"
+                            {
+                                "validating"
+                            } else {
+                                "downloading"
+                            }
+                        }
+                        JobStatus::Cancelled => {
+                            if j.message_code == "INTERRUPTED_BY_RESTART" {
+                                "interrupted"
+                            } else {
+                                "cancelled"
+                            }
+                        }
+                        JobStatus::Failed => {
+                            if error.as_ref().is_some_and(|e| e.code == "MEMORY_LIMIT") {
+                                "blocked"
+                            } else if error
+                                .as_ref()
+                                .is_some_and(|e| e.code == "INTERRUPTED_BY_RESTART")
+                            {
+                                "interrupted"
+                            } else {
+                                "failed"
+                            }
+                        }
+                        JobStatus::Succeeded => "interrupted",
+                    }
+                } else if downloaded {
+                    "interrupted"
+                } else {
+                    "uninstalled"
+                };
+                Ok(ModelSetupStatusV1 {
+                    schema_version: 1,
+                    manifest_id: manifest.id,
+                    fingerprint,
+                    state: state.into(),
+                    installation_ids,
+                    downloaded,
+                    job,
+                    error,
+                })
+            })
+            .collect()
+    }
+    /// Retry runtime validation from verified cached bytes without any network request.
+    pub fn retry_model_validation(&self, manifest: ModelManifestV1) -> AppResult<JobEvent> {
+        frameiq_inference::validate_manifest(&manifest)?;
+        let ready = self.models()?.into_iter().find(|m| {
+            m.status == "ready"
+                && Path::new(&m.path).is_file()
+                && frameiq_inference::model_fingerprint(&m.manifest)
+                    == frameiq_inference::model_fingerprint(&manifest)
+        });
+        if let Some(model) = ready {
+            let (mut event, _) = self.job("model_install", None)?;
+            self.register_model_setup(&manifest, &mut event)?;
+            event.result_ids = vec![model.id];
+            self.finish_job(&mut event, Ok(()), "MODEL_READY");
+            return Ok(event);
+        }
+        model_recovery::prepare_directory(
+            &self.inner.cache.parent().unwrap().join("model-downloads"),
+        )?;
+        let path = self
+            .inner
+            .cache
+            .parent()
+            .unwrap()
+            .join("model-downloads")
+            .join(format!("{}.partial", manifest.sha256));
+        if !fs::symlink_metadata(&path).is_ok_and(|m| m.is_file()) {
+            return Err(AppError::new(
+                "MODEL_MISSING",
+                "Downloaded model bytes are missing. Review the download again.",
+            ));
+        }
+        frameiq_inference::verify_model(&path, &manifest)?;
+        self.import_model(&path, manifest)
+    }
     pub fn benchmarks(&self) -> AppResult<Vec<ModelBenchmarkV1>> {
         lock(&self.inner.db)?.benchmarks()
+    }
+    fn register_model_setup(
+        &self,
+        manifest: &ModelManifestV1,
+        event: &mut JobEvent,
+    ) -> AppResult<()> {
+        let result = lock(&self.inner.db)?.begin_model_setup(
+            &frameiq_inference::model_fingerprint(manifest),
+            manifest,
+            &event.job_id,
+        );
+        if let Err(e) = result {
+            self.finish_job(event, Err(e.clone()), "MODEL_READY");
+            return Err(e);
+        }
+        Ok(())
+    }
+    fn activate_model(
+        &self,
+        source: &Path,
+        manifest: ModelManifestV1,
+        event: &mut JobEvent,
+        cancel: &AtomicBool,
+    ) -> AppResult<()> {
+        let models = self.inner.cache.parent().unwrap().join("models");
+        model_recovery::prepare_directory(&models)?;
+        let staging = tempfile::Builder::new()
+            .prefix(&format!(
+                "{}{}-",
+                model_recovery::STAGING_PREFIX,
+                Uuid::new_v4()
+            ))
+            .tempdir_in(&models)
+            .map_err(error)?;
+        let target = staging.path().join("model.onnx");
+        // Copy in bounded chunks so cancellation and file changes cannot activate partial installs.
+        let mut input = File::open(source).map_err(error)?;
+        let mut output = File::create(&target).map_err(error)?;
+        let mut chunk = vec![0; 1024 * 1024];
+        let mut bytes = 0;
+        loop {
+            if cancel.load(Ordering::SeqCst) {
+                return Err(AppError::new("CANCELLED", "Model import cancelled."));
+            }
+            let n = input.read(&mut chunk).map_err(error)?;
+            if n == 0 {
+                break;
+            }
+            bytes += n as u64;
+            if bytes > 512 * 1024 * 1024 {
+                return Err(AppError::new(
+                    "MODEL_SIZE",
+                    "Model exceeds the import size limit.",
+                ));
+            }
+            output.write_all(&chunk[..n]).map_err(error)?;
+        }
+        output.sync_all().map_err(error)?;
+        drop(output);
+        event.message_code = "MODEL_VALIDATING".into();
+        event.completed_units = "0".into();
+        event.total_units = None;
+        self.emit(event, None)?;
+        self.infer(
+            InferenceRequestV1::Validate {
+                manifest: manifest.clone(),
+                path: target.to_string_lossy().into(),
+            },
+            || cancel.load(Ordering::SeqCst),
+        )?;
+        if cancel.load(Ordering::SeqCst) {
+            return Err(AppError::new(
+                "CANCELLED",
+                "Model import cancelled before activation.",
+            ));
+        }
+        event.message_code = "MODEL_ACTIVATING".into();
+        self.emit(event, None)?;
+        let id = Uuid::new_v4().to_string();
+        let destination = models.join(&id);
+        model_recovery::checkpoint("before_activation");
+        // Rename the validated directory in one operation; startup recovery
+        // handles a crash between this rename and the database commit.
+        fs::rename(staging.path(), &destination).map_err(error)?;
+        model_recovery::checkpoint("after_activation");
+        let installation = ModelInstallationV1 {
+            id: id.clone(),
+            manifest: ModelManifestV1 {
+                id: id.clone(),
+                ..manifest
+            },
+            status: "ready".into(),
+            path: destination.join("model.onnx").to_string_lossy().into(),
+            error: None,
+        };
+        if cancel.load(Ordering::SeqCst) {
+            fs::remove_dir_all(&destination).map_err(error)?;
+            return Err(AppError::new(
+                "CANCELLED",
+                "Model installation cancelled before commit.",
+            ));
+        }
+        if let Err(e) = lock(&self.inner.db).and_then(|db| db.save_model(&installation)) {
+            let _ = fs::remove_dir_all(&destination);
+            return Err(e);
+        }
+        model_recovery::checkpoint("after_commit");
+        event.result_ids = vec![id];
+        event.completed_units = "1".into();
+        event.total_units = Some("1".into());
+        Ok(())
     }
     pub fn import_model(&self, path: &Path, manifest: ModelManifestV1) -> AppResult<JobEvent> {
         frameiq_inference::validate_manifest(&manifest)?;
         let source = path.canonicalize().map_err(error)?;
         let (mut event, cancel) = self.job("model_install", None)?;
+        self.register_model_setup(&manifest, &mut event)?;
         let first = event.clone();
         let app = self.clone();
         std::thread::spawn(move || {
             let result = (|| {
                 event.status = JobStatus::Running;
                 app.emit(&event, None)?;
-                let models = app.inner.cache.parent().unwrap().join("models");
-                model_recovery::prepare_directory(&models)?;
-                let staging = tempfile::Builder::new()
-                    .prefix(&format!(
-                        "{}{}-",
-                        model_recovery::STAGING_PREFIX,
-                        Uuid::new_v4()
-                    ))
-                    .tempdir_in(&models)
-                    .map_err(error)?;
-                let target = staging.path().join("model.onnx");
-                // Copy in bounded chunks so cancellation and file changes cannot activate partial installs.
-                let mut input = File::open(&source).map_err(error)?;
-                let mut output = File::create(&target).map_err(error)?;
-                let mut chunk = vec![0; 1024 * 1024];
-                let mut bytes = 0;
-                loop {
-                    if cancel.load(Ordering::SeqCst) {
-                        return Err(AppError::new("CANCELLED", "Model import cancelled."));
-                    }
-                    let n = input.read(&mut chunk).map_err(error)?;
-                    if n == 0 {
-                        break;
-                    }
-                    bytes += n as u64;
-                    if bytes > 512 * 1024 * 1024 {
-                        return Err(AppError::new(
-                            "MODEL_SIZE",
-                            "Model exceeds the import size limit.",
-                        ));
-                    }
-                    output.write_all(&chunk[..n]).map_err(error)?;
-                }
-                output.sync_all().map_err(error)?;
-                drop(output);
-                app.infer(
-                    InferenceRequestV1::Validate {
-                        manifest: manifest.clone(),
-                        path: target.to_string_lossy().into(),
-                    },
-                    || cancel.load(Ordering::SeqCst),
-                )?;
-                if cancel.load(Ordering::SeqCst) {
-                    return Err(AppError::new(
-                        "CANCELLED",
-                        "Model import cancelled before activation.",
-                    ));
-                }
-                let id = Uuid::new_v4().to_string();
-                let destination = models.join(&id);
-                model_recovery::checkpoint("before_activation");
-                // Rename the validated directory in one operation; startup recovery
-                // handles a crash between this rename and the database commit.
-                fs::rename(staging.path(), &destination).map_err(error)?;
-                model_recovery::checkpoint("after_activation");
-                let installation = ModelInstallationV1 {
-                    id: id.clone(),
-                    manifest: ModelManifestV1 {
-                        id: id.clone(),
-                        ..manifest
-                    },
-                    status: "ready".into(),
-                    path: destination.join("model.onnx").to_string_lossy().into(),
-                    error: None,
-                };
-                if let Err(e) = lock(&app.inner.db).and_then(|db| db.save_model(&installation)) {
-                    let _ = fs::remove_dir_all(&destination);
-                    return Err(e);
-                }
-                model_recovery::checkpoint("after_commit");
-                event.result_ids = vec![id];
-                event.completed_units = "1".into();
-                event.total_units = Some("1".into());
-                Ok(())
+                app.activate_model(&source, manifest, &mut event, &cancel)
             })();
             app.finish_job(&mut event, result, "MODEL_READY");
         });
@@ -526,12 +682,28 @@ impl Application {
         }
         frameiq_inference::validate_manifest(&manifest)?;
         let (mut event, cancel) = self.job("model_download", None)?;
+        self.register_model_setup(&manifest, &mut event)?;
         let first = event.clone();
         let app = self.clone();
         std::thread::spawn(move || {
             let result = (|| {
                 event.status = JobStatus::Running;
                 app.emit(&event, None)?;
+                let matching: Vec<_> = app
+                    .models()?
+                    .into_iter()
+                    .filter(|m| {
+                        m.status == "ready"
+                            && Path::new(&m.path).is_file()
+                            && frameiq_inference::model_fingerprint(&m.manifest)
+                                == frameiq_inference::model_fingerprint(&manifest)
+                    })
+                    .map(|m| m.id)
+                    .collect();
+                if !matching.is_empty() {
+                    event.result_ids = matching;
+                    return Ok(());
+                }
                 let directory = app.inner.cache.parent().unwrap().join("model-downloads");
                 model_recovery::prepare_directory(&directory)?;
                 let mut updated = Instant::now();
@@ -559,11 +731,10 @@ impl Application {
                 if cancel.load(Ordering::SeqCst) {
                     return Err(AppError::new("CANCELLED", "Download cancelled."));
                 }
-                let validation = app.import_model(&path, manifest)?;
-                event.result_ids = vec![validation.job_id];
-                Ok(())
+                lock(&app.inner.db)?.mark_model_downloaded(&event.job_id)?;
+                app.activate_model(&path, manifest, &mut event, &cancel)
             })();
-            app.finish_job(&mut event, result, "DOWNLOAD_COMPLETE_VALIDATING");
+            app.finish_job(&mut event, result, "MODEL_READY");
         });
         Ok(first)
     }

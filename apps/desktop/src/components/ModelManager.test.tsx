@@ -16,6 +16,7 @@ vi.mock("../client", () => ({
   message: (e: unknown) => String(e),
   api: {
     modelCatalog: async () => [],
+    modelSetupStatus: async () => [],
     hardware: async () => ({
       architecture: "aarch64",
       logicalCores: 12,

@@ -18,6 +18,7 @@ import type {
   GuidedRegionV1,
   ModelManifestV1,
   ModelInstallationV1,
+  ModelSetupStatusV1,
   ModelBenchmarkV1,
   HardwareProfileV1,
   LocalRuntimeReportV1,
@@ -103,6 +104,9 @@ export const api = {
     call<JobEvent>("estimate_pose", { person, index, model }),
   poseFeature: (person: string, index: number, model: string) =>
     call<PoseFrameV1 | null>("pose_feature", { person, index, model }),
+  modelSetupStatus: () => call<ModelSetupStatusV1[]>("model_setup_status"),
+  retryModelValidation: (manifest: ModelManifestV1) =>
+    call<JobEvent>("retry_model_validation", { manifest }),
   models: () => call<ModelInstallationV1[]>("models"),
   hardware: () => call<HardwareProfileV1>("hardware"),
   benchmarks: () => call<ModelBenchmarkV1[]>("model_benchmarks"),

@@ -75,6 +75,10 @@ impl Database {
                 10i64,
                 include_str!("../../../migrations/010_project_activity.sql"),
             ),
+            (
+                11i64,
+                include_str!("../../../migrations/011_model_setup_attempts.sql"),
+            ),
         ];
         let max: i64 = conn
             .query_row(
@@ -1252,6 +1256,52 @@ impl Database {
         self.conn.execute("INSERT INTO model_installations(id,manifest_json,status,path,error_json) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET manifest_json=excluded.manifest_json,status=excluded.status,path=excluded.path,error_json=excluded.error_json",params![model.id,serde_json::to_string(&model.manifest).map_err(err)?,model.status,model.path,model.error.as_ref().map(serde_json::to_string).transpose().map_err(err)?]).map_err(err)?;
         Ok(())
     }
+    pub fn begin_model_setup(
+        &self,
+        fingerprint: &str,
+        manifest: &ModelManifestV1,
+        job: &str,
+    ) -> AppResult<()> {
+        let active: bool = self.conn.query_row("SELECT EXISTS(SELECT 1 FROM model_setup_attempts a JOIN jobs j ON j.id=a.job_id WHERE a.fingerprint=? AND j.status IN('queued','running','cancelling'))", [fingerprint], |r| r.get(0)).map_err(err)?;
+        if active {
+            return Err(AppError::new(
+                "MODEL_BUSY",
+                "This model already has an active installation. Wait or cancel it first.",
+            ));
+        }
+        self.conn
+            .execute(
+                "INSERT INTO model_setup_attempts(job_id,fingerprint,manifest_json) VALUES(?,?,?)",
+                params![
+                    job,
+                    fingerprint,
+                    serde_json::to_string(manifest).map_err(err)?
+                ],
+            )
+            .map_err(err)?;
+        Ok(())
+    }
+    pub fn mark_model_downloaded(&self, job: &str) -> AppResult<()> {
+        self.conn
+            .execute(
+                "UPDATE model_setup_attempts SET downloaded=1 WHERE job_id=?",
+                [job],
+            )
+            .map_err(err)?;
+        Ok(())
+    }
+    pub fn model_setup_attempts(&self) -> AppResult<Vec<(ModelManifestV1, JobEvent, bool)>> {
+        let rows = self.conn.prepare("SELECT a.manifest_json,j.snapshot_json,a.downloaded FROM model_setup_attempts a JOIN jobs j ON j.id=a.job_id ORDER BY a.rowid DESC").map_err(err)?.query_map([], |r| Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?,r.get::<_,bool>(2)?))).map_err(err)?.collect::<Result<Vec<_>,_>>().map_err(err)?;
+        rows.into_iter()
+            .map(|(m, j, d)| {
+                Ok((
+                    serde_json::from_str(&m).map_err(err)?,
+                    serde_json::from_str(&j).map_err(err)?,
+                    d,
+                ))
+            })
+            .collect()
+    }
     pub fn save_benchmark(&self, result: &ModelBenchmarkV1) -> AppResult<()> {
         self.conn
             .execute(
@@ -1309,6 +1359,36 @@ impl Database {
 mod tests {
     use super::*;
     #[test]
+    fn setup_upgrade_from_ten_preserves_installations_and_durable_attempts() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("upgrade.db");
+        let db = Database::open(&path).unwrap();
+        let project = db.create_project("Existing project").unwrap();
+        let mut manifest: ModelManifestV1 =
+            serde_json::from_str(include_str!("../../../models/manifests/yunet-2023mar.json"))
+                .unwrap();
+        manifest.id = "installed-uuid".into();
+        let model = ModelInstallationV1 {
+            id: manifest.id.clone(),
+            manifest,
+            status: "ready".into(),
+            path: "/existing/model.onnx".into(),
+            error: None,
+        };
+        db.save_model(&model).unwrap();
+        db.conn
+            .execute_batch(
+                "DROP TABLE model_setup_attempts; DELETE FROM schema_migrations WHERE version=11;",
+            )
+            .unwrap();
+        drop(db);
+        let db = Database::open(&path).unwrap();
+        assert_eq!(db.projects().unwrap()[0].id, project.id);
+        assert_eq!(db.model_installations().unwrap()[0].id, model.id);
+        assert!(path.with_extension("pre-11.backup").exists());
+        assert!(db.model_setup_attempts().unwrap().is_empty());
+    }
+    #[test]
     fn display_names_and_activity_upgrade_preserve_originals_and_selections() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("db.sqlite");
@@ -1344,7 +1424,7 @@ mod tests {
         assert!(db.mark_project_opened("unknown").is_err());
         db.conn
             .execute_batch(
-                "DROP TABLE project_activity; DELETE FROM schema_migrations WHERE version=10;",
+                "DROP TABLE model_setup_attempts; DROP TABLE project_activity; DELETE FROM schema_migrations WHERE version>=10;",
             )
             .unwrap();
         drop(db);
@@ -1612,7 +1692,7 @@ mod tests {
         };
         db.save_face_feature(&feature).unwrap();
         // Emulate an existing migration-005 database with preserved detector output.
-        db.conn.execute_batch("DROP TABLE project_activity; DROP TABLE preset_results; DROP TABLE track_observations; DROP TABLE subject_tracks; DROP TABLE export_attempt_items; DROP TABLE region_subjects; DROP TABLE subject_choices; DROP TABLE pose_features; DROP TABLE person_features; DELETE FROM schema_migrations WHERE version>=6;").unwrap();
+        db.conn.execute_batch("DROP TABLE model_setup_attempts; DROP TABLE project_activity; DROP TABLE preset_results; DROP TABLE track_observations; DROP TABLE subject_tracks; DROP TABLE export_attempt_items; DROP TABLE region_subjects; DROP TABLE subject_choices; DROP TABLE pose_features; DROP TABLE person_features; DELETE FROM schema_migrations WHERE version>=6;").unwrap();
         drop(db);
         let db = Database::open(&d.path().join("db.sqlite")).unwrap();
         assert!(d.path().join("db.pre-6.backup").exists());

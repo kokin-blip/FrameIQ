@@ -40,6 +40,7 @@ export type ModelManifestV1 = { schemaVersion: number, id: string, name: string,
  */
 inputLayout: string | null, channelOrder: string, scale: number, mean: [number, number, number], labels: Array<string>, runtimeVersion: string, };
 export type ModelInstallationV1 = { id: string, manifest: ModelManifestV1, status: string, path: string, error: AppError | null, };
+export type ModelSetupStatusV1 = { schemaVersion: number, manifestId: string, fingerprint: string, state: string, installationIds: Array<string>, downloaded: boolean, job: JobEvent | null, error: AppError | null, };
 export type HardwareProfileV1 = { os: string, architecture: string, logicalCores: number, totalMemoryBytes: string, availableMemoryBytes: string, aiBudgetBytes: string, workerThreads: number, };
 export type ModelBenchmarkV1 = { modelId: string, modelHash: string, runtimeVersion: string, provider: string, coldLoadMs: number, warmLatencyMs: number, peakObservedMemoryBytes: string, hardware: HardwareProfileV1, };
 export type LocalRuntimeModelV1 = { id: string, vision: boolean, local: boolean, };

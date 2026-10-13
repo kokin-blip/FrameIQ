@@ -1,0 +1,12 @@
+{
+  "fileKey": "5L64rf754pinHPHimkme5e",
+  "pageId": "20:2",
+  "version": "0.1.3",
+  "states": {
+    "ready": "48:225",
+    "memoryBlocked": "48:232",
+    "partialSummary": "48:239"
+  },
+  "font": "Inter",
+  "notes": "Editable local Fluent adaptations; previous iterations retained. Finish setup returns to workspace. Start tutorial is optional; only Settings Replay tutorial resets completion."
+}

@@ -204,8 +204,8 @@ fn model_crash_helper() {
         panic!("Removal crash point was not reached");
     }
     let attempt = app.import_model(&original, manifest).unwrap();
-    terminal(&app, &attempt.job_id);
-    panic!("Configured crash point was not reached");
+    let result = terminal(&app, &attempt.job_id);
+    panic!("Configured crash point was not reached: {:?}", result.error);
 }
 
 #[cfg(feature = "fault-injection")]
@@ -378,4 +378,91 @@ fn repeated_worker_failures_leave_no_processes_or_staging_growth() {
         assert_eq!(std::fs::read(&installed.path).unwrap(), b"protocol fixture");
     }
     assert_eq!(std::fs::read(original).unwrap(), b"protocol fixture");
+}
+
+#[test]
+fn download_success_waits_for_validation_and_cached_retry_commits_the_same_job() {
+    let root = tempfile::tempdir().unwrap();
+    let (worker, _original, mut manifest) = setup(root.path());
+    let payload = b"\x3a\x0c\x0a\x0a\x22\x08Identity";
+    std::fs::write(root.path().join("original.onnx"), payload).unwrap();
+    manifest.byte_size = payload.len().to_string();
+    manifest.sha256 = format!("{:x}", Sha256::digest(payload));
+    let data = root.path().join("data");
+    std::fs::write(root.path().join("ai-worker-mode.txt"), "memory").unwrap();
+    let app = Application::new(&data, worker, Arc::new(|_| {})).unwrap();
+    let job = app.download_model(manifest.clone(), true).unwrap();
+    let failed = terminal(&app, &job.job_id);
+    assert!(matches!(failed.status, JobStatus::Failed));
+    assert_eq!(failed.error.unwrap().code, "MEMORY_LIMIT");
+    assert!(failed.result_ids.is_empty());
+    assert!(app.models().unwrap().is_empty());
+    assert_eq!(
+        app.list_jobs().unwrap().len(),
+        1,
+        "no independent validation job"
+    );
+    let cached = data
+        .join("model-downloads")
+        .join(format!("{}.partial", manifest.sha256));
+    assert_eq!(std::fs::read(&cached).unwrap(), payload);
+    std::fs::write(root.path().join("ai-worker-mode.txt"), "").unwrap();
+    let retry = app.retry_model_validation(manifest).unwrap();
+    let ready = terminal(&app, &retry.job_id);
+    assert!(matches!(ready.status, JobStatus::Succeeded));
+    assert_eq!(ready.result_ids, vec![app.models().unwrap()[0].id.clone()]);
+    assert!(cached.exists());
+}
+
+#[test]
+fn overlapping_pack_installations_are_rejected_and_validation_cancels_with_parent() {
+    let root = tempfile::tempdir().unwrap();
+    let (worker, original, manifest) = setup(root.path());
+    std::fs::write(root.path().join("ai-worker-mode.txt"), "cancelled").unwrap();
+    let app = Application::new(&root.path().join("data"), worker, Arc::new(|_| {})).unwrap();
+    let job = app.download_model(manifest.clone(), true).unwrap();
+    let start = Instant::now();
+    while !root.path().join("frameiq-ai-worker.started").exists() {
+        assert!(start.elapsed() < Duration::from_secs(5));
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert_eq!(
+        app.import_model(&original, manifest).unwrap_err().code,
+        "MODEL_BUSY"
+    );
+    app.cancel(&job.job_id).unwrap();
+    assert!(matches!(
+        terminal(&app, &job.job_id).status,
+        JobStatus::Cancelled
+    ));
+    assert!(app.models().unwrap().is_empty());
+}
+
+#[test]
+fn catalog_status_recognizes_existing_installation_uuid_after_restart() {
+    let root = tempfile::tempdir().unwrap();
+    let (worker, original, _) = setup(root.path());
+    let data = root.path().join("data");
+    let app = Application::new(&data, worker.clone(), Arc::new(|_| {})).unwrap();
+    // The protocol double isolates identity handling; this is not runtime compatibility evidence.
+    let manifest = app.model_catalog().unwrap().remove(0);
+    let job = app.import_model(&original, manifest.clone()).unwrap();
+    let id = terminal(&app, &job.job_id).result_ids[0].clone();
+    assert_ne!(id, manifest.id);
+    drop(app);
+    let app = Application::new(&data, worker, Arc::new(|_| {})).unwrap();
+    let status = app
+        .model_setup_status()
+        .unwrap()
+        .into_iter()
+        .find(|s| s.manifest_id == manifest.id)
+        .unwrap();
+    assert_eq!(status.state, "ready");
+    assert_eq!(status.installation_ids, vec![id]);
+    let download = app.download_model(manifest, true).unwrap();
+    assert_eq!(
+        terminal(&app, &download.job_id).result_ids,
+        status.installation_ids
+    );
+    assert_eq!(app.models().unwrap().len(), 1);
 }

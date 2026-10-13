@@ -1,3 +1,4 @@
+import { useModelRegistry } from "../workspace/modelRegistry";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@frameiq/ui";
 import { api, message, timestamp } from "../client";
@@ -21,7 +22,7 @@ export function PresetExecutionPanel({
   rectangle?: RegionRectV1;
 }) {
   const [experimental, setExperimental] = useState(false);
-  const [models, setModels] = useState<ModelInstallationV1[]>([]);
+  const models = useModelRegistry((s) => s.models);
   const [choice, setChoice] = useState<SubjectChoiceV1 | null>(null);
   const [face, setFace] = useState("");
   const [task, setTask] = useState<string>();
@@ -47,10 +48,12 @@ export function PresetExecutionPanel({
     let live = true;
     setChoice(null);
     if (source && ordinal)
-      void Promise.all([api.models(), api.subjectChoice(source, ordinal)])
+      void Promise.all([
+        useModelRegistry.getState().refresh(),
+        api.subjectChoice(source, ordinal),
+      ])
         .then(([list, selected]) => {
           if (!live) return;
-          setModels(list.filter((m) => m.status === "ready"));
           setChoice(selected);
         })
         .catch((e) => {
@@ -106,7 +109,9 @@ export function PresetExecutionPanel({
       live = false;
     };
   }, [task, active?.status]);
-  const faces = models.filter((m) => m.manifest.task === "face_detector");
+  const faces = models.filter((m) =>
+    ["yunet", "face", "face_detector"].includes(m.manifest.task),
+  );
   const faceId = face || faces[0]?.id;
   async function run() {
     if (!source || !ordinal || !choice || !experimental) return;
@@ -152,7 +157,7 @@ export function PresetExecutionPanel({
       </label>
       {kind === "face_landmarks" && (
         <label>
-          Face detector
+          Face detection model
           <select
             value={faceId ?? ""}
             onChange={(e) => setFace(e.target.value)}

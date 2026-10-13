@@ -1,0 +1,52 @@
+{
+  "version": "0.1.3",
+  "platform": "macOS-26.6.1-arm64-arm-64bit-Mach-O",
+  "memoryReserveFraction": 0.15,
+  "physicalRAMGiB": 24,
+  "actualPinnedDownloads": [
+    {
+      "byteSize": 5557238,
+      "sha256": "9d89c599319a18fb7d2e28451a883476164543182bafca5f09eb2cf767ed2f3f",
+      "checksumMatchesManifest": true,
+      "state": "failed",
+      "validationError": {
+        "code": "MEMORY_LIMIT",
+        "message": "Available memory: 3.39 GiB; required system reserve: 3.60 GiB. Model load estimate: 0.02 GiB; managed budget: 4.00 GiB."
+      },
+      "ready": false
+    },
+    {
+      "byteSize": 11990159,
+      "sha256": "47fd5599d6fa17608f03e0eb0ae230baa6e597d7e8a2c8199fe00abea55a701f",
+      "checksumMatchesManifest": true,
+      "state": "failed",
+      "validationError": {
+        "code": "MEMORY_LIMIT",
+        "message": "Available memory: 3.04 GiB; required system reserve: 3.60 GiB. Model load estimate: 0.04 GiB; managed budget: 4.00 GiB."
+      },
+      "ready": false
+    },
+    {
+      "byteSize": 232589,
+      "sha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+      "checksumMatchesManifest": true,
+      "state": "failed",
+      "validationError": {
+        "code": "MEMORY_LIMIT",
+        "message": "Available memory: 3.46 GiB; required system reserve: 3.60 GiB. Model load estimate: 0.00 GiB; managed budget: 4.00 GiB."
+      },
+      "ready": false
+    }
+  ],
+  "packIds": [
+    "pose_estimation_mediapipe-2023mar-fp32",
+    "person_detection_mediapipe-2023mar-fp32",
+    "yunet-2023mar-fp32"
+  ],
+  "readyInstallations": 0,
+  "nativeValidation": "pending by user choice; memory reserve remains enforced",
+  "limitations": [
+    "Successful ready restart/dropdown and actual fixture face/person/pose inference remain pending.",
+    "Windows and broader accuracy remain separate gates."
+  ]
+}

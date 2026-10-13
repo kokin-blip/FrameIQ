@@ -1,3 +1,4 @@
+import { useModelRegistry, setupLabel } from "../workspace/modelRegistry";
 import { Button } from "@frameiq/ui";
 import { useEffect, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -12,9 +13,9 @@ import type {
 
 const gib = (bytes: string) => `${(Number(bytes) / 1073741824).toFixed(1)} GiB`;
 export function ModelManager() {
-  const [catalog, setCatalog] = useState<ModelManifestV1[]>([]);
+  const { models, catalog, statuses } = useModelRegistry();
   const [hardware, setHardware] = useState<HardwareProfileV1>();
-  const [models, setModels] = useState<ModelInstallationV1[]>([]);
+
   const [benchmarks, setBenchmarks] = useState<ModelBenchmarkV1[]>([]);
   const [manifest, setManifest] = useState<ModelManifestV1>();
   const [reviewed, setReviewed] = useState(false);
@@ -28,18 +29,14 @@ export function ModelManager() {
   async function refresh() {
     const [h, m, b] = await Promise.all([
       api.hardware(),
-      api.models(),
+      useModelRegistry.getState().refresh(true),
       api.benchmarks(),
     ]);
     setHardware(h);
-    setModels(m.filter((item) => item.status !== "removed"));
     setBenchmarks(b);
   }
   useEffect(() => {
     if (!desktop) return;
-    void (async () => setCatalog(await api.modelCatalog()))().catch((e) =>
-      setError(message(e)),
-    );
     void refresh().catch((e) => setError(message(e)));
     const listener = api.onJob((e) => {
       if (
@@ -76,6 +73,36 @@ export function ModelManager() {
   return (
     <div className="model-manager">
       <h2>Local models</h2>
+      <Button onClick={() => void action(refresh)}>
+        Refresh memory status
+      </Button>
+      {statuses
+        .filter((s) => s.state !== "ready" && s.state !== "uninstalled")
+        .map((s) => (
+          <div key={s.fingerprint}>
+            <strong>{catalog.find((m) => m.id === s.manifestId)?.name}</strong>
+            <p>{setupLabel(s)}</p>
+            {s.error && <p role="alert">{s.error.message}</p>}
+            {s.downloaded && (
+              <Button
+                disabled={
+                  busy || ["downloading", "validating"].includes(s.state)
+                }
+                onClick={() =>
+                  void action(async () => {
+                    const pack = catalog.find((m) => m.id === s.manifestId);
+                    if (pack) {
+                      await api.retryModelValidation(pack);
+                      await refresh();
+                    }
+                  })
+                }
+              >
+                Retry validation
+              </Button>
+            )}
+          </div>
+        ))}
       <p>
         Models run in a separate worker. Compatibility checks do not establish
         detection accuracy.

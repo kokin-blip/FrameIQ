@@ -56,10 +56,14 @@ vi.mock("./client", async (original) => {
     ...actual,
     desktop: true,
     api: {
+      cloudKeyStatus: async () => ({ configured: false }),
+      benchmarks: async () => [],
       modelCatalog: async () => [],
+      modelSetupStatus: async () => [],
       models: async () => [],
       hardware: async () => ({
         architecture: "aarch64",
+        availableMemoryBytes: "8589934592",
         totalMemoryBytes: "17179869184",
         aiBudgetBytes: "4294967296",
       }),
@@ -465,13 +469,16 @@ it("shows skippable setup on first run and offers the workspace tutorial afterwa
   expect(
     await screen.findByRole("heading", { name: "Set up local models" }),
   ).toBeTruthy();
-  await user.click(
-    await screen.findByRole("button", { name: "Continue to tutorial" }),
-  );
+  await user.click(await screen.findByRole("button", { name: "Finish setup" }));
   expect(usePreferences.getState().setupCompleted).toBe(true);
   expect(
-    screen.getByRole("region", { name: "Workspace tutorial" }),
+    screen.getByRole("region", { name: "Optional tutorial" }),
   ).toBeTruthy();
+  expect(
+    screen.queryByRole("region", { name: "Workspace tutorial" }),
+  ).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Start tutorial" }));
+  expect(screen.getByText("1 of 3 · Attach a video")).toBeTruthy();
   await user.click(screen.getByRole("button", { name: "Skip tutorial" }));
   expect(usePreferences.getState().tutorialCompleted).toBe(true);
 });
@@ -510,4 +517,20 @@ it("defers clearing while automatic selection is running, preventing late result
   );
   expect(test.clear).not.toHaveBeenCalled();
   expect(test.selected).toHaveLength(1);
+});
+
+it("finishing setup preserves a completed tutorial and explicit replay begins at step one", async () => {
+  usePreferences.setState({ setupCompleted: false, tutorialCompleted: true });
+  const user = userEvent.setup();
+  render(<App />);
+  await user.click(await screen.findByRole("button", { name: "Finish setup" }));
+  expect(usePreferences.getState().tutorialCompleted).toBe(true);
+  expect(
+    screen.queryByRole("region", { name: "Workspace tutorial" }),
+  ).toBeNull();
+  expect(screen.queryByRole("button", { name: "Start tutorial" })).toBeNull();
+  await user.click(screen.getByRole("button", { name: "Settings" }));
+  await user.click(screen.getByRole("button", { name: "General & shortcuts" }));
+  await user.click(screen.getByRole("button", { name: "Replay tutorial" }));
+  expect(screen.getByText("1 of 3 · Attach a video")).toBeTruthy();
 });

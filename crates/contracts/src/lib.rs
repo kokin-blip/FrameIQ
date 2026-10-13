@@ -389,6 +389,18 @@ pub struct ModelInstallationV1 {
 }
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+pub struct ModelSetupStatusV1 {
+    pub schema_version: u32,
+    pub manifest_id: String,
+    pub fingerprint: String,
+    pub state: String,
+    pub installation_ids: Vec<String>,
+    pub downloaded: bool,
+    pub job: Option<JobEvent>,
+    pub error: Option<AppError>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
 pub struct HardwareProfileV1 {
     pub os: String,
     pub architecture: String,

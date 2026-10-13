@@ -14,7 +14,11 @@ const mock = vi.hoisted(() => ({
   cancel: vi.fn(),
 }));
 vi.mock("./client", () => ({
-  api: mock,
+  api: {
+    ...mock,
+    modelCatalog: async () => [],
+    modelSetupStatus: async () => [],
+  },
   message: (e: Error) => e.message,
   timestamp: (n: number) => String(n),
 }));

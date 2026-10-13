@@ -41,6 +41,7 @@ fn main() {
         TensorSpecV1,
         ModelManifestV1,
         ModelInstallationV1,
+        ModelSetupStatusV1,
         HardwareProfileV1,
         ModelBenchmarkV1,
         LocalRuntimeModelV1,

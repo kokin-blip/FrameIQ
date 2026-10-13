@@ -155,6 +155,13 @@ async fn download_async(
     retained_file(&path)?;
     retained_file(&metadata)?;
     let expected = manifest.byte_size.parse::<u64>().map_err(error)?;
+    // A completed verified body needs no network request, even without an ETag.
+    if std::fs::metadata(&path).is_ok_and(|m| m.len() == expected)
+        && super::verify_model(&path, manifest).is_ok()
+    {
+        progress(expected, expected)?;
+        return Ok(path);
+    }
     let saved: serde_json::Value = std::fs::read(&metadata)
         .ok()
         .and_then(|b| serde_json::from_slice(&b).ok())

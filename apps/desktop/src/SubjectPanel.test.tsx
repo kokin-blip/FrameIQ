@@ -23,7 +23,12 @@ const mock = vi.hoisted(() => ({
   cancel: vi.fn(),
 }));
 vi.mock("./client", () => ({
-  api: { ...mock, image: (path: string) => path },
+  api: {
+    modelCatalog: async () => [],
+    modelSetupStatus: async () => [],
+    ...mock,
+    image: (path: string) => path,
+  },
   message: (e: unknown) => String((e as { message?: string }).message ?? e),
 }));
 const frameRef = (ordinal = "0") => ({
@@ -101,7 +106,7 @@ beforeEach(() => {
     ["person_detector", "pose"].map((task, i) => ({
       id: i ? "pose" : "detector",
       status: "ready",
-      manifest: { task, name: i ? "Pose model" : "Person model" },
+      manifest: { task, name: i ? "Body pose model" : "Person model" },
     })) as ModelInstallationV1[],
   );
   mock.personFeature.mockResolvedValue(people());
@@ -123,9 +128,7 @@ it("keeps manual workflows available when no compatible model is installed", asy
   mock.models.mockResolvedValue([]);
   render(<SubjectPanel w={workspace()} />);
   expect(
-    await screen.findByText(
-      "No compatible person detector installed.",
-    ),
+    await screen.findByText("No compatible person detector installed."),
   ).toBeTruthy();
   expect(
     (screen.getByRole("button", { name: "Detect people" }) as HTMLButtonElement)
@@ -264,8 +267,35 @@ it("restores the saved detector when several compatible installations exist", as
   expect(
     (
       screen.getByRole("combobox", {
-        name: "Person detector",
+        name: "Person detection model",
       }) as HTMLSelectElement
     ).value,
   ).toBe("detector");
+});
+
+it("refreshes compatible detector choices from the shared registry without restarting", async () => {
+  const { useModelRegistry } = await import("./workspace/modelRegistry");
+  mock.models.mockResolvedValue([]);
+  render(<SubjectPanel w={workspace()} />);
+  await waitFor(() =>
+    expect(
+      screen.getByRole("button", { name: "Detect people" }),
+    ).toHaveProperty("disabled", true),
+  );
+  mock.models.mockResolvedValue([
+    {
+      id: "installed-uuid",
+      status: "ready",
+      manifest: { task: "person_detector", name: "Installed person detector" },
+    },
+  ]);
+  await act(async () => {
+    await useModelRegistry.getState().refresh();
+  });
+  expect(
+    screen.getByRole("option", { name: "Installed person detector" }),
+  ).toBeTruthy();
+  expect(
+    screen.getByRole("combobox", { name: "Person detection model" }),
+  ).toHaveProperty("value", "installed-uuid");
 });

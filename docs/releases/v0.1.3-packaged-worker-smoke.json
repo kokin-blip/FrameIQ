@@ -1,0 +1,132 @@
+{
+  "version": "0.1.3",
+  "platform": "aarch64-apple-darwin",
+  "developmentLibraryPathsRemoved": true,
+  "cases": [
+    {
+      "fixture": "sdr",
+      "mode": "sdr",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 8,
+      "sha256": "25831d7fe9c3de8f5b7fa2f7a80f97d7f8178e0bbcc17d8189e8c1522930c291",
+      "conversion": {
+        "policy": "legacy_sdr",
+        "resize": null,
+        "rotation": 0
+      }
+    },
+    {
+      "fixture": "pq",
+      "mode": "sdr",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 8,
+      "sha256": "8e5bfd759e62a629a5a2c1eba671dd9f179fb93a038e0557e4b7260fb0472506",
+      "conversion": {
+        "filter": "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=10,zscale=t=iec61966-2-1:m=gbr:r=full,format=gbrp,format=rgb24",
+        "hlgReferenceDisplay": null,
+        "lightLevelChunkHex": null,
+        "masteringChunkHex": null,
+        "policy": "srgb_sdr",
+        "rotation": 0,
+        "sourceInterpretation": null,
+        "sourceMatrix": "Unspecified",
+        "sourcePeakNits": 1000.0,
+        "sourcePeakOrigin": "fallback",
+        "sourcePrimaries": "Unspecified",
+        "sourceRange": "Unspecified",
+        "sourceTransfer": "Unspecified",
+        "toneMapping": "Hable; target 100 nits; desaturation disabled"
+      }
+    },
+    {
+      "fixture": "pq",
+      "mode": "preserve16_bit",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 16,
+      "sha256": "77176090cab540e0b4d1b5a7f734f07e212f2b03f42f8a4a4e404e18daf3d72d",
+      "conversion": {
+        "filter": "zscale=m=gbr:r=full,format=gbrp16le,format=rgb48le",
+        "hlgReferenceDisplay": null,
+        "lightLevelChunkHex": null,
+        "masteringChunkHex": null,
+        "policy": "rgb16_preserve",
+        "rotation": 0,
+        "sourceInterpretation": null,
+        "sourceMatrix": "Unspecified",
+        "sourcePeakNits": 1000.0,
+        "sourcePeakOrigin": "fallback",
+        "sourcePrimaries": "Unspecified",
+        "sourceRange": "Unspecified",
+        "sourceTransfer": "Unspecified",
+        "toneMapping": null
+      }
+    },
+    {
+      "fixture": "hlg",
+      "mode": "sdr",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 8,
+      "sha256": "8e9c28e33a4718e78eb6dbf0726a98eec052cca528ded443fd3a7d70ee4aa2ae",
+      "conversion": {
+        "filter": "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0:peak=10,zscale=t=iec61966-2-1:m=gbr:r=full,format=gbrp,format=rgb24",
+        "hlgReferenceDisplay": null,
+        "lightLevelChunkHex": null,
+        "masteringChunkHex": null,
+        "policy": "srgb_sdr",
+        "rotation": 0,
+        "sourceInterpretation": null,
+        "sourceMatrix": "Unspecified",
+        "sourcePeakNits": 1000.0,
+        "sourcePeakOrigin": "fallback",
+        "sourcePrimaries": "Unspecified",
+        "sourceRange": "Unspecified",
+        "sourceTransfer": "Unspecified",
+        "toneMapping": "Hable; target 100 nits; desaturation disabled"
+      }
+    },
+    {
+      "fixture": "hlg",
+      "mode": "preserve16_bit",
+      "ordinal": "2",
+      "dimensions": [
+        160,
+        120
+      ],
+      "pngBitDepth": 16,
+      "sha256": "9f33b38c6cb40edbbfcf1c8faf6a4db10bdff4c4e8257c487a9c918ae54aa568",
+      "conversion": {
+        "filter": "zscale=m=gbr:r=full,format=gbrp16le,format=rgb48le",
+        "hlgReferenceDisplay": null,
+        "lightLevelChunkHex": null,
+        "masteringChunkHex": null,
+        "policy": "rgb16_preserve",
+        "rotation": 0,
+        "sourceInterpretation": null,
+        "sourceMatrix": "Unspecified",
+        "sourcePeakNits": 1000.0,
+        "sourcePeakOrigin": "fallback",
+        "sourcePrimaries": "Unspecified",
+        "sourceRange": "Unspecified",
+        "sourceTransfer": "Unspecified",
+        "toneMapping": null
+      }
+    }
+  ],
+  "inference": "Pending native runtime validation: system reserve remains enforced."
+}

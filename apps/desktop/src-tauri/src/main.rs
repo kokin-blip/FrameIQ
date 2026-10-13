@@ -328,6 +328,17 @@ fn hardware(app: State<Application>) -> HardwareProfileV1 {
     app.hardware()
 }
 #[tauri::command]
+fn model_setup_status(app: State<Application>) -> AppResult<Vec<ModelSetupStatusV1>> {
+    app.model_setup_status()
+}
+#[tauri::command]
+fn retry_model_validation(
+    app: State<Application>,
+    manifest: ModelManifestV1,
+) -> AppResult<JobEvent> {
+    app.retry_model_validation(manifest)
+}
+#[tauri::command]
 fn models(app: State<Application>) -> AppResult<Vec<ModelInstallationV1>> {
     app.models()
 }
@@ -468,6 +479,8 @@ fn main() {
             mark_project_opened,
             project_activity,
             model_catalog,
+            model_setup_status,
+            retry_model_validation,
             sources,
             frames,
             resolve_frame,

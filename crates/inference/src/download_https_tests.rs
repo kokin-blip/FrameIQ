@@ -487,3 +487,26 @@ fn checkpoint_cleanup_preserves_unknown_files_and_partial_bodies() {
     assert_eq!(std::fs::read(unknown).unwrap(), b"preserve");
     assert_eq!(std::fs::read(partial).unwrap(), b"resume");
 }
+
+#[test]
+fn complete_verified_bytes_without_validator_reuse_without_any_http_request() {
+    let server = Server::new(vec![]);
+    let body = bytes();
+    let m = manifest(&server.url, &body);
+    let directory = tempfile::tempdir().unwrap();
+    let cached = directory.path().join(format!("{}.partial", m.sha256));
+    std::fs::write(&cached, &body).unwrap();
+    let result = download_with(
+        &m,
+        directory.path(),
+        server.transport(true, Duration::from_secs(1)),
+        || false,
+        |done, total| {
+            assert_eq!(done, total);
+            Ok(())
+        },
+    )
+    .unwrap();
+    assert_eq!(result, cached);
+    assert!(server.requests.lock().unwrap().is_empty());
+}
