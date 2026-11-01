@@ -1,1 +1,1 @@
-{"$schema":"../gen/schemas/desktop-schema.json","identifier":"main","description":"Local FrameIQ workspace dialogs and recoverable job events.","windows":["main"],"permissions":["core:default","dialog:allow-open"]}
+{"$schema":"../gen/schemas/desktop-schema.json","identifier":"main","description":"Local FrameIQ workspace dialogs, recoverable job events, and ChatGPT usage settings.","windows":["main"],"permissions":["core:default","dialog:allow-open",{"identifier":"opener:allow-open-url","allow":[{"url":"https://chatgpt.com/settings/usage"}]}]}

@@ -24,16 +24,16 @@ export function Settings({
       <div className="settings-content">
         <nav className="settings-tabs" aria-label="Settings sections">
           <Button
+            aria-pressed={tab === "cloud"}
+            onClick={() => setTab("cloud")}
+          >
+            AI connections
+          </Button>
+          <Button
             aria-pressed={tab === "models"}
             onClick={() => setTab("models")}
           >
             Local models
-          </Button>
-          <Button
-            aria-pressed={tab === "cloud"}
-            onClick={() => setTab("cloud")}
-          >
-            Cloud AI
           </Button>
           <Button
             aria-pressed={tab === "general"}

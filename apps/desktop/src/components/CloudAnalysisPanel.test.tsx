@@ -10,7 +10,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CloudAnalysisPanel } from "./CloudAnalysisPanel";
-import { useJobs } from "../store";
+import { useJobs, usePreferences } from "../store";
 import type { Workspace } from "../workspace/useWorkspace";
 import type { CloudReviewV1, JobEvent, Selection } from "../contracts";
 const mocks = vi.hoisted(() => ({
@@ -76,6 +76,7 @@ const w = {
   openSelection: vi.fn(),
 } as unknown as Workspace;
 const packet: CloudReviewV1 = {
+  accountId: null,
   id: "review",
   provider: "openai",
   model: "vision",
@@ -115,6 +116,7 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 async function startReview() {
+  usePreferences.setState({ primaryProvider: "openai" });
   const user = userEvent.setup();
   mocks.prepare.mockResolvedValue(event("cloud_preparing", "queued"));
   mocks.review.mockResolvedValue(packet);
@@ -132,6 +134,63 @@ async function startReview() {
   return user;
 }
 describe("cloud image review", () => {
+  it("defaults to BYOS, lists account models, and never falls back after a subscription error", async () => {
+    usePreferences.setState({ primaryProvider: "chatgpt" });
+    const user = userEvent.setup();
+    mocks.list.mockResolvedValue({
+      provider: "chatgpt",
+      models: ["available-model"],
+      modelLabels: { "available-model": "Account vision model" },
+      modelCount: 1,
+      moreAvailable: false,
+    });
+    mocks.prepare.mockResolvedValue(event("cloud_preparing", "queued"));
+    mocks.review.mockResolvedValue({
+      ...packet,
+      provider: "chatgpt",
+      model: "available-model",
+      accountId: "bound-account",
+    });
+    mocks.discard.mockResolvedValue(undefined);
+    render(<CloudAnalysisPanel w={w} />);
+    expect(screen.getByLabelText("Provider")).toHaveProperty(
+      "value",
+      "chatgpt",
+    );
+    expect(screen.queryByLabelText("Image-capable model ID")).toBeNull();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "List provider models" }),
+      ).toHaveProperty("disabled", false),
+    );
+    expect(mocks.list).not.toHaveBeenCalled();
+    await user.click(
+      screen.getByRole("button", { name: "List provider models" }),
+    );
+    await screen.findByRole("option", { name: "Account vision model" });
+    expect(mocks.list).toHaveBeenCalledWith("chatgpt");
+    await user.click(screen.getByRole("button", { name: "Review images" }));
+    expect(mocks.prepare.mock.calls[0][0]).toMatchObject({
+      provider: "chatgpt",
+      model: "available-model",
+    });
+    act(() => useJobs.getState().setJob(event("cloud_preparing", "succeeded")));
+    fireEvent.load(
+      await screen.findByRole("img", { name: "Upload preview image_1" }),
+    );
+    expect(mocks.send).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("checkbox", { name: /Allow sending/ }));
+    mocks.send.mockRejectedValue(new Error("ChatGPT usage limit reached."));
+    await user.click(
+      screen.getByRole("button", { name: "Send to ChatGPT subscription" }),
+    );
+    expect(await screen.findByRole("alert")).toHaveProperty(
+      "textContent",
+      expect.stringContaining("usage limit reached"),
+    );
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+    expect(mocks.list).toHaveBeenCalledTimes(1);
+  });
   it("does not send before exact previews load and explicit consent, preserving large ordinals", async () => {
     const user = await startReview();
     expect(mocks.send).not.toHaveBeenCalled();
@@ -204,6 +263,7 @@ describe("cloud image review", () => {
     );
   });
   it("requires explicitly chosen frames for ranking", async () => {
+    usePreferences.setState({ primaryProvider: "openai" });
     mocks.discard.mockResolvedValue(undefined);
     const user = userEvent.setup();
     render(<CloudAnalysisPanel w={w} />);

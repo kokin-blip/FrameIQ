@@ -740,6 +740,7 @@ pub struct PresetResultV1 {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 pub enum CloudProviderV1 {
+    Chatgpt,
     Openai,
     Gemini,
 }
@@ -756,6 +757,24 @@ pub struct CloudConnectionV1 {
     pub model_count: u32,
     pub more_available: bool,
     pub models: Vec<String>,
+    pub model_labels: std::collections::BTreeMap<String, String>,
+}
+
+/// Public account metadata only. OAuth credentials never cross the IPC boundary.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct SubscriptionAccountV1 {
+    pub id: String,
+    pub label: String,
+    pub connected: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+pub struct SubscriptionStatusV1 {
+    pub accounts: Vec<SubscriptionAccountV1>,
+    pub active_account_id: Option<String>,
+    pub signing_in: bool,
+    pub error: Option<AppError>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
@@ -778,6 +797,8 @@ pub struct CloudReviewRequestV1 {
     pub task: CloudTaskV1,
     pub goal: String,
     pub images: Vec<CloudImageInputV1>,
+    #[serde(default)]
+    pub account_id: Option<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -799,6 +820,8 @@ pub struct CloudReviewV1 {
     pub task: CloudTaskV1,
     pub goal: String,
     pub images: Vec<CloudReviewImageV1>,
+    #[serde(default)]
+    pub account_id: Option<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

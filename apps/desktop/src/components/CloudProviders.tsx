@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@frameiq/ui";
 import { api, desktop, message } from "../client";
 import type { CloudProviderV1 } from "../contracts";
+import { usePreferences } from "../store";
+import { providerNames } from "../connectors";
+import { SubscriptionBridge } from "./SubscriptionBridge";
 
 function Provider({
   provider,
@@ -135,9 +138,29 @@ function Provider({
   );
 }
 export function CloudProviders() {
+  const { primaryProvider, setPrimaryProvider } = usePreferences();
   return (
     <section className="cloud-providers" aria-labelledby="cloud-heading">
-      <h2 id="cloud-heading">Cloud AI</h2>
+      <h2 id="cloud-heading">AI connections</h2>
+      <label className="connector-field">
+        Primary connector
+        <select
+          value={primaryProvider}
+          onChange={(e) =>
+            setPrimaryProvider(e.target.value as CloudProviderV1)
+          }
+        >
+          <option value="chatgpt">ChatGPT subscription · BYOS</option>
+          <option value="openai">OpenAI API key</option>
+          <option value="gemini">Gemini API key</option>
+        </select>
+      </label>
+      <p>
+        Studio starts with {providerNames[primaryProvider]}. You can choose
+        another connector for each request.
+      </p>
+      <SubscriptionBridge />
+      <h3>API-key connectors</h3>
       <p>
         Connection tests send your key to the selected provider to list models.
         No images or video are sent.

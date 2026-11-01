@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-01T04:23:38.099Z",
+        "reason": "Project design system: apps/desktop/DESIGN.md specifies locally bundled Inter for all shared desktop UI typography; the subscription connector preserves that approved identity."
+      }
+    ]
+  }
+}

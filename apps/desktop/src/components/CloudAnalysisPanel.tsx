@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@frameiq/ui";
 import { api, message, timestamp } from "../client";
-import { useSettingsTab } from "../store";
+import { useSettingsTab, usePreferences } from "../store";
+import { providerNames } from "../connectors";
 import { useJobs } from "../store";
 import type {
   CloudProviderV1,
@@ -33,9 +34,13 @@ export function CloudAnalysisPanel({
   region?: [RegionRectV1, React.Dispatch<React.SetStateAction<RegionRectV1>>];
   onCropChange?: (active: boolean) => void;
 }) {
-  const [provider, setProvider] = useState<CloudProviderV1>("openai");
+  const primaryProvider = usePreferences((s) => s.primaryProvider);
+  const [provider, setProvider] = useState<CloudProviderV1>(primaryProvider);
   const [model, setModel] = useState("");
   const [models, setModels] = useState<string[]>([]);
+  const [modelLabels, setModelLabels] = useState<
+    Record<string, string | undefined>
+  >({});
   const [saved, setSaved] = useState(false);
   const [task, setTask] = useState<CloudTaskV1>("describe");
   const [goal, setGoal] = useState("outfit");
@@ -90,7 +95,9 @@ export function CloudAnalysisPanel({
     let live = true;
     setSaved(false);
     setModels([]);
+    setModelLabels({});
     setModel("");
+    setError("");
     void api
       .cloudKeyStatus(provider)
       .then((s) => {
@@ -179,6 +186,7 @@ export function CloudAnalysisPanel({
           frame,
           region: task === "describe" && crop ? rectangle : null,
         })),
+        accountId: null,
       });
       setJob(job);
       if (generation.current === token) {
@@ -217,6 +225,12 @@ export function CloudAnalysisPanel({
     try {
       const r = await api.testCloudConnection(provider);
       setModels(r.models);
+      setModelLabels(r.modelLabels ?? {});
+      if (provider === "chatgpt") setModel(r.models[0] ?? "");
+      if (provider === "chatgpt" && r.models.length === 0)
+        setError(
+          "No subscription models are available for this account. Check ChatGPT access or choose another connector.",
+        );
       if (r.moreAvailable)
         setError(
           "This is the first model-list page. You can also enter a model ID.",
@@ -227,7 +241,7 @@ export function CloudAnalysisPanel({
       setBusy(false);
     }
   }
-  const name = provider === "openai" ? "OpenAI" : "Gemini";
+  const name = providerNames[provider];
   return (
     <aside
       className="analysis-panel cloud-analysis"
@@ -246,13 +260,18 @@ export function CloudAnalysisPanel({
             value={provider}
             onChange={(e) => setProvider(e.target.value as CloudProviderV1)}
           >
-            <option value="openai">OpenAI</option>
-            <option value="gemini">Gemini</option>
+            <option value="chatgpt">ChatGPT subscription · BYOS</option>
+            <option value="openai">OpenAI API key</option>
+            <option value="gemini">Gemini API key</option>
           </select>
         </label>
         {!saved && (
           <>
-            <p>No {name} key saved.</p>
+            <p>
+              {provider === "chatgpt"
+                ? "Connect your ChatGPT subscription in Settings."
+                : `No ${name} key saved.`}
+            </p>
             <Button
               onClick={() => {
                 useSettingsTab.getState().setTab("cloud");
@@ -276,24 +295,32 @@ export function CloudAnalysisPanel({
               <option value="">Choose a model</option>
               {models.map((id) => (
                 <option key={id} value={id}>
-                  {id}
+                  {modelLabels[id] ?? id}
                 </option>
               ))}
             </select>
           </label>
         )}
         <p>Model lists do not confirm image or structured-output support.</p>
-        <details open={!model || undefined}>
-          <summary>Model ID / advanced</summary>
-          <label>
-            Image-capable model ID
-            <input
-              value={model}
-              maxLength={128}
-              onChange={(e) => setModel(e.target.value)}
-            />
-          </label>
-        </details>
+        {provider === "chatgpt" && (
+          <p>
+            Use your ChatGPT plan for descriptions and preset ranking. Local
+            models remain available for detection, tracking, and measurements.
+          </p>
+        )}
+        {provider !== "chatgpt" && (
+          <details open={!model || undefined}>
+            <summary>Model ID / advanced</summary>
+            <label>
+              Image-capable model ID
+              <input
+                value={model}
+                maxLength={128}
+                onChange={(e) => setModel(e.target.value)}
+              />
+            </label>
+          </details>
+        )}
         <label>
           Task
           <select
@@ -385,6 +412,7 @@ export function CloudAnalysisPanel({
           disabled={
             !saved ||
             !model.trim() ||
+            (provider === "chatgpt" && !models.includes(model)) ||
             (task === "describe"
               ? !current
               : selected.length < 2 || selected.length > 8)
@@ -411,15 +439,17 @@ export function CloudAnalysisPanel({
               Cancel
             </Button>
           )}
-          <p>Sent data cannot be recalled. A request may already be billed.</p>
+          <p>
+            Sent data cannot be recalled.{" "}
+            {provider === "chatgpt"
+              ? "The request may already count toward your ChatGPT usage."
+              : "A request may already be billed."}
+          </p>
         </div>
       )}
       {review && (
         <section aria-label="Review cloud upload">
-          <h3>
-            Review images for{" "}
-            {review.provider === "openai" ? "OpenAI" : "Gemini"}
-          </h3>
+          <h3>Review images for {providerNames[review.provider]}</h3>
           <p>
             {review.model} · {review.goal.replaceAll("_", " ")}
           </p>
@@ -449,12 +479,19 @@ export function CloudAnalysisPanel({
               </figcaption>
             </figure>
           ))}
-          <p>
-            Provider charges and data-use terms apply. One request; no automatic
-            retry. Maximum output:{" "}
-            {review.images.length === 1 ? "1,200" : "3,000"} tokens. No price
-            estimate is available.
-          </p>
+          {review.provider === "chatgpt" ? (
+            <p>
+              Your ChatGPT plan and any credits you allow in ChatGPT Settings
+              apply. One request; no automatic retry or API-key fallback.
+            </p>
+          ) : (
+            <p>
+              Provider charges and data-use terms apply. One request; no
+              automatic retry. Maximum output:{" "}
+              {review.images.length === 1 ? "1,200" : "3,000"} tokens. No price
+              estimate is available.
+            </p>
+          )}
           <label className="check-row">
             <input
               type="checkbox"

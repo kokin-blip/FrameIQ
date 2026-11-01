@@ -1,6 +1,7 @@
 import { invoke, convertFileSrc, isTauri } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type {
+  SubscriptionStatusV1,
   CloudReviewRequestV1,
   CloudReviewV1,
   CloudAnalysisResultV1,
@@ -44,6 +45,13 @@ function call<T>(name: string, args?: Record<string, unknown>): Promise<T> {
   return invoke<T>(name, args);
 }
 export const api = {
+  subscriptionStatus: () => call<SubscriptionStatusV1>("subscription_status"),
+  startSubscriptionLogin: (accountId: string | null) =>
+    call<void>("start_subscription_login", { accountId }),
+  cancelSubscriptionLogin: () => call<void>("cancel_subscription_login"),
+  selectSubscriptionAccount: (accountId: string) =>
+    call<void>("select_subscription_account", { accountId }),
+  disconnectSubscription: () => call<void>("disconnect_subscription"),
   renameProject: (id: string, name: string) =>
     call<void>("rename_project", { id, name }),
   renameSource: (id: string, name: string) =>

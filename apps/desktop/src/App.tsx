@@ -13,7 +13,7 @@ import { Activity } from "./components/Activity";
 import { ModelSetup } from "./components/ModelSetup";
 import { Tutorial } from "./components/Tutorial";
 import { desktop } from "./client";
-import { usePreferences } from "./store";
+import { usePreferences, useSettingsTab } from "./store";
 
 export default function App() {
   const w = useWorkspace();
@@ -74,6 +74,12 @@ export default function App() {
         {desktop && (
           <ModelSetup
             visible={w.view === "setup"}
+            onConnectSubscription={() => {
+              usePreferences.getState().completeSetup();
+              usePreferences.getState().setPrimaryProvider("chatgpt");
+              useSettingsTab.getState().setTab("cloud");
+              w.setView("settings");
+            }}
             onFinish={() => {
               usePreferences.getState().completeSetup();
               w.setView("extract");

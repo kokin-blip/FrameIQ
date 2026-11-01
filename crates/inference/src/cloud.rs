@@ -17,7 +17,7 @@ pub(super) fn status_error(status: StatusCode) -> AppError {
     let (code, message) = match status.as_u16() {
         401 | 403 => (
             "AUTH_REQUIRED",
-            "The provider rejected this key. Check its permissions or replace it.",
+            "The provider rejected this connection. Reconnect the subscription or check your API key permissions.",
         ),
         400 | 404 => ("MODEL_INCOMPATIBLE", "The provider rejected the request. Check the model ID and its image/structured-output support."),
         429 => (
@@ -34,7 +34,7 @@ pub(super) fn status_error(status: StatusCode) -> AppError {
 fn parse_models(provider: CloudProviderV1, value: &Value) -> AppResult<CloudConnectionV1> {
     let key = match provider {
         CloudProviderV1::Openai => "data",
-        CloudProviderV1::Gemini => "models",
+        CloudProviderV1::Gemini | CloudProviderV1::Chatgpt => "models",
     };
     let models = value[key].as_array().ok_or_else(|| {
         AppError::new(
@@ -42,19 +42,30 @@ fn parse_models(provider: CloudProviderV1, value: &Value) -> AppResult<CloudConn
             "The provider returned an unsupported model list.",
         )
     })?;
+    let visible = models
+        .iter()
+        .filter(|m| !matches!(provider, CloudProviderV1::Chatgpt) || m["visibility"] == "list")
+        .collect::<Vec<_>>();
+    let id_key = match provider {
+        CloudProviderV1::Chatgpt => "slug",
+        CloudProviderV1::Openai => "id",
+        CloudProviderV1::Gemini => "name",
+    };
     Ok(CloudConnectionV1 {
         provider,
-        model_count: models.len().min(u32::MAX as usize) as u32,
-        models: models
+        model_count: visible.len().min(u32::MAX as usize) as u32,
+        model_labels: visible
             .iter()
             .filter_map(|m| {
-                m[if matches!(provider, CloudProviderV1::Openai) {
-                    "id"
-                } else {
-                    "name"
-                }]
-                .as_str()
+                Some((
+                    m[id_key].as_str()?.to_owned(),
+                    m["display_name"].as_str()?.to_owned(),
+                ))
             })
+            .collect(),
+        models: visible
+            .iter()
+            .filter_map(|m| m[id_key].as_str())
             .filter(|id| id.len() <= 128)
             .take(256)
             .map(str::to_owned)
@@ -78,7 +89,7 @@ fn model_request(
     key: &str,
 ) -> reqwest::blocking::RequestBuilder {
     match provider {
-        CloudProviderV1::Openai => client
+        CloudProviderV1::Openai | CloudProviderV1::Chatgpt => client
             .get("https://api.openai.com/v1/models")
             .bearer_auth(key),
         CloudProviderV1::Gemini => client
@@ -194,6 +205,17 @@ mod tests {
         assert_eq!(gemini.model_count, 0);
         assert!(gemini.more_available);
         assert!(parse_models(CloudProviderV1::Openai, &json!({"error":"sensitive-body"})).is_err());
+        let subscription = parse_models(
+            CloudProviderV1::Chatgpt,
+            &json!({"models":[
+                {"slug":"available","display_name":"Available model","visibility":"list"},
+                {"slug":"hidden","display_name":"Hidden model","visibility":"hide"}
+            ]}),
+        )
+        .unwrap();
+        assert_eq!(subscription.models, vec!["available"]);
+        assert_eq!(subscription.model_labels["available"], "Available model");
+        assert_eq!(subscription.model_count, 1);
     }
     #[test]
     fn errors_are_safe_actionable_codes() {

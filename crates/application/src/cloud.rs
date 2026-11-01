@@ -174,6 +174,7 @@ impl Application {
                     task: request.task,
                     goal: request.goal,
                     images,
+                    account_id: request.account_id,
                 };
                 lock(&app.inner.cloud_reviews)?.insert(
                     review.id.clone(),

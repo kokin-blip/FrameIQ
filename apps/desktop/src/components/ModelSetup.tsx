@@ -23,9 +23,11 @@ type Outcome = { status: string; message?: string; job?: JobEvent };
 export function ModelSetup({
   visible,
   onFinish,
+  onConnectSubscription,
 }: {
   visible: boolean;
   onFinish: () => void;
+  onConnectSubscription?: () => void;
 }) {
   const { catalog, statuses, refresh } = useModelRegistry();
   const installed = statuses
@@ -178,6 +180,25 @@ export function ModelSetup({
           Frame extraction works without models. Choose models for optional
           local analysis.
         </p>
+        {step === "choose" && onConnectSubscription && (
+          <section
+            className="setup-subscription"
+            aria-label="Primary AI connector"
+          >
+            <h2>ChatGPT subscription</h2>
+            <p>
+              Bring your own subscription for frame descriptions and preset
+              ranking. Local model packs are optional for these requests.
+            </p>
+            <Button
+              variant="primary"
+              disabled={busy}
+              onClick={onConnectSubscription}
+            >
+              Connect ChatGPT
+            </Button>
+          </section>
+        )}
         <p>Choose models → Review downloads → Install</p>
         {hardware && (
           <p>
@@ -338,8 +359,8 @@ export function ModelSetup({
           footwear automatic models are not available yet.
         </p>
         <p>
-          Installed vision runtimes and cloud AI keys can be connected later in
-          Settings.
+          ChatGPT subscriptions, installed vision runtimes, and cloud AI keys
+          can be connected in Settings.
         </p>
         <div className="setup-actions">
           <Button

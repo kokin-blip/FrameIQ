@@ -1,4 +1,5 @@
 mod cloud;
+mod subscription;
 use frameiq_application::Application;
 use frameiq_contracts::*;
 use std::path::PathBuf;
@@ -445,6 +446,8 @@ async fn probe_runtime(
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_opener::init())
+        .manage(subscription::Bridge::default())
         .setup(|handle| {
             let data = handle.path().app_data_dir()?;
             let worker = if let Some(path) = std::env::var_os("FRAMEIQ_WORKER") {
@@ -537,6 +540,11 @@ fn main() {
             cloud::save_cloud_key,
             cloud::remove_cloud_key,
             cloud::test_cloud_connection,
+            subscription::subscription_status,
+            subscription::start_subscription_login,
+            subscription::cancel_subscription_login,
+            subscription::select_subscription_account,
+            subscription::disconnect_subscription,
             save_runtime_token,
             discover_runtime,
             probe_runtime

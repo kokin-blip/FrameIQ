@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { JobEvent } from "./contracts";
+import type { CloudProviderV1, JobEvent } from "./contracts";
 type State = {
   jobs: Record<string, JobEvent>;
   order: string[];
@@ -23,12 +23,14 @@ export const useJobs = create<State>((set) => ({
 export const useSettingsTab = create<{
   tab: "models" | "cloud" | "general";
   setTab: (tab: "models" | "cloud" | "general") => void;
-}>((set) => ({ tab: "models", setTab: (tab) => set({ tab }) }));
+}>((set) => ({ tab: "cloud", setTab: (tab) => set({ tab }) }));
 
 export const usePreferences = create<{
   setupCompleted: boolean;
   tutorialCompleted: boolean;
   clearSelectionsOnSwitch: boolean;
+  primaryProvider: CloudProviderV1;
+  setPrimaryProvider: (provider: CloudProviderV1) => void;
   completeSetup: () => void;
   completeTutorial: () => void;
   replayTutorial: () => void;
@@ -39,6 +41,8 @@ export const usePreferences = create<{
       setupCompleted: false,
       tutorialCompleted: false,
       clearSelectionsOnSwitch: true,
+      primaryProvider: "chatgpt",
+      setPrimaryProvider: (primaryProvider) => set({ primaryProvider }),
       completeSetup: () => set({ setupCompleted: true }),
       completeTutorial: () => set({ tutorialCompleted: true }),
       replayTutorial: () => set({ tutorialCompleted: false }),
@@ -51,10 +55,12 @@ export const usePreferences = create<{
         setupCompleted,
         tutorialCompleted,
         clearSelectionsOnSwitch,
+        primaryProvider,
       }) => ({
         setupCompleted,
         tutorialCompleted,
         clearSelectionsOnSwitch,
+        primaryProvider,
       }),
     },
   ),

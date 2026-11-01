@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   cleanup,
   render,
@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   save: vi.fn(),
   remove: vi.fn(),
   test: vi.fn(),
+  subscription: vi.fn(),
 }));
 vi.mock("../client", () => ({
   desktop: true,
@@ -23,11 +24,20 @@ vi.mock("../client", () => ({
     saveCloudKey: mocks.save,
     removeCloudKey: mocks.remove,
     testCloudConnection: mocks.test,
+    subscriptionStatus: mocks.subscription,
   },
 }));
 afterEach(() => {
   cleanup();
   vi.resetAllMocks();
+});
+beforeEach(() => {
+  mocks.subscription.mockResolvedValue({
+    accounts: [],
+    activeAccountId: null,
+    signingIn: false,
+    error: null,
+  });
 });
 describe("cloud credentials", () => {
   it("does not connect on mount or key save, clears the input and removes a saved key", async () => {

@@ -61,6 +61,7 @@ fn prepared_images_are_exact_bounded_and_consent_is_single_use() {
     let source = app.sources(&project.id).unwrap()[0].clone();
     let view = app.preview(&source.id, "2").unwrap();
     let request = CloudReviewRequestV1 {
+        account_id: None,
         provider: CloudProviderV1::Openai,
         model: "user-selected-vision-model".into(),
         task: CloudTaskV1::Describe,

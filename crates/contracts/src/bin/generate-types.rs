@@ -14,6 +14,8 @@ fn main() {
         CloudProviderV1,
         CloudCredentialStatusV1,
         CloudConnectionV1,
+        SubscriptionAccountV1,
+        SubscriptionStatusV1,
         TimestampOrigin,
         FrameRefV1,
         IndexedFrame,
