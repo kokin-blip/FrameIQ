@@ -1,0 +1,9 @@
+torch==2.7.1
+transformers==4.57.1
+numpy==2.5.4
+onnx==1.19.1
+onnxruntime==1.22.0
+onnxscript==0.3.0
+pillow==11.3.0
+huggingface-hub==0.36.2
+safetensors==0.8.0

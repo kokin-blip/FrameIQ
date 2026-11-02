@@ -57,6 +57,54 @@ fn wait(app: &Application, id: &str) -> JobEvent {
     }
 }
 #[test]
+fn av1_download_import_preview_and_export() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let worker = root.join(if cfg!(windows) {
+        "target/debug/frameiq-worker.exe"
+    } else {
+        "target/debug/frameiq-worker"
+    });
+    let d = tempfile::tempdir().unwrap();
+    let video = d.path().join("#viral #shorts #av1.mp4");
+    std::fs::copy(root.join("tests/fixtures/media/av1-fragmented.mp4"), &video).unwrap();
+    let app = Application::new(&d.path().join("project"), worker, Arc::new(|_| {})).unwrap();
+    let project = app.create_project("AV1 download").unwrap();
+    let imported = app.import_video(&project.id, &video, None).unwrap();
+    let done = wait(&app, &imported.job_id);
+    assert!(
+        matches!(done.status, JobStatus::Succeeded),
+        "{:?}",
+        done.error
+    );
+    let source = &app.sources(&project.id).unwrap()[0];
+    assert_eq!(source.status, "ready");
+    assert_eq!(source.frame_count, "10");
+    assert_eq!(source.metadata.as_ref().unwrap().streams[0].codec, "av1");
+    for ordinal in ["0", "9"] {
+        let preview = app.preview(&source.id, ordinal).unwrap();
+        assert_eq!((preview.width, preview.height), (160, 120));
+        app.select(&source.id, ordinal, true).unwrap();
+    }
+    let exported = app
+        .export(&project.id, d.path(), ExportOptions::default())
+        .unwrap();
+    let done = wait(&app, &exported.job_id);
+    assert!(
+        matches!(done.status, JobStatus::Succeeded),
+        "{:?}",
+        done.error
+    );
+    let pngs = std::fs::read_dir(&done.result_ids[0])
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .filter(|path| path.extension().is_some_and(|ext| ext == "png"))
+        .collect::<Vec<_>>();
+    assert_eq!(pngs.len(), 2);
+    for png in pngs {
+        assert_eq!(image::image_dimensions(png).unwrap(), (160, 120));
+    }
+}
+#[test]
 fn offline_import_precise_selection_and_three_format_exports() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let worker = root.join(if cfg!(windows) {

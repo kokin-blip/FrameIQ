@@ -34,7 +34,9 @@ fn tracked_presets_rerank_reopen_invalidate_and_cancel_children() {
     let suffix = if cfg!(windows) { ".exe" } else { "" };
     let worker = data.path().join(format!("frameiq-worker{suffix}"));
     std::fs::copy(
-        root.join(format!("target/debug/frameiq-worker{suffix}")),
+        std::env::var_os("FRAMEIQ_TEST_WORKER")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|| root.join(format!("target/debug/frameiq-worker{suffix}"))),
         &worker,
     )
     .unwrap();
@@ -183,4 +185,155 @@ fn tracked_presets_rerank_reopen_invalidate_and_cancel_children() {
     app.remove_model(&model).unwrap();
     assert!(app.preset_result(&job.job_id).unwrap().is_none());
     assert!(original.exists());
+}
+
+#[test]
+fn every_preset_executes_with_dependencies_and_middle_anchor_tracks_both_directions() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let data = tempfile::tempdir().unwrap();
+    let suffix = if cfg!(windows) { ".exe" } else { "" };
+    let worker = data.path().join(format!("frameiq-worker{suffix}"));
+    std::fs::copy(
+        std::env::var_os("FRAMEIQ_TEST_WORKER")
+            .map(std::path::PathBuf::from)
+            .unwrap_or_else(|| root.join(format!("target/debug/frameiq-worker{suffix}"))),
+        &worker,
+    )
+    .unwrap();
+    std::fs::copy(
+        env!("CARGO_BIN_EXE_frameiq-test-ai-worker"),
+        data.path().join(format!("frameiq-ai-worker{suffix}")),
+    )
+    .unwrap();
+    std::fs::write(data.path().join("ai-worker-mode.txt"), "tracking").unwrap();
+    let video = data.path().join("source.mkv");
+    assert!(
+        std::process::Command::new(root.join(format!(".native/ffmpeg/bin/ffmpeg{suffix}")))
+            .args([
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-f",
+                "lavfi",
+                "-i",
+                "testsrc2=size=160x120:rate=10:duration=2",
+                "-c:v",
+                "ffv1",
+                video.to_str().unwrap()
+            ])
+            .status()
+            .unwrap()
+            .success()
+    );
+    let appdata = data.path().join("data");
+    let app = Application::new(&appdata, worker, Arc::new(|_| {})).unwrap();
+    let original = data.path().join("weights.onnx");
+    std::fs::write(&original, b"protocol fixture").unwrap();
+    let mut ids = Vec::new();
+    for name in [
+        "person_detection_mediapipe-2023mar.json",
+        "pose_estimation_mediapipe-2023mar.json",
+        "yunet-2023mar.json",
+    ] {
+        let mut manifest: ModelManifestV1 = serde_json::from_slice(
+            &std::fs::read(root.join("models/manifests").join(name)).unwrap(),
+        )
+        .unwrap();
+        manifest.byte_size = "16".into();
+        manifest.sha256 = format!("{:x}", Sha256::digest(b"protocol fixture"));
+        ids.push(
+            success(&app, app.import_model(&original, manifest).unwrap()).result_ids[0].clone(),
+        );
+    }
+    // Explicit fault-injection protocol fixtures; no model accuracy claim or relaxed production import.
+    {
+        let db = frameiq_persistence::Database::open(&appdata.join("frameiq.db")).unwrap();
+        for task in ["hair", "detection"] {
+            db.save_task_pack(
+                &TaskPackV2 {
+                    schema_version: 2,
+                    id: format!("fixture-{task}"),
+                    task: task.into(),
+                    adapter: if task == "hair" {
+                        "hair_segmenter_v1"
+                    } else {
+                        "grounding_dino_v1"
+                    }
+                    .into(),
+                    inputs: vec![],
+                    outputs: vec![],
+                    artifacts: vec![TaskArtifactV2 {
+                        name: "fixture.onnx".into(),
+                        sha256: "a".repeat(64),
+                        byte_size: "16".into(),
+                        source_url: "https://example.test/protocol".into(),
+                    }],
+                    license: "fixture".into(),
+                    license_url: "https://example.test/license".into(),
+                    preprocessing: "{}".into(),
+                    qualification: "protocol_double_only".into(),
+                },
+                data.path().to_str().unwrap(),
+                "ready",
+            )
+            .unwrap();
+        }
+    }
+    let project = app.create_project("All seven protocol workflows").unwrap();
+    success(&app, app.import_video(&project.id, &video, None).unwrap());
+    let source = app.sources(&project.id).unwrap().remove(0);
+    let mut complete_job = None;
+    for preset in app.presets().unwrap() {
+        let is_custom = preset.id == "custom";
+        let is_complete = preset.id == "complete";
+        let request = PresetExecutionV1 {
+            source_id: source.id.clone(),
+            preset,
+            anchor_ordinal: "10".into(),
+            person_model_id: ids[0].clone(),
+            person_index: 0,
+            face_model_id: Some(ids[2].clone()),
+            custom_rectangle: is_custom.then_some(RegionRectV1 {
+                x: 0.3,
+                y: 0.3,
+                width: 0.3,
+                height: 0.3,
+            }),
+            experimental: true,
+        };
+        let job = success(&app, app.execute_preset(request).unwrap());
+        let result = app.preset_result(&job.job_id).unwrap().unwrap();
+        assert!(
+            !result.frames.is_empty(),
+            "{} returned no results",
+            result.preset.id
+        );
+        assert!(result.track.observations.iter().any(|o| o
+            .frame
+            .frame_ref
+            .presentation_ordinal
+            .parse::<u64>()
+            .unwrap()
+            < 10));
+        assert!(result.track.observations.iter().any(|o| o
+            .frame
+            .frame_ref
+            .presentation_ordinal
+            .parse::<u64>()
+            .unwrap()
+            > 10));
+        if is_complete {
+            assert!(
+                result.frames.len() < 8,
+                "One supported view cannot fabricate eight views"
+            );
+            assert!(!result.details.unwrap().is_empty());
+            complete_job = Some(job.job_id);
+        }
+    }
+    app.remove_model(&ids[1]).unwrap();
+    assert!(
+        app.preset_result(&complete_job.unwrap()).unwrap().is_none(),
+        "Pose removal invalidates dependent view classifications"
+    );
 }

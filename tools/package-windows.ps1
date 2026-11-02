@@ -15,6 +15,7 @@ Copy-Item "$repo/target/release/frameiq-ai-worker.exe" "$stage/binaries/frameiq-
 Get-ChildItem "$native/bin" -Filter '*.dll' | Copy-Item -Destination "$stage/native" -Force
 Copy-Item "$native/LICENSE" "$stage/native/FFmpeg-LICENSE" -Force
 Copy-Item "$native/zimg-LICENSE" "$stage/native/zimg-LICENSE" -Force
+Copy-Item "$native/dav1d-LICENSE" "$stage/native/dav1d-LICENSE" -Force
 Copy-Item "$native/build-config.mak" "$stage/native/build-config.mak" -Force
 # The ORT archive must have been verified against the committed runtime lock.
 $ort="$repo/.native/onnxruntime"

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "adapter": "siglip2_image_v1",
+  "modelSha256": "734181cbe07095fb4fb465439b72feb07c4b973687e97bdfcfc33d3a9c668134",
+  "upstream": "google/siglip2-base-patch16-224",
+  "upstreamRevision": "75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2",
+  "runtime": "1.22.0",
+  "torch": "2.7.1",
+  "passed": true,
+  "cases": [
+    {
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maximumAbsoluteErrors": [
+        8.821487426757812e-06
+      ],
+      "passed": true,
+      "scope": "Identical-tensor PyTorch/ONNX Runtime parity; not accuracy evaluation"
+    }
+  ],
+  "native": null,
+  "nativeCases": [
+    {
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "cosine": 0.9999998089910752,
+      "maximumAbsoluteError": 6.288230897100178e-08
+    },
+    {
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "cosine": 0.9999999806140958,
+      "maximumAbsoluteError": 2.2621154838198265e-08
+    },
+    {
+      "imageSha256": "56c3c4f755b6b8787bdadac7992077aab796338ef88b253b16a7cf783bde245b",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "cosine": 0.9999999608932881,
+      "maximumAbsoluteError": 1.771035766928719e-07
+    }
+  ],
+  "workerSha256": "4b3c0c4a9be03e8fde962f2c11495a00860f5529d8b26b107bcd6e9a0d5f4d84",
+  "preprocessingSha256": "af008c7a6f8891665edb1db80d4767fa01b7622e2455d184ba8d903f66b30325"
+}

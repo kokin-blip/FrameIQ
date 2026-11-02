@@ -18,6 +18,7 @@ fn authorize(
 fn client() -> AppResult<Client> {
     Client::builder()
         .no_proxy()
+        .retry(reqwest::retry::never())
         .redirect(reqwest::redirect::Policy::none())
         .connect_timeout(Duration::from_secs(2))
         .timeout(Duration::from_secs(30))
@@ -43,6 +44,58 @@ fn body(response: reqwest::blocking::Response) -> AppResult<Value> {
         return Err(error("Runtime response exceeds limit."));
     }
     serde_json::from_slice(&bytes).map_err(error)
+}
+/// Explicit reviewed project images; discovery/probes continue to send synthetic pixels only.
+pub fn analyze_images(
+    runtime: &str,
+    port: u16,
+    model: &str,
+    token: Option<&str>,
+    images: &[String],
+    context: &str,
+    task: &FashionTaskV1,
+) -> AppResult<crate::fashion::Outcome> {
+    if matches!(task, FashionTaskV1::Research) {
+        return Err(error(
+            "Local vision models do not provide hosted web search.",
+        ));
+    }
+    if images.is_empty()
+        || images.len() > 8
+        || images.iter().any(|s| s.len() > 1400000)
+        || context.len() > 20000
+    {
+        return Err(error("Reviewed image request exceeds limits."));
+    }
+    let report = discover(runtime, port, token)?;
+    if !report
+        .models
+        .iter()
+        .any(|m| m.id == model && m.vision && m.local)
+    {
+        return Err(error("Choose a locally hosted image-capable model."));
+    }
+    let prompt = crate::fashion::instruction(task, context);
+    let base = endpoint(runtime, port)?;
+    let c = client()?;
+    let value = if runtime == "ollama" {
+        body(authorize(c.post(format!("{base}/api/generate")),token).json(&json!({"model":model,"prompt":prompt,"images":images,"format":"json","stream":false})).send().map_err(error)?)?
+    } else {
+        let mut content = vec![json!({"type":"text","text":prompt})];
+        for b in images {
+            content.push(json!({"type":"image_url","image_url":{"url":format!("data:image/jpeg;base64,{b}")}}));
+        }
+        body(authorize(c.post(format!("{base}/v1/chat/completions")),token).json(&json!({"model":model,"messages":[{"role":"user","content":content}],"response_format":{"type":"json_object"},"stream":false})).send().map_err(error)?)?
+    };
+    let text = if runtime == "ollama" {
+        value["response"].as_str()
+    } else {
+        value["choices"][0]["message"]["content"].as_str()
+    }
+    .ok_or_else(|| error("Model returned no structured attributes."))?;
+    let mut outcome = crate::fashion::parse(text, vec![], false)?;
+    outcome.model = Some(value["model"].as_str().unwrap_or(model).to_string());
+    Ok(outcome)
 }
 pub fn discover(runtime: &str, port: u16, token: Option<&str>) -> AppResult<LocalRuntimeReportV1> {
     let client = client()?;

@@ -1,5 +1,7 @@
 # Implementation status
 
+Current phases 1–8 implementation and qualification status: [phase-1-8-completion.md](phase-1-8-completion.md). The older milestone narrative below is retained as history.
+
 The current milestone 1–4 implementation and explicit remaining gates are tracked in [milestones-1-4-status.md](milestones-1-4-status.md). The baseline below records the earlier extractor delivery; it is retained as historical context.
 
 ## Implemented in this checkout

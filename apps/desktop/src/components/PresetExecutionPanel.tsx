@@ -1,3 +1,4 @@
+import { fashionApi } from "../fashionClient";
 import { useModelRegistry } from "../workspace/modelRegistry";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@frameiq/ui";
@@ -39,11 +40,39 @@ export function PresetExecutionPanel({
     starting ||
     (!!active && ["queued", "running", "cancelling"].includes(active.status));
   const kind = preset.requiredCapabilities.join(",");
-  const supported = [
+  const [extraCapabilities, setExtraCapabilities] = useState<string[]>([]);
+  const baselineSupported = [
     "region_tracking",
     "face_landmarks",
     "person,pose,person_mask",
   ].includes(kind);
+  const hasPose = models.some(
+    (m) => m.status === "ready" && m.manifest.task === "pose",
+  );
+  const supported =
+    baselineSupported ||
+    (kind === "head_region,hair_mask" && extraCapabilities.includes("hair")) ||
+    (["accessory_region", "foot_landmarks,footwear_region"].includes(kind) &&
+      extraCapabilities.includes("detection")) ||
+    (kind === "person,pose,view_orientation" && hasPose);
+  useEffect(() => {
+    let live = true;
+    if (!baselineSupported)
+      void fashionApi
+        .capabilities()
+        .then((c) => {
+          if (live)
+            setExtraCapabilities(
+              c.filter((c) => c.status !== "unavailable").map((c) => c.task),
+            );
+        })
+        .catch(() => {
+          if (live) setExtraCapabilities([]);
+        });
+    return () => {
+      live = false;
+    };
+  }, [kind, jobs]);
   useEffect(() => {
     let live = true;
     setChoice(null);
@@ -142,9 +171,9 @@ export function PresetExecutionPanel({
     <section aria-label="Experimental preset execution">
       <h3>Automatic frame selection</h3>
       <p>
-        Choose the anchor subject above. Tracking stops at cuts, lost subjects,
-        or ambiguity. Accuracy is not yet validated. Results are added to
-        Selections; existing frames are kept.
+        Choose the anchor subject above. Tracking runs in both directions and
+        stops at cuts, lost subjects, or ambiguity. Accuracy is not yet
+        validated. Results are added to Selections; existing frames are kept.
       </p>
       <label>
         <input
@@ -170,6 +199,12 @@ export function PresetExecutionPanel({
             ))}
           </select>
         </label>
+      )}
+      {kind === "person,pose,person_mask" && !hasPose && (
+        <p>
+          Degraded Outfit mode: visibility and coverage use tracked-region
+          geometry proxies until a pose model is available.
+        </p>
       )}
       {!supported && (
         <p>Required automatic model capability unavailable for this preset.</p>
@@ -238,9 +273,44 @@ export function PresetExecutionPanel({
               : ""}
           </p>
           <p>
-            Region quality only. Visibility, coverage, and composition weights
-            are not scored.
+            All five weights affect ranking. Visibility, coverage, occlusion and
+            view orientation are experimental measurements; geometry proxies are
+            labeled in each result.
           </p>
+          {result.preset.requiredCapabilities.includes("view_orientation") && (
+            <div>
+              <h4>Complementary detail crops</h4>
+              {!result.details?.length && (
+                <p>
+                  No eligible distinct detail crops were available. Install a
+                  qualified detection pack or collect closer views.
+                </p>
+              )}
+              {result.details?.map((item) => (
+                <article key={item.id}>
+                  {item.crop && (
+                    <img
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: 160,
+                        objectFit: "contain",
+                      }}
+                      src={api.image(item.crop.path)}
+                      alt={`${item.category} detail crop`}
+                    />
+                  )}
+                  <Button
+                    onClick={() => {
+                      if (item.media.kind === "frame")
+                        w.openSelection(item.media.selection);
+                    }}
+                  >
+                    {item.category.replaceAll("_", " ")} · inspect exact source
+                  </Button>
+                </article>
+              ))}
+            </div>
+          )}
           {result.frames.map((r) => (
             <article
               className="recommendation-row"
@@ -250,7 +320,7 @@ export function PresetExecutionPanel({
                 Frame {r.quality.frame.frameRef.presentationOrdinal} ·{" "}
                 {timestamp(r.quality.frame.timeSeconds)}
               </button>
-              <strong>Region quality {r.score.toFixed(0)}</strong>
+              <strong>Weighted score {r.score.toFixed(0)}</strong>
               <p>{r.reasons.join(" · ")}</p>
             </article>
           ))}

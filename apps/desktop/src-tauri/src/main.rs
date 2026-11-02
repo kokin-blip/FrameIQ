@@ -1,3 +1,5 @@
+mod shopping;
+mod fashion;
 mod cloud;
 mod subscription;
 use frameiq_application::Application;
@@ -475,6 +477,44 @@ fn main() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            fashion::fashion_exports,
+            fashion::export_look,
+            fashion::resume_look_export,
+            shopping::ebay_status,
+            shopping::save_ebay_credentials,
+            shopping::remove_ebay_credentials,
+            fashion::photos,
+            fashion::import_photo,
+            fashion::fashion_media,
+            fashion::fashion_items,
+            fashion::save_fashion_item,
+            fashion::delete_fashion_item,
+            fashion::undo_fashion_item,
+            fashion::garment_groups,
+            fashion::save_garment_group,
+            fashion::associate_garments,
+            fashion::product_candidates,
+            fashion::confirm_product_candidate,
+            fashion::saved_looks,
+            fashion::save_look,
+            fashion::delete_look,
+            fashion::fashion_capabilities,
+            fashion::detect_fashion_local,
+            fashion::refine_item_mask,
+            fashion::catalog_products,
+            fashion::import_catalog,
+            fashion::search_catalog,
+            fashion::import_task_pack,
+            fashion::fashion_model_catalog,
+            fashion::download_task_pack,
+            fashion::remove_task_pack,
+            fashion::read_task_pack,
+            fashion::prepare_fashion_review,
+            fashion::fashion_review,
+            fashion::fashion_history,
+            fashion::discard_fashion_review,
+            fashion::run_fashion_review,
+
             projects,
             create_project,
             rename_project,

@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: rustup update stable --no-self-update
       - run: rustup default stable
-      - run: brew install pkg-config gnupg llvm autoconf automake libtool
+      - run: brew install pkg-config gnupg llvm autoconf automake libtool meson ninja
       - uses: actions/cache@v4
         id: native-cache
         with:

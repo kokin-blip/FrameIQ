@@ -50,6 +50,75 @@ fn main() {
                         serde_json::json!({"kind":"persons","result":{"width":w,"height":h,"algorithm":"mediapipe-person-224-v1","modelHash":request["manifest"]["sha256"],"persons":[{"detectorBox":[0.,0.,w as f64,h as f64],"landmarks":[[w as f64/2.,h as f64/2.],[w as f64/2.,0.],[w as f64/2.,h as f64/4.],[w as f64/2.,0.]],"score":0.9}]}})
                     );
                 }
+                "detect_faces" => {
+                    let (w, h) =
+                        image::image_dimensions(request["image"].as_str().unwrap()).unwrap();
+                    let landmarks = (0..5)
+                        .map(|_| serde_json::json!({"x":0.5,"y":0.2}))
+                        .collect::<Vec<_>>();
+                    println!(
+                        "{}",
+                        serde_json::json!({"kind":"faces","result":{"width":w,"height":h,"algorithm":"yunet-2023-letterbox-v1","modelHash":request["manifest"]["sha256"],"faces":[{"rectangle":{"x":0.35,"y":0.1,"width":0.3,"height":0.25},"detectionScore":0.95,"landmarks":landmarks,"inFrameFraction":1.,"allLandmarksInFrame":true}]}})
+                    );
+                }
+                "estimate_pose" => {
+                    use sha2::{Digest, Sha256};
+                    let (w, h) =
+                        image::image_dimensions(request["image"].as_str().unwrap()).unwrap();
+                    let path = request["mask_output"].as_str().unwrap();
+                    image::GrayImage::from_pixel(w, h, image::Luma([255]))
+                        .save(path)
+                        .unwrap();
+                    let hash = format!("{:x}", Sha256::digest(std::fs::read(path).unwrap()));
+                    let points=(0..39).map(|_|serde_json::json!({"x":w as f64/2.,"y":h as f64/2.,"z":0.,"visibility":0.95,"presence":0.95})).collect::<Vec<_>>();
+                    let world = (0..39)
+                        .map(|i| {
+                            if i == 11 {
+                                [-0.2, 0., 0.]
+                            } else if i == 12 {
+                                [0.2, 0., 0.]
+                            } else {
+                                [0., 0., 0.]
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                    println!(
+                        "{}",
+                        serde_json::json!({"kind":"pose","result":{"width":w,"height":h,"algorithm":"mediapipe-pose-roi-v1","modelHash":request["manifest"]["sha256"],"pose":{"score":0.95,"boxXyxy":[0.,0.,w as f64,h as f64],"landmarks":points,"worldLandmarks":world},"maskPath":path,"maskSha256":hash}})
+                    );
+                }
+                "run_task_pack" => {
+                    use sha2::{Digest, Sha256};
+                    let p = &request["pack"];
+                    let (w, h) =
+                        image::image_dimensions(request["image"].as_str().unwrap()).unwrap();
+                    let mask = if p["task"] == "hair" {
+                        let path = request["mask_output"].as_str().unwrap();
+                        image::GrayImage::from_fn(w, h, |x, y| {
+                            image::Luma([
+                                if x > w / 4 && x < w * 3 / 4 && y > h / 12 && y < h / 3 {
+                                    255
+                                } else {
+                                    0
+                                },
+                            ])
+                        })
+                        .save(path)
+                        .unwrap();
+                        serde_json::json!({"path":path,"sha256":format!("{:x}",Sha256::digest(std::fs::read(path).unwrap())),"width":w,"height":h})
+                    } else {
+                        serde_json::Value::Null
+                    };
+                    let detections = if p["task"] == "detection" {
+                        serde_json::json!([{"category":"bag","rectangle":{"x":0.6,"y":0.4,"width":0.2,"height":0.25},"score":0.9},{"category":"footwear","rectangle":{"x":0.35,"y":0.75,"width":0.3,"height":0.2},"score":0.9}])
+                    } else {
+                        serde_json::json!([])
+                    };
+                    println!(
+                        "{}",
+                        serde_json::json!({"kind":"task_result","result":{"packId":p["id"],"modelHash":p["artifacts"][0]["sha256"],"detections":detections,"mask":mask,"embedding":[]}})
+                    );
+                }
                 _ => panic!("Unsupported protocol-double request"),
             }
             std::io::stdout().flush().unwrap();

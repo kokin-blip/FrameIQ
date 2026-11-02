@@ -18,7 +18,7 @@ $port = Get-Content "$overlay/portfile.cmake" -Raw
 $header = 'vcpkg_download_distfile(ARCHIVE URLS "https://ffmpeg.org/releases/ffmpeg-8.0.3.tar.xz" FILENAME "ffmpeg-8.0.3.tar.xz" SHA512 e024e6a8b93cf8765f7d3ce6ec5b3e0b85d2f939cea42200d681e6cdbd5cfbd2cff237c23ce882c98ab0ce6a52b04b17ae5f90e368cf5360caa919fbcb8a4305)' + "`n" + 'vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}"'
 $port = $port.Replace('vcpkg_from_github(', $header)
 $port = $port -replace '(?m)^\s*(OUT_SOURCE_PATH|REPO|REF|SHA512|HEAD_REF) .+\r?\n',''
-$restricted = '--disable-gpl --disable-nonfree --disable-network --disable-everything --enable-avdevice --enable-indev=lavfi --enable-avcodec --enable-avformat --enable-avfilter --enable-swscale --enable-swresample --enable-ffmpeg --enable-ffprobe --enable-libzimg --enable-decoder=wrapped_avframe,h264,hevc,vp8,vp9,av1,mpeg4,mpeg2video,mjpeg,png,ffv1,rawvideo --enable-parser=h264,hevc,vp8,vp9,av1,mpeg4video,mpegvideo --enable-demuxer=mov,matroska,avi,mpegts,ogg,image2,concat --enable-protocol=file,pipe --enable-encoder=png,mjpeg,ffv1,mpeg4,rawvideo,wrapped_avframe --enable-muxer=image2,matroska,null,rawvideo --enable-filter=testsrc2,setpts,select,scale,format,color,buffer,buffersink,zscale,tonemap,geq,setparams'
+$restricted = '--disable-gpl --disable-nonfree --disable-network --disable-everything --enable-avdevice --enable-indev=lavfi --enable-avcodec --enable-avformat --enable-avfilter --enable-swscale --enable-swresample --enable-ffmpeg --enable-ffprobe --enable-libzimg --enable-libdav1d --enable-decoder=wrapped_avframe,h264,hevc,vp8,vp9,av1,libdav1d,mpeg4,mpeg2video,mjpeg,png,ffv1,rawvideo --enable-parser=h264,hevc,vp8,vp9,av1,mpeg4video,mpegvideo --enable-demuxer=mov,matroska,avi,mpegts,ogg,image2,concat --enable-protocol=file,pipe --enable-encoder=png,mjpeg,ffv1,mpeg4,rawvideo,wrapped_avframe --enable-muxer=image2,matroska,null,rawvideo --enable-filter=testsrc2,setpts,select,scale,format,color,buffer,buffersink,zscale,tonemap,geq,setparams'
 $port = $port.Replace('set(OPTIONS_RELEASE "--enable-optimizations")', 'string(APPEND OPTIONS " ' + $restricted + '")' + "`n" + 'set(OPTIONS_RELEASE "--enable-optimizations")')
 Set-Content "$overlay/portfile.cmake" $port
 $manifest = Get-Content "$overlay/vcpkg.json" -Raw | ConvertFrom-Json
@@ -35,7 +35,7 @@ set(VCPKG_BUILD_TYPE release)
 '@ | Set-Content "$triplets/x64-frameiq.cmake"
 $overlayRoot = Split-Path $overlay -Parent
 Copy-Item "$repo/tools/vcpkg-overlay/zimg" $overlayRoot -Recurse -Force
-& "$vc/vcpkg.exe" install 'ffmpeg[avcodec,avdevice,avfilter,avformat,swresample,swscale,ffmpeg,ffprobe]:x64-frameiq' "--overlay-ports=$overlayRoot" "--overlay-triplets=$triplets" --disable-metrics
+& "$vc/vcpkg.exe" install 'ffmpeg[avcodec,avdevice,avfilter,avformat,swresample,swscale,ffmpeg,ffprobe,dav1d]:x64-frameiq' "--overlay-ports=$overlayRoot" "--overlay-triplets=$triplets" --disable-metrics
 if($LASTEXITCODE){throw 'Restricted FFmpeg native build failed'}
 $prefix = "$vc/installed/x64-frameiq"
 $native = "$repo/.native/ffmpeg"
@@ -43,6 +43,7 @@ New-Item -ItemType Directory -Force $native | Out-Null
 Copy-Item "$prefix/*" $native -Recurse -Force
 Copy-Item "$prefix/share/ffmpeg/copyright" "$native/LICENSE" -Force
 Copy-Item "$prefix/share/zimg/copyright" "$native/zimg-LICENSE" -Force
+Copy-Item "$prefix/share/dav1d/copyright" "$native/dav1d-LICENSE" -Force
 $ffmpeg = Get-ChildItem $prefix -Recurse -Filter ffmpeg.exe | Select-Object -First 1
 $probe = Get-ChildItem $prefix -Recurse -Filter ffprobe.exe | Select-Object -First 1
 Copy-Item $ffmpeg.FullName "$native/bin/ffmpeg.exe" -Force
@@ -50,7 +51,7 @@ Copy-Item $probe.FullName "$native/bin/ffprobe.exe" -Force
 $env:PATH = "$native/bin;$env:PATH"
 & "$native/bin/ffmpeg.exe" -buildconf 2>&1 | Set-Content "$native/build-config.mak"
 $config = Get-Content "$native/build-config.mak" -Raw
-if($config -match '--enable-(gpl|nonfree)' -or $config -notmatch '--enable-libzimg') { throw 'Native license/color configuration failed validation' }
+if($config -match '--enable-(gpl|nonfree)' -or $config -notmatch '--enable-libzimg' -or $config -notmatch '--enable-libdav1d') { throw 'Native license/color/AV1 configuration failed validation' }
 $env:FFMPEG_DIR = $native
 $env:VCPKG_ROOT = $vc
 $env:VCPKGRS_TRIPLET = 'x64-frameiq'

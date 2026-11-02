@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "adapter": "sam2_image_v1",
+  "modelSha256": "7c28a4e774920c71933953476478e1bba77a4a1b7eba085e6568b84637089a30",
+  "upstream": "facebook/sam2.1-hiera-tiny",
+  "upstreamRevision": "de431c4043854a71d8101e17995dfe596bf101a5",
+  "runtime": "1.22.0",
+  "torch": "2.7.1",
+  "passed": false,
+  "referencePassed": false,
+  "cases": [
+    {
+      "maskIoU": 0.9911906528189911,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.11,
+        "y": 0.4,
+        "width": 0.64,
+        "height": 0.6
+      },
+      "finiteOutputs": true,
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maximumAbsoluteErrors": [
+        0.17534101009368896
+      ],
+      "passed": false,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "maskIoU": 0.9287469287469288,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.465,
+        "y": 0.42,
+        "width": 0.065,
+        "height": 0.25
+      },
+      "finiteOutputs": true,
+      "imageSha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "maximumAbsoluteErrors": [
+        0.7310209274291992
+      ],
+      "passed": false,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "maskIoU": 0.9995561867566128,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.44,
+        "y": 0.34,
+        "width": 0.52,
+        "height": 0.65
+      },
+      "finiteOutputs": true,
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "maximumAbsoluteErrors": [
+        0.24535655975341797
+      ],
+      "passed": false,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "maskIoU": 0.995565927654609,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.36,
+        "y": 0.56,
+        "width": 0.31,
+        "height": 0.44
+      },
+      "finiteOutputs": true,
+      "imageSha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "maximumAbsoluteErrors": [
+        0.2637653350830078
+      ],
+      "passed": false,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    }
+  ],
+  "native": null
+}

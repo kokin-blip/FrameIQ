@@ -143,14 +143,14 @@ impl AiProcess {
         let mut last_memory = Instant::now();
         let native_inference = matches!(
             request,
-            InferenceRequestV1::Validate { .. }
+            InferenceRequestV1::RunTaskPack { .. } | InferenceRequestV1::Validate { .. }
                 | InferenceRequestV1::Run { .. }
                 | InferenceRequestV1::DetectFaces { .. }
                 | InferenceRequestV1::DetectPersons { .. }
                 | InferenceRequestV1::EstimatePose { .. }
                 | InferenceRequestV1::Benchmark { .. }
         );
-        let timeout = if matches!(request, InferenceRequestV1::Download { .. }) {
+        let timeout = if matches!(request, InferenceRequestV1::Download { .. } | InferenceRequestV1::DownloadArtifact { .. }) {
             Duration::from_secs(7200)
         } else {
             Duration::from_secs(120)
@@ -231,7 +231,7 @@ impl Application {
         };
         let _cpu = if matches!(
             &request,
-            InferenceRequestV1::Validate { .. }
+            InferenceRequestV1::RunTaskPack { .. } | InferenceRequestV1::Validate { .. }
                 | InferenceRequestV1::Run { .. }
                 | InferenceRequestV1::DetectFaces { .. }
                 | InferenceRequestV1::DetectPersons { .. }

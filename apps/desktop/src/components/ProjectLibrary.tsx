@@ -1,3 +1,4 @@
+import { fashionApi } from "../fashionClient";
 import { useEffect, useState } from "react";
 import { Button, EmptyState } from "@frameiq/ui";
 import {
@@ -7,7 +8,7 @@ import {
   Plus,
   AlertCircle,
 } from "lucide-react";
-import { api, message } from "../client";
+import { api, desktop, message } from "../client";
 import type { SourceSummary } from "../contracts";
 import type { Workspace } from "../workspace/useWorkspace";
 
@@ -18,6 +19,7 @@ type Cover = {
   loading?: boolean;
   sourceId?: string;
   sources?: SourceSummary[];
+  photos?: {name:string;revision:string}[];
 };
 function Rename({
   name,
@@ -99,15 +101,17 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
       // One thumbnail request at a time; native decoding stays bounded.
       for (const project of w.projects) {
         try {
-          const sources = await api.sources(project.id);
+          const [sources,photos] = await Promise.all([api.sources(project.id),desktop?fashionApi.photos(project.id):Promise.resolve([])]);
           const source = sources.find(
             (s) => s.status === "ready" && BigInt(s.frameCount) > 0n,
           );
           let cover: Cover = {
-            sourceCount: sources.length,
+            sourceCount: sources.length+photos.length,
+            photos,
             sources,
             sourceId: source?.id,
           };
+          if (!source&&photos[0])cover.url=api.image(photos[0].imagePath);
           if (source) {
             try {
               const image = await api.thumbnail(source.id, "0");
@@ -138,7 +142,7 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
       <div className="page-title">
         <div>
           <h1>Project library</h1>
-          <p>Manage videos, selected frames, and exports.</p>
+          <p>Manage photos, videos, selected frames, looks and exports.</p>
         </div>
         <Button onClick={() => void w.importVideo()}>
           <Plus size={16} />
@@ -193,7 +197,7 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
               <article className="project-card" key={p.id}>
                 <button
                   className="project-open"
-                  onClick={() => w.openProject(p)}
+                  onClick={() => {void Promise.resolve(w.openProject(p)).then(()=>{if(!cover?.sources?.length&&cover?.photos?.length)w.setView("fashion");});}}
                   aria-label={`Open project ${p.name}`}
                 >
                   <div className="project-cover">
@@ -240,6 +244,7 @@ export function ProjectLibrary({ w }: { w: Workspace }) {
                   />
                   <details>
                     <summary>Sources ({cover?.sourceCount ?? 0})</summary>
+                    {cover?.photos?.map(photo=><div className="source-alias" key={photo.revision}><strong>{photo.name}</strong><small>Photo</small></div>)}
                     {cover?.sources?.map((source) => (
                       <div className="source-alias" key={source.id}>
                         <strong>{source.name}</strong>

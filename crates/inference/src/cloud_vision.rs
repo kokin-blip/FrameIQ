@@ -194,13 +194,13 @@ fn parse(provider: CloudProviderV1, value: &Value, ids: &[String]) -> AppResult<
 
 /// Bounded SSE framing survives arbitrary byte/UTF-8 boundaries. Partial text is never a result.
 #[derive(Default)]
-struct SubscriptionStream {
+pub(crate) struct SubscriptionStream {
     pending: Vec<u8>,
     received: usize,
     completed: Option<Value>,
 }
 impl SubscriptionStream {
-    fn push(&mut self, chunk: &[u8]) -> AppResult<()> {
+    pub(crate) fn push(&mut self, chunk: &[u8]) -> AppResult<()> {
         self.received += chunk.len();
         if self.received > 2 * 1024 * 1024 {
             return Err(invalid());
@@ -251,7 +251,7 @@ impl SubscriptionStream {
         }
         Ok(())
     }
-    fn finish(self) -> AppResult<Value> {
+    pub(crate) fn finish(self) -> AppResult<Value> {
         if self.pending.iter().any(|b| !b.is_ascii_whitespace()) {
             return Err(invalid());
         }

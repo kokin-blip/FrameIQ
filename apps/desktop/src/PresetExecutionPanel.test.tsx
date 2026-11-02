@@ -115,6 +115,8 @@ it("restores an exact recommended frame and explains partial coverage", async ()
   );
   await user.click(screen.getByRole("button", { name: "Auto-select frames" }));
   mock.presetResult.mockResolvedValue({
+    preset,
+    details: [],
     track: { coverageComplete: false, stopReason: "ambiguous_subjects" },
     frames: [
       { quality: { frame }, score: 70, reasons: ["Sharp target region"] },
@@ -165,6 +167,8 @@ it("does not auto-add cancelled preset results", async () => {
   await waitFor(() => expect(button.disabled).toBe(false));
   await user.click(button);
   mock.presetResult.mockResolvedValue({
+    preset,
+    details: [],
     track: { coverageComplete: false, stopReason: "cancelled" },
     frames: [{ quality: { frame }, score: 70, reasons: [] }],
   } as unknown as PresetResultV1);

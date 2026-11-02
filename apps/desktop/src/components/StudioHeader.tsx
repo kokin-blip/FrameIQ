@@ -1,4 +1,5 @@
 import { Button } from "@frameiq/ui";
+import { AppLogo } from "./AppLogo";
 import {
   FolderOpen,
   Plus,
@@ -17,7 +18,8 @@ export function StudioHeader({ w }: { w: Workspace }) {
         aria-label="FrameIQ project library"
         onClick={() => w.setView("library")}
       >
-        FrameIQ
+        <AppLogo className="brand-mark" />
+        <span>FrameIQ</span>
       </button>
       <div className="project-context">
         <button
@@ -48,6 +50,14 @@ export function StudioHeader({ w }: { w: Workspace }) {
         )}
       </div>
       <nav className="workspace-switch" aria-label="Workspaces">
+        <button
+          aria-label="Fashion inspection"
+          aria-current={w.view === "fashion" ? "page" : undefined}
+          className={w.view === "fashion" ? "active" : ""}
+          onClick={() => w.setView("fashion")}
+        >
+          Fashion
+        </button>
         <button
           aria-label="Extract frames"
           aria-current={w.view === "extract" ? "page" : undefined}

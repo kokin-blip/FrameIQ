@@ -1,8 +1,13 @@
+import { FashionRouting } from "./FashionRouting";
+import { ShoppingProviders } from "./ShoppingProviders";
+import { FashionModels } from "./FashionModels";
 import { CloudProviders } from "./CloudProviders";
 import { ModelManager } from "./ModelManager";
 import { Button } from "@frameiq/ui";
 import { useSettingsTab, usePreferences } from "../store";
 import { Film, Keyboard } from "lucide-react";
+import { AppLogo } from "./AppLogo";
+import { version } from "../../package.json";
 
 export function Settings({
   onSetup,
@@ -45,11 +50,21 @@ export function Settings({
         <div hidden={tab !== "models"}>
           <Button onClick={onSetup}>Run model setup</Button>
           <ModelManager />
+          <FashionModels />
         </div>
         <div hidden={tab !== "cloud"}>
           <CloudProviders />
+          <ShoppingProviders />
+          <FashionRouting />
         </div>
         <div hidden={tab !== "general"}>
+          <section className="settings-section app-about" aria-label="About FrameIQ">
+            <AppLogo size={64} />
+            <div>
+              <h2>FrameIQ</h2>
+              <p>Version {version}</p>
+            </div>
+          </section>
           <section className="settings-section">
             <div>
               <h2>Selections</h2>
@@ -76,7 +91,7 @@ export function Settings({
           </section>
           <p>
             Extraction stays on this computer. Cloud requests require reviewed
-            images and explicit approval. Shopping search is unavailable.
+            images and explicit approval. Fashion research sends only explicitly reviewed images.
           </p>
           <section className="settings-section">
             <Film size={24} />

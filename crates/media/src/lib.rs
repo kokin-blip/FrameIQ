@@ -1,3 +1,5 @@
+mod photo;
+pub use photo::{decode_photo,crop_photo,apply_photo_mask};
 mod color;
 use ffmpeg_next as ffmpeg;
 use frameiq_contracts::*;

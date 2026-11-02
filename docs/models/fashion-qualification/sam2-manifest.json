@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "id": "facebook-sam2.1-hiera-tiny-de431c404385",
+  "task": "mask",
+  "adapter": "sam2_image_v1",
+  "inputs": [
+    {
+      "name": "pixel_values",
+      "shape": [
+        1,
+        3,
+        1024,
+        1024
+      ],
+      "dtype": "float32"
+    },
+    {
+      "name": "input_boxes",
+      "shape": [
+        1,
+        1,
+        4
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "mask",
+      "shape": [
+        1,
+        1,
+        1,
+        256,
+        256
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "model.onnx",
+      "sha256": "7c28a4e774920c71933953476478e1bba77a4a1b7eba085e6568b84637089a30",
+      "byteSize": "125707606",
+      "sourceUrl": "https://huggingface.co/facebook/sam2.1-hiera-tiny/tree/de431c4043854a71d8101e17995dfe596bf101a5"
+    },
+    {
+      "name": "qualification.json",
+      "sha256": "d9bea450387682289e184c72be85b58aa4ffc90543de56406f25641c46762d4e",
+      "byteSize": "2644",
+      "sourceUrl": "https://huggingface.co/facebook/sam2.1-hiera-tiny/tree/de431c4043854a71d8101e17995dfe596bf101a5"
+    }
+  ],
+  "license": "Apache-2.0",
+  "licenseUrl": "https://huggingface.co/facebook/sam2.1-hiera-tiny/tree/de431c4043854a71d8101e17995dfe596bf101a5",
+  "preprocessing": "{\"imageInput\":\"pixel_values\",\"width\":1024,\"height\":1024,\"layout\":\"nchw\",\"scale\":0.00392156862745098,\"mean\":[0.485,0.456,0.406],\"std\":[0.229,0.224,0.225],\"letterbox\":false,\"output\":\"mask\",\"constants\":{\"input_boxes\":{\"from\":\"box\"}}}",
+  "qualification": "failed"
+}

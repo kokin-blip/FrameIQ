@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 2,
+  "id": "mediapipe-selfie-multiclass-hair-c6748b1253a9",
+  "task": "hair",
+  "adapter": "hair_segmenter_v1",
+  "inputs": [
+    {
+      "name": "input_29",
+      "shape": [
+        1,
+        256,
+        256,
+        3
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "mask",
+      "shape": [
+        1,
+        1,
+        256,
+        256
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "model.onnx",
+      "sha256": "441549728960d078da547bdb902906ed79361a9c5f6a19ac8fdf3b7658b5870c",
+      "byteSize": "16454717",
+      "sourceUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/fashion-packs-v1/hair-model.onnx"
+    },
+    {
+      "name": "qualification.json",
+      "sha256": "13f93c352dea19adc1752587332b434bda653d0e0e0dd9633792df42ae548bc5",
+      "byteSize": "2808",
+      "sourceUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/fashion-packs-v1/hair-qualification.json"
+    },
+    {
+      "name": "LICENSE.txt",
+      "sha256": "8707eef0533987efc5b155d64761eeb6e20793f50b9bd1a68dad1cf4719d0ed8",
+      "byteSize": "12331",
+      "sourceUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/fashion-packs-v1/hair-LICENSE.txt"
+    },
+    {
+      "name": "NOTICE.txt",
+      "sha256": "9c236c77f3da6bd6247d21473c5491d001b3f4189efaf9c25d493bd199fd7e0e",
+      "byteSize": "887",
+      "sourceUrl": "https://github.com/kokin-blip/FrameIQ/releases/download/fashion-packs-v1/hair-NOTICE.txt"
+    }
+  ],
+  "license": "Apache-2.0",
+  "licenseUrl": "https://storage.googleapis.com/mediapipe-assets/Model%20Card%20Multiclass%20Segmentation.pdf",
+  "preprocessing": "{\"imageInput\":\"input_29\",\"width\":256,\"height\":256,\"layout\":\"nhwc\",\"scale\":0.00784313725490196,\"mean\":[1,1,1],\"std\":[1,1,1],\"output\":\"mask\",\"threshold\":0.5,\"constants\":{},\"resampling\":\"pillow_bilinear_v1\"}",
+  "qualification": "reference_checked"
+}

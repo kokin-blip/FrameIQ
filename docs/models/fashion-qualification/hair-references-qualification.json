@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "adapter": "hair_segmenter_v1",
+  "upstream": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite",
+  "upstreamSha256": "c6748b1253a99067ef71f7e26ca71096cd449baefa8f101900ea23016507e0e0",
+  "modelSha256": "441549728960d078da547bdb902906ed79361a9c5f6a19ac8fdf3b7658b5870c",
+  "normalization": {
+    "mean": [
+      127.5
+    ],
+    "std": [
+      127.5
+    ]
+  },
+  "tensorflow": "2.16.2",
+  "onnxruntime": "1.22.0",
+  "cases": [
+    {
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maximumAbsoluteError": 4.420429468154907e-05,
+      "maskIoU": 1.0,
+      "passed": true,
+      "scope": "Original TFLite/ONNX tensor and hair-category parity; not annotated accuracy"
+    },
+    {
+      "imageSha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "maximumAbsoluteError": 3.5822391510009766e-05,
+      "maskIoU": 1.0,
+      "passed": true,
+      "scope": "Original TFLite/ONNX tensor and hair-category parity; not annotated accuracy"
+    },
+    {
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "maximumAbsoluteError": 4.0277838706970215e-05,
+      "maskIoU": 1.0,
+      "passed": true,
+      "scope": "Original TFLite/ONNX tensor and hair-category parity; not annotated accuracy"
+    },
+    {
+      "imageSha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "maximumAbsoluteError": 4.3138861656188965e-05,
+      "maskIoU": 1.0,
+      "passed": true,
+      "scope": "Original TFLite/ONNX tensor and hair-category parity; not annotated accuracy"
+    }
+  ],
+  "passed": true,
+  "note": "Native qualification must pass separately before activation.",
+  "nativeCases": [
+    {
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 1.0
+    },
+    {
+      "imageSha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 1.0
+    },
+    {
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 0.9963495812754992
+    },
+    {
+      "imageSha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 0.9983452840595698
+    }
+  ],
+  "native": null,
+  "workerSha256": "4b3c0c4a9be03e8fde962f2c11495a00860f5529d8b26b107bcd6e9a0d5f4d84",
+  "preprocessingSha256": "4b376984197bea0d9b9836a3e2c4d87dfe294b58e3877d6875098d973e288dd0"
+}

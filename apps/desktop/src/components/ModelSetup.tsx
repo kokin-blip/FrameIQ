@@ -1,6 +1,8 @@
 import { setupLabel, useModelRegistry } from "../workspace/modelRegistry";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@frameiq/ui";
+import { AppLogo } from "./AppLogo";
+import { FashionModels } from "./FashionModels";
 import { api, message } from "../client";
 import { useJobs } from "../store";
 import type {
@@ -41,6 +43,8 @@ export function ModelSetup({
   const [loading, setLoading] = useState(false);
   const [loadKey, setLoadKey] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [fashionBusy, setFashionBusy] = useState(false);
+  const setupBusy = busy || fashionBusy;
   const [error, setError] = useState("");
   const [outcomes, setOutcomes] = useState<Record<string, Outcome>>({});
   const cancel = useRef(false),
@@ -169,13 +173,16 @@ export function ModelSetup({
       aria-label="Model setup"
     >
       <div className="setup-content">
-        <h1>
-          {step === "choose"
-            ? "Set up local models"
-            : step === "review"
-              ? "Review downloads"
-              : "Model installation"}
-        </h1>
+        <div className="setup-heading">
+          <AppLogo size={48} />
+          <h1>
+            {step === "choose"
+              ? "Set up local models"
+              : step === "review"
+                ? "Review downloads"
+                : "Model installation"}
+          </h1>
+        </div>
         <p>
           Frame extraction works without models. Choose models for optional
           local analysis.
@@ -187,12 +194,12 @@ export function ModelSetup({
           >
             <h2>ChatGPT subscription</h2>
             <p>
-              Bring your own subscription for frame descriptions and preset
-              ranking. Local model packs are optional for these requests.
+              Use your subscription for item suggestions, fashion descriptions
+              and product research. These requests do not require local packs.
             </p>
             <Button
               variant="primary"
-              disabled={busy}
+              disabled={setupBusy}
               onClick={onConnectSubscription}
             >
               Connect ChatGPT
@@ -222,6 +229,10 @@ export function ModelSetup({
             )}
           </div>
         )}
+        {visible && step === "choose" && (
+          <FashionModels onboarding onBusyChange={setFashionBusy} />
+        )}
+        {step === "choose" && <h2>Person and face models</h2>}
         {step === "choose" &&
           catalog.map((m) => {
             const ready = installed.includes(m.id);
@@ -236,7 +247,7 @@ export function ModelSetup({
                   <input
                     type="checkbox"
                     checked={ready || chosen.includes(m.id)}
-                    disabled={ready || !!needsPerson}
+                    disabled={setupBusy || ready || !!needsPerson}
                     onChange={(e) => {
                       setReviewed(false);
                       setChosen((ids) =>
@@ -355,8 +366,8 @@ export function ModelSetup({
         )}
         <p>
           These model packs and automatic presets are experimental.
-          Compatibility checks do not establish accuracy. Hair, accessory, and
-          footwear automatic models are not available yet.
+          Compatibility checks do not establish accuracy. Automatic features
+          become available when their required packs are installed.
         </p>
         <p>
           ChatGPT subscriptions, installed vision runtimes, and cloud AI keys
@@ -364,7 +375,7 @@ export function ModelSetup({
         </p>
         <div className="setup-actions">
           <Button
-            disabled={busy}
+            disabled={setupBusy}
             onClick={() =>
               void Promise.all([
                 refresh(),
@@ -405,7 +416,7 @@ export function ModelSetup({
           {step === "choose" && (
             <Button
               variant="primary"
-              disabled={loading || pending.length === 0}
+              disabled={setupBusy || loading || pending.length === 0}
               onClick={() => setStep("review")}
             >
               Review downloads
@@ -433,10 +444,10 @@ export function ModelSetup({
               Retry unfinished models
             </Button>
           )}
-          <Button disabled={busy} onClick={onFinish}>
+          <Button disabled={setupBusy} onClick={onFinish}>
             {step === "install" || pending.length === 0
               ? "Finish setup"
-              : "Skip model setup"}
+              : "Continue without installing"}
           </Button>
         </div>
       </div>

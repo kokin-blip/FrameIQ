@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "adapter": "sam_image_v1",
+  "modelSha256": "9a282c968146840d670216d9b9f6ddedd860dbfcaff62c0aa0f19789ae8bcc53",
+  "upstream": "facebook/sam-vit-base",
+  "upstreamRevision": "70c1a07f894ebb5b307fd9eaaee97b9dfc16068f",
+  "runtime": "1.22.0",
+  "torch": "2.7.1",
+  "passed": true,
+  "referencePassed": true,
+  "cases": [
+    {
+      "maskIoU": 1.0,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.11,
+        "y": 0.4,
+        "width": 0.64,
+        "height": 0.6
+      },
+      "finiteOutputs": true,
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maximumAbsoluteErrors": [
+        0.0008226633071899414
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "maskIoU": 1.0,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.465,
+        "y": 0.42,
+        "width": 0.065,
+        "height": 0.25
+      },
+      "finiteOutputs": true,
+      "imageSha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "maximumAbsoluteErrors": [
+        0.0009975433349609375
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "maskIoU": 1.0,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.44,
+        "y": 0.34,
+        "width": 0.52,
+        "height": 0.65
+      },
+      "finiteOutputs": true,
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "maximumAbsoluteErrors": [
+        0.00010991096496582031
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "maskIoU": 1.0,
+      "maximumLogitErrorLimit": 0.05,
+      "minimumMaskIoU": 0.99,
+      "rectangle": {
+        "x": 0.36,
+        "y": 0.56,
+        "width": 0.31,
+        "height": 0.44
+      },
+      "finiteOutputs": true,
+      "imageSha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "maximumAbsoluteErrors": [
+        0.0008707046508789062
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    }
+  ],
+  "native": null,
+  "workerSha256": "4b3c0c4a9be03e8fde962f2c11495a00860f5529d8b26b107bcd6e9a0d5f4d84",
+  "nativeCases": [
+    {
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 1.0
+    },
+    {
+      "imageSha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 0.9962168978562421
+    },
+    {
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 0.9920334863624088
+    },
+    {
+      "imageSha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "maskIoU": 0.9987507807620237
+    }
+  ],
+  "preprocessingSha256": "d390689bf7304a0e0e7eb498f65685f5d26b016eda9c397bb102b63748424ae4"
+}

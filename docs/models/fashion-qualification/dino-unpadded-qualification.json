@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "adapter": "grounding_dino_v1",
+  "modelSha256": "26fd34400fa1dd321ab00b2067015d4913316d33c9044c66f5e0f4774e6daa32",
+  "upstream": "IDEA-Research/grounding-dino-tiny",
+  "upstreamRevision": "a2bb814dd30d776dcf7e30523b00659f4f141c71",
+  "runtime": "1.22.0",
+  "torch": "2.7.1",
+  "passed": true,
+  "referencePassed": true,
+  "cases": [
+    {
+      "referenceDetections": 2,
+      "exportDetections": 2,
+      "maximumModelPixelError": 0.0005483627319335938,
+      "maximumScoreError": 8.225440979003906e-06,
+      "tensorParityPassed": false,
+      "finiteOutputs": true,
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "maximumAbsoluteErrors": [
+        1.5838580131530762,
+        0.5196029543876648
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "referenceDetections": 1,
+      "exportDetections": 1,
+      "maximumModelPixelError": 0.0004291534423828125,
+      "maximumScoreError": 0.00016039609909057617,
+      "tensorParityPassed": false,
+      "finiteOutputs": true,
+      "imageSha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "maximumAbsoluteErrors": [
+        4.407571792602539,
+        0.47629398107528687
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "referenceDetections": 4,
+      "exportDetections": 4,
+      "maximumModelPixelError": 0.00019073486328125,
+      "maximumScoreError": 1.4007091522216797e-06,
+      "tensorParityPassed": true,
+      "finiteOutputs": true,
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "maximumAbsoluteErrors": [
+        0.006657123565673828,
+        0.0008186399936676025
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    },
+    {
+      "referenceDetections": 3,
+      "exportDetections": 3,
+      "maximumModelPixelError": 0.0001430511474609375,
+      "maximumScoreError": 1.6093254089355469e-06,
+      "tensorParityPassed": false,
+      "finiteOutputs": true,
+      "imageSha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "maximumAbsoluteErrors": [
+        0.03921794891357422,
+        0.0011793524026870728
+      ],
+      "passed": true,
+      "scope": "Task-output PyTorch/ONNX Runtime reference comparison; tensor differences retained; not accuracy evaluation"
+    }
+  ],
+  "native": null,
+  "nativeCases": [
+    {
+      "imageSha256": "88431cd9653ccd539741b555fb0a46b61558b301d4110412b5bc28b5e3ea6cb5",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "referenceDetections": 2,
+      "nativeDetections": 2,
+      "categories": [
+        "hair",
+        "hair_accessory"
+      ],
+      "detections": [
+        {
+          "category": "hair",
+          "rectangle": {
+            "x": 0.29766160249710083,
+            "y": 0.029282137751579285,
+            "width": 0.29205822944641113,
+            "height": 0.226483553647995
+          },
+          "score": 0.5156399011611938
+        },
+        {
+          "category": "hair_accessory",
+          "rectangle": {
+            "x": 0.2177293598651886,
+            "y": 0.2866808772087097,
+            "width": 0.38210880756378174,
+            "height": 0.2933262586593628
+          },
+          "score": 0.4617655277252197
+        }
+      ],
+      "maximumSourcePixelError": 1.52587890625e-05
+    },
+    {
+      "imageSha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "referenceDetections": 1,
+      "nativeDetections": 1,
+      "categories": [
+        "hat"
+      ],
+      "detections": [
+        {
+          "category": "hat",
+          "rectangle": {
+            "x": 0.3471020460128784,
+            "y": 0.9327581193712022,
+            "width": 0.032831013202667236,
+            "height": 0.06724188062879777
+          },
+          "score": 0.36431965231895447
+        }
+      ],
+      "maximumSourcePixelError": 0.0
+    },
+    {
+      "imageSha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "referenceDetections": 4,
+      "nativeDetections": 4,
+      "categories": [
+        "hair",
+        "hair_accessory",
+        "outerwear"
+      ],
+      "detections": [
+        {
+          "category": "hair_accessory",
+          "rectangle": {
+            "x": 0.6476854085922241,
+            "y": 0.7810419400533041,
+            "width": 0.11832091212272644,
+            "height": 0.21895805994669593
+          },
+          "score": 0.47385308146476746
+        },
+        {
+          "category": "outerwear",
+          "rectangle": {
+            "x": 0.41732102632522583,
+            "y": 0.7139573627048068,
+            "width": 0.5452934503555298,
+            "height": 0.2860426372951932
+          },
+          "score": 0.44933557510375977
+        },
+        {
+          "category": "hair",
+          "rectangle": {
+            "x": 0.5605316162109375,
+            "y": 0.0008591281043158637,
+            "width": 0.20682880282402039,
+            "height": 0.4170795546637641
+          },
+          "score": 0.43600523471832275
+        },
+        {
+          "category": "hair",
+          "rectangle": {
+            "x": 0.13147419691085815,
+            "y": 0.47760788599650067,
+            "width": 0.15198862552642822,
+            "height": 0.43377219306098086
+          },
+          "score": 0.3674328327178955
+        }
+      ],
+      "maximumSourcePixelError": 3.814697270065892e-05
+    },
+    {
+      "imageSha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "referenceDetections": 3,
+      "nativeDetections": 3,
+      "categories": [
+        "hair",
+        "outerwear"
+      ],
+      "detections": [
+        {
+          "category": "hair",
+          "rectangle": {
+            "x": 0.5207189321517944,
+            "y": 0.5548261536492242,
+            "width": 0.10247224569320679,
+            "height": 0.3864292568630642
+          },
+          "score": 0.4633479118347168
+        },
+        {
+          "category": "outerwear",
+          "rectangle": {
+            "x": 0.698426365852356,
+            "y": 0.7656694518195258,
+            "width": 0.3009513020515442,
+            "height": 0.23433054818047416
+          },
+          "score": 0.43493711948394775
+        },
+        {
+          "category": "hair",
+          "rectangle": {
+            "x": 0.22695046663284302,
+            "y": 0.2529335816701253,
+            "width": 0.09420609474182129,
+            "height": 0.2456912464565701
+          },
+          "score": 0.35738739371299744
+        }
+      ],
+      "maximumSourcePixelError": 7.62939453125e-05
+    },
+    {
+      "imageSha256": "56c3c4f755b6b8787bdadac7992077aab796338ef88b253b16a7cf783bde245b",
+      "exitCode": 0,
+      "errors": [],
+      "passed": true,
+      "referenceDetections": 1,
+      "nativeDetections": 1,
+      "categories": [
+        "footwear"
+      ],
+      "detections": [
+        {
+          "category": "footwear",
+          "rectangle": {
+            "x": 0.02117598056793213,
+            "y": 0.003762041959951276,
+            "width": 0.8099400997161865,
+            "height": 0.9962379580400488
+          },
+          "score": 0.5725715160369873
+        }
+      ],
+      "maximumSourcePixelError": 0.0
+    }
+  ],
+  "workerSha256": "4b3c0c4a9be03e8fde962f2c11495a00860f5529d8b26b107bcd6e9a0d5f4d84",
+  "preprocessingSha256": "dd5d0045ab6bffe9b3e86070a6bfad531fea5ab44932d6b89617b013945bf89f"
+}

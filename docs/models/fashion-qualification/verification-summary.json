@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "phase9Excluded": true,
+  "nativeSuite": {
+    "passed": 115,
+    "failed": 0,
+    "ignored": 7
+  },
+  "frontendSuite": {
+    "passed": 55,
+    "failed": 0
+  },
+  "desktopAccountBindingTests": {
+    "passed": 1,
+    "failed": 0
+  },
+  "checks": [
+    "workspace cargo check",
+    "contracts generation check",
+    "TypeScript",
+    "production frontend build",
+    "real task-pack import/remove for four packs",
+    "real SAM/hair refinement/undo/removal",
+    "1440x960 and 1000x700 fashion workspace review"
+  ],
+  "qualifiedTaskPacks": {
+    "dino-unpadded": {
+      "passed": true,
+      "modelSha256": "26fd34400fa1dd321ab00b2067015d4913316d33c9044c66f5e0f4774e6daa32",
+      "preprocessingSha256": "dd5d0045ab6bffe9b3e86070a6bfad531fea5ab44932d6b89617b013945bf89f",
+      "nativeCases": 5
+    },
+    "sam-base": {
+      "passed": true,
+      "modelSha256": "9a282c968146840d670216d9b9f6ddedd860dbfcaff62c0aa0f19789ae8bcc53",
+      "preprocessingSha256": "d390689bf7304a0e0e7eb498f65685f5d26b016eda9c397bb102b63748424ae4",
+      "nativeCases": 4
+    },
+    "siglip2": {
+      "passed": true,
+      "modelSha256": "734181cbe07095fb4fb465439b72feb07c4b973687e97bdfcfc33d3a9c668134",
+      "preprocessingSha256": "af008c7a6f8891665edb1db80d4767fa01b7622e2455d184ba8d903f66b30325",
+      "nativeCases": 3
+    },
+    "hair-references": {
+      "passed": true,
+      "modelSha256": "441549728960d078da547bdb902906ed79361a9c5f6a19ac8fdf3b7658b5870c",
+      "preprocessingSha256": "4b376984197bea0d9b9836a3e2c4d87dfe294b58e3877d6875098d973e288dd0",
+      "nativeCases": 4
+    }
+  },
+  "externalAcceptance": [
+    "Live ChatGPT account/model hosted-search eligibility",
+    "Live authorized eBay production access",
+    "Live local-versus-ChatGPT comparative attribute acceptance"
+  ],
+  "figma": "Editable workflow/state compositions structurally verified; expanded-state screenshot service timed out"
+}

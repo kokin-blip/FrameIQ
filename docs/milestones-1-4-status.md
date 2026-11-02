@@ -1,5 +1,7 @@
 # Milestones 1–4: implementation and remaining gates
 
+Current phases 1–8 implementation and qualification status: [phase-1-8-completion.md](phase-1-8-completion.md). The older milestone narrative below is retained as history.
+
 Updated 2026-10-09. This is a working implementation, **not a declaration that all four milestones are release-ready**. The Fluent docked editor, original projects, offline extraction, and FrameRefV1 remain intact. Migration 001 is unchanged.
 
 ## Implemented

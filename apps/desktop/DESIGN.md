@@ -108,6 +108,8 @@ FrameIQ follows the approved Fluent Docked Editor direction: matte graphite surf
 
 The shared visual system applies to Studio, Library, Export, and Settings. Tonal surface steps and fine dividers organize information; imagery comes from imported media. The approved reference is docs/design/mockups/fluent-option-1.png. The previous Canvas/DesignCode world is superseded; its handoffs, captures, and earlier Figma pages remain historical references.
 
+The user selected the FQ Monogram logo in `docs/design/logo-options/02-fq-monogram.png`. Production vector masters live in `apps/desktop/public/brand/`: the transparent graphite-and-blue monogram and a desktop icon with a Reading White backplate. The backplate keeps the graphite F visible against dark surfaces. The shared AppLogo component supplies the 32px header mark across all workspaces, the 48px model-setup mark, and the 64px Settings app-information mark. The static startup screen uses the same 64px asset before React mounts. Keep decorative marks hidden from assistive technology when adjacent text names the app. The browser uses SVG and ICO favicons; native PNG, ICO, and ICNS exports use the same vector icon. Windows installer and uninstaller icons, header artwork, and welcome/finish sidebar artwork also use this identity. The fixed-size installer bitmaps are regenerated with `tools/export-brand-assets.swift`.
+
 **Key Characteristics:**
 
 - Opaque graphite surfaces with no decorative glow or blur.

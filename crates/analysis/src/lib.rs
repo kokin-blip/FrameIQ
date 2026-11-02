@@ -1,3 +1,4 @@
+pub mod target_ranking;
 use frameiq_contracts::*;
 use image::{imageops::FilterType, DynamicImage};
 pub const ALGORITHM: &str = "quality-v2-sdr640";

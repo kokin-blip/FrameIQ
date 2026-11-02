@@ -1,3 +1,5 @@
+mod fashion;
+pub use fashion::*;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -189,6 +191,9 @@ pub struct SeekAnchor {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum WorkerRequest {
+    ApplyPhotoMask { path:String, mask:AssetRefV1, output:String, rectangle:RegionRectV1 },
+    CropPhoto { path:String, output:String, mask_output:Option<String>, rectangle:RegionRectV1, polygon:Vec<[f64;2]> },
+    DecodePhoto { path: String, output: String, max_width: Option<u32> },
     Index {
         path: String,
         stream: Option<u32>,
@@ -212,6 +217,8 @@ pub enum WorkerRequest {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum WorkerMessage {
+    PhotoAssets { crop:AssetRefV1, mask:Option<AssetRefV1> },
+    Photo { asset: AssetRefV1, source_sha256: String },
     Revision {
         sha256: String,
         bytes: u64,
@@ -445,6 +452,9 @@ pub struct TensorOutput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum InferenceRequestV1 {
+    DownloadArtifact { artifact: TaskArtifactV2, directory: String },
+    RunTaskPack { pack:TaskPackV2, directory:String, image:Option<String>, rectangle:Option<RegionRectV1>, mask_output:Option<String> },
+    FashionLocal { runtime:String, port:u16, model:String, token:Option<String>, images:Vec<String>, context:String, task:FashionTaskV1 },
     Download {
         manifest: ModelManifestV1,
         directory: String,
@@ -495,6 +505,8 @@ pub enum InferenceRequestV1 {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum InferenceResponseV1 {
+    TaskResult { result:TaskResultV2 },
+    Fashion { result:serde_json::Value },
     DownloadProgress { completed: u64, total: u64 },
     Downloaded { path: String },
     RuntimeReport { report: LocalRuntimeReportV1 },
@@ -729,6 +741,9 @@ pub struct SubjectTrackV1 {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 pub struct PresetResultV1 {
+    #[serde(default)]
+    #[ts(optional)]
+    pub details: Option<Vec<FashionItemV1>>,
     pub job_id: String,
     pub track: SubjectTrackV1,
     pub preset: PresetV1,

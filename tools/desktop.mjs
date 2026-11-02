@@ -65,6 +65,7 @@ if (process.platform === "darwin" && existsSync(ortNative)) {
 for (const [src, dst] of [
   ["LICENSE", "FFmpeg-LICENSE"],
   ["zimg-LICENSE", "zimg-LICENSE"],
+  ["dav1d-LICENSE", "dav1d-LICENSE"],
   ["source.sha256", "source.sha256"],
   ["build-config.mak", "build-config.mak"],
 ]) {

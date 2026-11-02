@@ -34,6 +34,9 @@ vi.mock("../client", () => ({
     }),
   },
 }));
+vi.mock("../fashionClient", () => ({
+  fashionApi: { capabilities: async () => [], modelCatalog: async () => [] },
+}));
 const packs = [
   {
     id: "person",
@@ -87,6 +90,20 @@ beforeEach(() => {
   useJobs.setState({ jobs: {}, order: [] });
 });
 afterEach(cleanup);
+it("offers four optional fashion packs and lets users continue without installing", async () => {
+  const user = userEvent.setup();
+  const finish = vi.fn();
+  render(<ModelSetup visible onFinish={finish} />);
+  await screen.findByRole("heading", { name: "Item detection" });
+  expect(screen.getByRole("heading", { name: "Hair selection" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Item cutouts" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Visual matching" })).toBeTruthy();
+  await user.click(
+    screen.getByRole("button", { name: "Continue without installing" }),
+  );
+  expect(finish).toHaveBeenCalledOnce();
+  expect(mock.download).not.toHaveBeenCalled();
+});
 it("requires review before installing selected packs and enforces pose's detector dependency", async () => {
   const user = userEvent.setup();
   render(<ModelSetup visible onFinish={() => {}} />);

@@ -1,3 +1,7 @@
+mod task_resize;
+pub mod product_providers;
+pub mod task_packs;
+pub mod fashion;
 pub mod cloud;
 pub mod cloud_vision;
 pub mod subscription;
@@ -210,11 +214,12 @@ fn check_memory(m: &ModelManifestV1, h: &HardwareProfileV1) -> AppResult<()> {
     Ok(())
 }
 pub struct Engine {
+    task_session: Option<task_packs::CachedTaskSession>,
     session: Option<(String, Session)>,
 }
 impl Default for Engine {
     fn default() -> Self {
-        Self { session: None }
+        Self { session: None, task_session: None }
     }
 }
 impl Engine {
@@ -233,6 +238,7 @@ impl Engine {
             return Ok(0.);
         }
         self.session = None;
+        self.task_session = None;
         initialize_runtime()?;
         let bytes = verify_model(path, m)?;
         let started = Instant::now();
@@ -367,13 +373,17 @@ impl Engine {
     pub fn handle(&mut self, request: InferenceRequestV1) -> InferenceResponseV1 {
         let result = (|| -> AppResult<InferenceResponseV1> {
             match request {
-                InferenceRequestV1::Download { .. }
+                InferenceRequestV1::FashionLocal { .. }
+                | InferenceRequestV1::DownloadArtifact { .. }
+                | InferenceRequestV1::Download { .. }
                 | InferenceRequestV1::Discover { .. }
                 | InferenceRequestV1::Probe { .. } => Err(AppError::new(
                     "AI_PROTOCOL",
                     "Network operations require the supervised worker.",
                 )),
+                InferenceRequestV1::RunTaskPack {pack,directory,image,rectangle,mask_output} => self.task_pack(&pack,Path::new(&directory),image.as_deref(),rectangle.as_ref(),mask_output.as_deref()).map(|result|InferenceResponseV1::TaskResult{result}),
                 InferenceRequestV1::Unload => {
+                    self.task_session=None;
                     self.session = None;
                     Ok(InferenceResponseV1::Unloaded)
                 }

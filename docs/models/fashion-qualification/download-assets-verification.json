@@ -1,0 +1,111 @@
+{
+  "release": "https://github.com/kokin-blip/FrameIQ/releases/tag/fashion-packs-v1",
+  "assets": [
+    {
+      "name": "hair-manifest.json",
+      "bytes": 1964,
+      "sha256": "5e7776cf689be893fd5235adaef01c1eeba321210263437f1d9a67d536a0127e"
+    },
+    {
+      "name": "mask-manifest.json",
+      "bytes": 2155,
+      "sha256": "e560a517abbc6000373b5ec20c02da8f9e0f0658da118157dcc454e73c0e7299"
+    },
+    {
+      "name": "embedding-LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "name": "detection-LICENSE.txt",
+      "bytes": 11355,
+      "sha256": "b403c98ec1ffaccb0124632592a3d99642cddc3031ca412b402568e6c06c202a"
+    },
+    {
+      "name": "embedding-qualification.json",
+      "bytes": 1599,
+      "sha256": "db4a1db644234f776e87fc8b44c37587e52265ff90cb867508f097dbdfa466d9"
+    },
+    {
+      "name": "hair-LICENSE.txt",
+      "bytes": 12331,
+      "sha256": "8707eef0533987efc5b155d64761eeb6e20793f50b9bd1a68dad1cf4719d0ed8"
+    },
+    {
+      "name": "embedding-manifest.json",
+      "bytes": 2005,
+      "sha256": "be0318b46bb735639fb9cd3f58692a6bbfe8b65679178218dc1bac303181ad43"
+    },
+    {
+      "name": "detection-manifest.json",
+      "bytes": 3445,
+      "sha256": "8435dd63bb45c87a80a58bb34c5c03451a132538ab3221da57086933104d8e3d"
+    },
+    {
+      "name": "hair-qualification.json",
+      "bytes": 2808,
+      "sha256": "13f93c352dea19adc1752587332b434bda653d0e0e0dd9633792df42ae548bc5"
+    },
+    {
+      "name": "mask-model.onnx",
+      "bytes": 375372166,
+      "sha256": "9a282c968146840d670216d9b9f6ddedd860dbfcaff62c0aa0f19789ae8bcc53"
+    },
+    {
+      "name": "mask-NOTICE.txt",
+      "bytes": 720,
+      "sha256": "2ca70b6e25b034f5e13e46cb08e00ced8c08a93d91d6f8c233cda486fc14a47d"
+    },
+    {
+      "name": "detection-qualification.json",
+      "bytes": 7913,
+      "sha256": "08940121457f39d4ab4419eacd3b4f34fe7d15ce756d03f532b05d50a768c976"
+    },
+    {
+      "name": "detection-NOTICE.txt",
+      "bytes": 710,
+      "sha256": "e833e7c9507c0e838869305f9e60bc124e3b1882eca3097695fdd886987591a5"
+    },
+    {
+      "name": "detection-model.onnx",
+      "bytes": 694754467,
+      "sha256": "26fd34400fa1dd321ab00b2067015d4913316d33c9044c66f5e0f4774e6daa32"
+    },
+    {
+      "name": "hair-NOTICE.txt",
+      "bytes": 887,
+      "sha256": "9c236c77f3da6bd6247d21473c5491d001b3f4189efaf9c25d493bd199fd7e0e"
+    },
+    {
+      "name": "embedding-model.onnx",
+      "bytes": 371698766,
+      "sha256": "734181cbe07095fb4fb465439b72feb07c4b973687e97bdfcfc33d3a9c668134"
+    },
+    {
+      "name": "embedding-NOTICE.txt",
+      "bytes": 4140,
+      "sha256": "48f3ce364432f618e83db06fd9807dd341f18f7798c13e72f3c50616d316ba8c"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 1738,
+      "sha256": "fe219c44346e54b3706a050d6588c32eb915bcf9e52fb89a1b8c6f8ed534f5b0"
+    },
+    {
+      "name": "mask-LICENSE.txt",
+      "bytes": 11357,
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "name": "mask-qualification.json",
+      "bytes": 3575,
+      "sha256": "cea50b7cde9128bf354fffa402adffcbc242f5877043d1ea790c1286ba72ebde"
+    },
+    {
+      "name": "hair-model.onnx",
+      "bytes": 16454717,
+      "sha256": "441549728960d078da547bdb902906ed79361a9c5f6a19ac8fdf3b7658b5870c"
+    }
+  ],
+  "allVerified": true
+}

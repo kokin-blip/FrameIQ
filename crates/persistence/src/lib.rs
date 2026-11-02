@@ -1,3 +1,4 @@
+mod fashion;
 use frameiq_contracts::*;
 use rusqlite::{params, Connection, OptionalExtension};
 use sha2::{Digest, Sha256};
@@ -79,6 +80,7 @@ impl Database {
                 11i64,
                 include_str!("../../../migrations/011_model_setup_attempts.sql"),
             ),
+            (12i64, include_str!("../../../migrations/012_fashion.sql")),
         ];
         let max: i64 = conn
             .query_row(
@@ -266,7 +268,7 @@ impl Database {
         let id: Option<String> = self
             .conn
             .query_row(
-                "SELECT id FROM sources WHERE project_id=? AND path=?",
+                "SELECT id FROM sources WHERE kind='video' AND project_id=? AND path=?",
                 params![project_id, path.to_string_lossy()],
                 |r| r.get(0),
             )
@@ -501,6 +503,8 @@ impl Database {
         rows.collect::<Result<Vec<_>, _>>().map_err(err)
     }
     pub fn clear_model_features(&self, model: &str) -> AppResult<()> {
+        self.conn.execute("DELETE FROM target_regions WHERE id IN (SELECT o.region_id FROM track_observations o JOIN pose_track_dependencies d ON d.track_id=o.track_id WHERE d.model_id=?)", [model]).map_err(err)?;
+        self.conn.execute("DELETE FROM subject_tracks WHERE id IN (SELECT track_id FROM pose_track_dependencies WHERE model_id=?)", [model]).map_err(err)?;
         self.conn.execute("DELETE FROM target_regions WHERE json_extract(region_json,'$.origin')='experimental_shot_tracking' AND id IN (SELECT s.region_id FROM region_subjects s JOIN person_features p ON p.id=s.person_feature_id WHERE p.model_id=?)",[model]).map_err(err)?;
         self.conn.execute("DELETE FROM target_regions WHERE id IN (SELECT o.region_id FROM track_observations o JOIN subject_tracks t ON t.id=o.track_id WHERE t.person_model_id=? OR t.face_model_id=?)",params![model,model]).map_err(err)?;
         self.conn
@@ -667,7 +671,7 @@ impl Database {
     pub fn sources(&self, project: &str) -> AppResult<Vec<SourceSummary>> {
         let ids = self
             .conn
-            .prepare("SELECT id FROM sources WHERE project_id=? ORDER BY rowid DESC")
+            .prepare("SELECT id FROM sources WHERE kind='video' AND project_id=? ORDER BY rowid DESC")
             .map_err(err)?
             .query_map([project], |r| r.get::<_, String>(0))
             .map_err(err)?
@@ -1358,6 +1362,11 @@ impl Database {
 #[cfg(test)]
 mod tests {
     use super::*;
+    // Downgrade fixtures must remove later schemas as well as their migration rows.
+    // Production migrations remain append-only and continue to reject duplicate tables.
+    fn remove_fashion_schema(db: &Database) {
+        db.conn.execute_batch("DROP TABLE fashion_exports; DROP TABLE look_entries; DROP TABLE saved_looks; DROP TABLE fashion_research_runs; DROP TABLE candidate_evidence; DROP TABLE product_candidates; DROP TABLE product_evidence; DROP TABLE retailer_listings; DROP TABLE fashion_product_search; DROP TABLE fashion_products; DROP TABLE garment_group_items; DROP TABLE garment_groups; DROP TABLE fashion_item_history; DROP TABLE fashion_items; DROP TABLE photo_heads; DROP TABLE photo_assets; DROP TABLE preset_target_features; DROP TABLE task_track_dependencies; DROP TABLE pose_track_dependencies; DROP TABLE fashion_task_results; DROP TABLE task_packs; DROP TABLE fashion_provider_usage; DELETE FROM schema_migrations WHERE version=12;").unwrap();
+    }
     #[test]
     fn setup_upgrade_from_ten_preserves_installations_and_durable_attempts() {
         let dir = tempfile::tempdir().unwrap();
@@ -1376,6 +1385,7 @@ mod tests {
             error: None,
         };
         db.save_model(&model).unwrap();
+        remove_fashion_schema(&db);
         db.conn
             .execute_batch(
                 "DROP TABLE model_setup_attempts; DELETE FROM schema_migrations WHERE version=11;",
@@ -1422,6 +1432,7 @@ mod tests {
         db.mark_project_opened(&p.id).unwrap();
         assert!(db.project_activity().unwrap()[&p.id].ends_with('Z'));
         assert!(db.mark_project_opened("unknown").is_err());
+        remove_fashion_schema(&db);
         db.conn
             .execute_batch(
                 "DROP TABLE model_setup_attempts; DROP TABLE project_activity; DELETE FROM schema_migrations WHERE version>=10;",
@@ -1692,6 +1703,7 @@ mod tests {
         };
         db.save_face_feature(&feature).unwrap();
         // Emulate an existing migration-005 database with preserved detector output.
+        remove_fashion_schema(&db);
         db.conn.execute_batch("DROP TABLE model_setup_attempts; DROP TABLE project_activity; DROP TABLE preset_results; DROP TABLE track_observations; DROP TABLE subject_tracks; DROP TABLE export_attempt_items; DROP TABLE region_subjects; DROP TABLE subject_choices; DROP TABLE pose_features; DROP TABLE person_features; DELETE FROM schema_migrations WHERE version>=6;").unwrap();
         drop(db);
         let db = Database::open(&d.path().join("db.sqlite")).unwrap();

@@ -1,0 +1,40 @@
+{
+  "name": "FrameIQ FQ Monogram",
+  "selection": "User selected logo option 2 in this chat.",
+  "reference": "docs/design/logo-options/02-fq-monogram.png",
+  "referenceGenerator": "Built-in image_gen",
+  "referencePrompts": "docs/design/logo-options/prompts.json",
+  "productionMaster": "Hand-transcribed geometric SVG matching the approved FQ symbol, with flat design-system colors.",
+  "colors": {
+    "graphite": "#1b1b1b",
+    "blue": "#0f6cbd",
+    "backplate": "#f5f5f5"
+  },
+  "transparentMonogram": "apps/desktop/public/brand/monogram.svg",
+  "iconMaster": "apps/desktop/public/brand/app-icon.svg",
+  "nativeExports": [
+    "apps/desktop/src-tauri/icons/icon.png",
+    "apps/desktop/src-tauri/icons/icon.ico",
+    "apps/desktop/src-tauri/icons/icon.icns"
+  ],
+  "exportTool": "Tauri CLI icon generator",
+  "browserFallback": "apps/desktop/public/brand/favicon.ico",
+  "sharedComponent": "apps/desktop/src/components/AppLogo.tsx",
+  "surfaces": [
+    "Shared header in every workspace",
+    "Static startup screen",
+    "Model setup",
+    "Settings app information",
+    "Browser SVG and ICO favicons",
+    "Native application and shortcut icons",
+    "macOS bundled app icon used by its system About panel",
+    "Windows installer and uninstaller icons",
+    "Windows installer and uninstaller header",
+    "Windows installer welcome and finish sidebar"
+  ],
+  "installerExports": [
+    "apps/desktop/src-tauri/icons/installer-header.bmp",
+    "apps/desktop/src-tauri/icons/installer-sidebar.bmp"
+  ],
+  "installerExportTool": "tools/export-brand-assets.swift (AppKit, RGB24 BMP)"
+}

@@ -60,6 +60,75 @@ impl Transport {
         })
     }
 }
+struct DownloadSpec<'a> {
+    source_url: &'a str,
+    sha256: &'a str,
+    byte_size: &'a str,
+    legacy: Option<&'a ModelManifestV1>,
+}
+impl DownloadSpec<'_> {
+    fn verify(&self, path: &Path) -> AppResult<()> {
+        if let Some(manifest) = self.legacy {
+            return super::verify_model(path, manifest).map(|_| ());
+        }
+        use sha2::{Digest, Sha256};
+        use std::io::Read;
+        let mut file = std::fs::File::open(path).map_err(error)?;
+        if file.metadata().map_err(error)?.len().to_string() != self.byte_size {
+            return Err(AppError::new(
+                "MODEL_CHECKSUM",
+                "Artifact size differs from its manifest.",
+            ));
+        }
+        let mut hash = Sha256::new();
+        let mut buffer = [0; 65536];
+        loop {
+            let n = file.read(&mut buffer).map_err(error)?;
+            if n == 0 {
+                break;
+            }
+            hash.update(&buffer[..n]);
+        }
+        if format!("{:x}", hash.finalize()) != self.sha256.to_lowercase() {
+            return Err(AppError::new(
+                "MODEL_CHECKSUM",
+                "Artifact checksum differs from its manifest.",
+            ));
+        }
+        Ok(())
+    }
+}
+/// Downloads an integrity-pinned artifact; task/graph/reference validation still
+/// runs separately before activation. Legacy arbitrary-model limits stay intact.
+pub fn download_artifact(
+    artifact: &TaskArtifactV2,
+    directory: &Path,
+    cancel: impl Fn() -> bool,
+    progress: impl FnMut(u64, u64) -> AppResult<()>,
+) -> AppResult<std::path::PathBuf> {
+    if artifact.sha256.len() != 64
+        || !artifact.sha256.bytes().all(|b| b.is_ascii_hexdigit())
+        || artifact
+            .byte_size
+            .parse::<u64>()
+            .ok()
+            .is_none_or(|n| n == 0 || n > 2 * 1024 * 1024 * 1024)
+    {
+        return Err(error("Invalid bounded artifact descriptor."));
+    }
+    download_spec_with(
+        DownloadSpec {
+            source_url: &artifact.source_url,
+            sha256: &artifact.sha256,
+            byte_size: &artifact.byte_size,
+            legacy: None,
+        },
+        directory,
+        Transport::production()?,
+        cancel,
+        progress,
+    )
+}
 pub fn download(
     manifest: &ModelManifestV1,
     directory: &Path,
@@ -76,6 +145,27 @@ pub fn download(
 }
 fn download_with(
     manifest: &ModelManifestV1,
+    directory: &Path,
+    transport: Transport,
+    cancel: impl Fn() -> bool,
+    progress: impl FnMut(u64, u64) -> AppResult<()>,
+) -> AppResult<std::path::PathBuf> {
+    super::validate_manifest(manifest)?;
+    download_spec_with(
+        DownloadSpec {
+            source_url: &manifest.source_url,
+            sha256: &manifest.sha256,
+            byte_size: &manifest.byte_size,
+            legacy: Some(manifest),
+        },
+        directory,
+        transport,
+        cancel,
+        progress,
+    )
+}
+fn download_spec_with(
+    manifest: DownloadSpec<'_>,
     directory: &Path,
     transport: Transport,
     cancel: impl Fn() -> bool,
@@ -129,13 +219,12 @@ fn valid_range(range: &str, offset: u64, expected: u64) -> bool {
         && number(total) == Some(expected)
 }
 async fn download_async(
-    manifest: &ModelManifestV1,
+    manifest: DownloadSpec<'_>,
     directory: &Path,
     transport: Transport,
     cancel: impl Fn() -> bool,
     mut progress: impl FnMut(u64, u64) -> AppResult<()>,
 ) -> AppResult<std::path::PathBuf> {
-    super::validate_manifest(manifest)?;
     if cancel() {
         return Err(cancelled());
     }
@@ -156,8 +245,7 @@ async fn download_async(
     retained_file(&metadata)?;
     let expected = manifest.byte_size.parse::<u64>().map_err(error)?;
     // A completed verified body needs no network request, even without an ETag.
-    if std::fs::metadata(&path).is_ok_and(|m| m.len() == expected)
-        && super::verify_model(&path, manifest).is_ok()
+    if std::fs::metadata(&path).is_ok_and(|m| m.len() == expected) && manifest.verify(&path).is_ok()
     {
         progress(expected, expected)?;
         return Ok(path);
@@ -185,7 +273,7 @@ async fn download_async(
             .header(reqwest::header::IF_RANGE, etag.unwrap());
     }
     if offset == expected {
-        if super::verify_model(&path, manifest).is_ok() {
+        if manifest.verify(&path).is_ok() {
             return Ok(path);
         }
         std::fs::remove_file(&path).map_err(error)?;
@@ -290,7 +378,7 @@ async fn download_async(
     }
     drop(output);
     checkpoint("before_verification");
-    if let Err(e) = super::verify_model(&path, manifest) {
+    if let Err(e) = manifest.verify(&path) {
         let _ = std::fs::remove_file(&path);
         let _ = std::fs::remove_file(&metadata);
         return Err(e);

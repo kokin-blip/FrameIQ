@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 2,
+  "id": "mediapipe-selfie-multiclass-hair-c6748b1253a9",
+  "task": "hair",
+  "adapter": "hair_segmenter_v1",
+  "inputs": [
+    {
+      "name": "input_29",
+      "shape": [
+        1,
+        256,
+        256,
+        3
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "mask",
+      "shape": [
+        1,
+        1,
+        256,
+        256
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "model.onnx",
+      "sha256": "441549728960d078da547bdb902906ed79361a9c5f6a19ac8fdf3b7658b5870c",
+      "byteSize": "16454717",
+      "sourceUrl": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite"
+    },
+    {
+      "name": "qualification.json",
+      "sha256": "13f93c352dea19adc1752587332b434bda653d0e0e0dd9633792df42ae548bc5",
+      "byteSize": "2808",
+      "sourceUrl": "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite"
+    }
+  ],
+  "license": "Apache-2.0",
+  "licenseUrl": "https://storage.googleapis.com/mediapipe-assets/Model%20Card%20Multiclass%20Segmentation.pdf",
+  "preprocessing": "{\"imageInput\":\"input_29\",\"width\":256,\"height\":256,\"layout\":\"nhwc\",\"scale\":0.00784313725490196,\"mean\":[1,1,1],\"std\":[1,1,1],\"output\":\"mask\",\"threshold\":0.5,\"constants\":{},\"resampling\":\"pillow_bilinear_v1\"}",
+  "qualification": "reference_checked"
+}

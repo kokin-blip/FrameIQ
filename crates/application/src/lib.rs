@@ -1,3 +1,11 @@
+mod preset_details;
+mod preset_refinement;
+mod preset_targets;
+mod fashion_export;
+mod fashion_models;
+mod fashion_catalog;
+mod fashion_review;
+pub mod fashion;
 mod ai;
 mod body;
 mod cloud;
@@ -58,6 +66,8 @@ struct Inner {
     presets_lane: Mutex<()>,
     cloud_lane: Mutex<()>,
     cloud_reviews: Mutex<HashMap<String, cloud::Prepared>>,
+    fashion_reviews: Mutex<HashMap<String, fashion::PreparedFashion>>,
+    task_install_lane: Mutex<()>,
     cpu: cpu::Budget,
 }
 #[derive(Clone)]
@@ -104,6 +114,7 @@ impl Application {
         cloud::recover(&cache)?;
         body::recover_mask_orphans(&cache, &db)?;
         model_recovery::recover(data, &db)?;
+        fashion_models::recover(&cache, &db)?;
         let ai = Arc::new(Mutex::new(None));
         let ai_idle = ai::IdleMonitor::start(&ai)?;
         Ok(Self {
@@ -123,6 +134,8 @@ impl Application {
                 presets_lane: Mutex::new(()),
                 cloud_lane: Mutex::new(()),
                 cloud_reviews: Mutex::new(HashMap::new()),
+                fashion_reviews: Mutex::new(HashMap::new()),
+                task_install_lane: Mutex::new(()),
                 cpu: cpu::Budget::new(
                     (std::thread::available_parallelism()
                         .map(|n| n.get())

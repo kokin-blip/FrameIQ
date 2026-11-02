@@ -510,3 +510,28 @@ fn complete_verified_bytes_without_validator_reuse_without_any_http_request() {
     assert_eq!(result, cached);
     assert!(server.requests.lock().unwrap().is_empty());
 }
+
+#[test]
+fn task_artifacts_share_https_resume_and_checksum_enforcement() {
+    let bytes = b"reviewed auxiliary artifact";
+    let mut reply = Reply::full(bytes, "\"artifact-v1\"");
+    reply.pieces = vec![bytes[..5].to_vec(), bytes[5..].to_vec()];
+    reply.delay = Duration::from_millis(80);
+    let server = Server::new(vec![reply, Reply::partial(bytes, 5, "\"artifact-v1\"")]);
+    let directory = tempfile::tempdir().unwrap();
+    let hash = format!("{:x}", Sha256::digest(bytes));
+    let length = bytes.len().to_string();
+    let spec = || DownloadSpec { source_url: &server.url, sha256: &hash, byte_size: &length, legacy: None };
+    let cancelled = AtomicBool::new(false);
+    let first = download_spec_with(spec(), directory.path(), server.transport(true, Duration::from_secs(1)),
+        || cancelled.load(Ordering::SeqCst), |_, _| { cancelled.store(true, Ordering::SeqCst); Ok(()) });
+    assert_eq!(first.unwrap_err().code, "CANCELLED");
+    let body = download_spec_with(spec(), directory.path(), server.transport(true, Duration::from_secs(1)), || false, |_, _| Ok(())).unwrap();
+    assert_eq!(std::fs::read(body).unwrap(), bytes);
+    assert!(server.requests.lock().unwrap()[1].contains("range: bytes=5-"));
+    let bad = Server::new(vec![Reply::full(&vec![0; bytes.len()], "\"bad\"")]);
+    let directory = tempfile::tempdir().unwrap();
+    assert_eq!(download_spec_with(DownloadSpec { source_url: &bad.url, sha256: &hash, byte_size: &length, legacy: None },
+        directory.path(), bad.transport(true, Duration::from_secs(1)), || false, |_, _| Ok(())).unwrap_err().code, "MODEL_CHECKSUM");
+    assert!(!directory.path().join(format!("{hash}.partial")).exists());
+}

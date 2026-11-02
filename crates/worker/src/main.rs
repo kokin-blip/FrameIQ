@@ -20,6 +20,9 @@ fn run() -> AppResult<()> {
     let request: WorkerRequest =
         serde_json::from_str(&line).map_err(|e| AppError::new("WORKER_PROTOCOL", e.to_string()))?;
     match request {
+        WorkerRequest::ApplyPhotoMask {path,mask,output,rectangle}=>{emit(frameiq_media::apply_photo_mask(&path,&mask,&output,&rectangle)?)?;emit(WorkerMessage::Complete)},
+        WorkerRequest::CropPhoto { path,output,mask_output,rectangle,polygon } => {emit(frameiq_media::crop_photo(&path,&output,mask_output.as_deref(),&rectangle,&polygon)?)?;emit(WorkerMessage::Complete)},
+        WorkerRequest::DecodePhoto { path, output, max_width } => { emit(frameiq_media::decode_photo(&path, &output, max_width)?)?; emit(WorkerMessage::Complete) },
         WorkerRequest::Index { path, stream } => frameiq_media::index(&path, stream, emit),
         WorkerRequest::AnalyzeBatch {
             path,

@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "apps/desktop/src/style.css"
+        ],
+        "createdAt": "2026-11-01T04:49:53.827Z",
+        "reason": "Project design system: apps/desktop/DESIGN.md requires locally bundled Inter for the approved Fluent desktop UI; preserve the established typography while applying the selected FQ logo."
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "apps/desktop/index.html"
+        ],
+        "createdAt": "2026-11-01T05:01:06.814Z",
+        "reason": "Project design system: Inter is the approved FrameIQ typeface. The startup screen uses the same established family while the app initializes."
+      }
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 2,
+  "id": "google-siglip2-base-patch16-224-75de2d55ec2d",
+  "task": "embedding",
+  "adapter": "siglip2_image_v1",
+  "inputs": [
+    {
+      "name": "pixel_values",
+      "shape": [
+        1,
+        3,
+        224,
+        224
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "embedding",
+      "shape": [
+        1,
+        768
+      ],
+      "dtype": "float32"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "model.onnx",
+      "sha256": "734181cbe07095fb4fb465439b72feb07c4b973687e97bdfcfc33d3a9c668134",
+      "byteSize": "371698766",
+      "sourceUrl": "https://huggingface.co/google/siglip2-base-patch16-224/tree/75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2"
+    },
+    {
+      "name": "qualification.json",
+      "sha256": "db4a1db644234f776e87fc8b44c37587e52265ff90cb867508f097dbdfa466d9",
+      "byteSize": "1599",
+      "sourceUrl": "https://huggingface.co/google/siglip2-base-patch16-224/tree/75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2"
+    }
+  ],
+  "license": "Apache-2.0",
+  "licenseUrl": "https://huggingface.co/google/siglip2-base-patch16-224/tree/75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2",
+  "preprocessing": "{\"imageInput\":\"pixel_values\",\"width\":224,\"height\":224,\"layout\":\"nchw\",\"scale\":0.00392156862745098,\"mean\":[0.5,0.5,0.5],\"std\":[0.5,0.5,0.5],\"letterbox\":false,\"output\":\"embedding\",\"constants\":{},\"resampling\":\"pillow_bilinear_v1\"}",
+  "qualification": "reference_checked"
+}

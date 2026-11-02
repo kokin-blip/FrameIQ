@@ -43,6 +43,69 @@ fn fixture(dir: &Path, vfr: bool, bframes: bool) -> PathBuf {
     path
 }
 #[test]
+fn software_av1_index_and_exact_export_match_sequential_reference() {
+    let source =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/fixtures/media/av1-fragmented.mp4");
+    let d = tempfile::tempdir().unwrap();
+    let mut frames = vec![];
+    index(source.to_str().unwrap(), None, |m| {
+        if let WorkerMessage::Frames { frames: batch } = m {
+            frames.extend(batch);
+        }
+        Ok(())
+    })
+    .unwrap();
+    assert_eq!(frames.len(), 10);
+    assert!((frames[9].time_seconds - 0.9).abs() < 0.001);
+    let raw = d.path().join("reference.rgb");
+    run(&[
+        "-i",
+        source.to_str().unwrap(),
+        "-vf",
+        "scale=in_range=tv:out_range=pc:in_color_matrix=bt709:flags=bicubic",
+        "-pix_fmt",
+        "rgb24",
+        "-f",
+        "rawvideo",
+        "-fps_mode",
+        "passthrough",
+        raw.to_str().unwrap(),
+    ]);
+    let reference = std::fs::read(raw).unwrap();
+    assert_eq!(reference.len(), 10 * 160 * 120 * 3);
+    for f in &frames {
+        let ordinal = f.ordinal.parse::<u64>().unwrap();
+        let anchor = frames
+            .iter()
+            .rev()
+            .find(|a| a.ordinal.parse::<u64>().unwrap() <= ordinal && a.key_frame)
+            .map(|a| SeekAnchor {
+                ordinal: a.ordinal.parse().unwrap(),
+                pts: a.pts_ticks.as_ref().unwrap().parse().unwrap(),
+                time_seconds: a.time_seconds,
+            });
+        let output = d.path().join(format!("{ordinal}.png"));
+        decode(
+            source.to_str().unwrap(),
+            0,
+            ordinal,
+            f.pts_ticks.as_ref().map(|p| p.parse().unwrap()),
+            anchor.as_ref(),
+            &output,
+            None,
+            &ExportOptions::default(),
+        )
+        .unwrap();
+        let pixels = image::open(output).unwrap().to_rgb8().into_raw();
+        let start = ordinal as usize * 160 * 120 * 3;
+        assert_eq!(
+            pixels,
+            reference[start..start + 160 * 120 * 3],
+            "AV1 frame {ordinal}"
+        );
+    }
+}
+#[test]
 fn exact_export_matches_sequential_reference_for_cfr_vfr_and_b_frames() {
     for (vfr, bframes) in [(false, false), (true, false), (false, true)] {
         let d = tempfile::tempdir().unwrap();

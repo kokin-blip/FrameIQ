@@ -1,3 +1,4 @@
+import { LookExportPanel } from "./LookExportPanel";
 import { useEffect, useState } from "react";
 import { api, message } from "../client";
 import { useJobs } from "../store";
@@ -69,6 +70,7 @@ export function ExportStudio({
             Back to studio
           </Button>
         </div>
+        <LookExportPanel w={w}/>
         <div className="export-layout">
           <div className="export-configuration">
             <div className="export-summary">

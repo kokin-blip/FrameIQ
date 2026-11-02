@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-09T04:05:44.025753+00:00",
+  "generatedAt": "2026-11-01T05:01:06.795540+00:00",
   "title": "Design System: FrameIQ",
   "extensions": {
     "colorMeta": {
@@ -275,7 +275,35 @@
       "handoff": "docs/design/fluent-handoff.md",
       "verification": "docs/design/fluent-feature-parity.md",
       "kit": "Local editable Fluent-style adaptations; no imported official kit instances.",
-      "limitations": "Browser empty-state review and build/test evidence only. Full native Mac QA blocked by locked Mac; populated native parity and Windows verification not claimed. No canonical composition-diff artifact or separate canonical spec created."
+      "limitations": "Browser empty-state review and build/test evidence only. Full native Mac QA blocked by locked Mac; populated native parity and Windows verification not claimed. No canonical composition-diff artifact or separate canonical spec created.",
+      "brand": {
+        "selection": "User selected option 2, FQ Monogram, in this chat.",
+        "reference": "docs/design/logo-options/02-fq-monogram.png",
+        "identity": "apps/desktop/public/brand/identity.json",
+        "transparentMaster": "apps/desktop/public/brand/monogram.svg",
+        "iconMaster": "apps/desktop/public/brand/app-icon.svg",
+        "nativeExports": [
+          "apps/desktop/src-tauri/icons/icon.png",
+          "apps/desktop/src-tauri/icons/icon.ico",
+          "apps/desktop/src-tauri/icons/icon.icns"
+        ],
+        "surfaces": [
+          "Shared header in every workspace",
+          "Static startup screen",
+          "Model setup",
+          "Settings app information",
+          "Browser SVG and ICO favicons",
+          "Native application and shortcut icons",
+          "macOS bundled app icon used by its system About panel",
+          "Windows installer and uninstaller icons",
+          "Windows installer and uninstaller header",
+          "Windows installer welcome and finish sidebar"
+        ],
+        "installerExports": [
+          "apps/desktop/src-tauri/icons/installer-header.bmp",
+          "apps/desktop/src-tauri/icons/installer-sidebar.bmp"
+        ]
+      }
     }
   },
   "components": [
@@ -342,11 +370,18 @@
       "description": "Direct attachment instruction and native picker entry.",
       "html": "<button class=\"ds-attach\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M8 13l5 3-5 3z\"/></svg><strong>Drop a video here</strong><span>or click to attach</span></button>",
       "css": ".ds-attach{font-family:Inter,sans-serif;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:220px;width:100%;background:var(--color-canvas,#141414);color:var(--color-text,#f5f5f5);border:1px dashed transparent;border-radius:var(--radius-panel,6px)}.ds-attach svg,.ds-attach span{color:var(--color-muted,#bdbdbd)}.ds-attach strong{font-size:22px;font-weight:500}.ds-attach:hover:enabled{background:var(--color-surface,#202020);border-color:var(--color-border,#3d3d3d)}.ds-attach:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-attach:disabled{opacity:.45;cursor:default} @media(prefers-reduced-motion:reduce){.ds-attach{transition:none}}"
+    },
+    {
+      "name": "Brand home button",
+      "kind": "button",
+      "description": "The selected FQ monogram on its light backplate beside the native Inter wordmark; opens the project library.",
+      "html": "<button class=\"ds-brand\" aria-label=\"FrameIQ project library\"><svg width=\"32\" height=\"32\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1024 1024\">\n  <rect x=\"80\" y=\"80\" width=\"864\" height=\"864\" rx=\"192\" fill=\"#f5f5f5\"/>\n  <g transform=\"translate(180 207) scale(1.03) translate(-307 -241)\">\n  <path fill=\"#1b1b1b\" d=\"M307 342 416 241H582L475 345H416V428H715L619 523H418V793H307Z\"/>\n  <path fill=\"#0f6cbd\" d=\"M582 241H798C887 241 947 299 947 393V652C947 677 936 695 922 707L828 614V384C828 360 813 345 791 345H475Z\"/>\n  <path fill=\"#0f6cbd\" d=\"M462 561H575V655C575 686 590 698 622 698H759L692 631H810L953 779 901 832H849L810 793H620C524 793 462 744 462 653Z\"/>\n  </g>\n</svg><span>FrameIQ</span></button>",
+      "css": ".ds-brand{font-family:Inter,sans-serif;font-size:21px;font-weight:600;letter-spacing:-.025em;display:inline-flex;align-items:center;gap:8px;flex-shrink:0;padding:3px 24px 3px 0;border:0;border-right:1px solid var(--color-border,#3d3d3d);background:transparent;color:var(--color-text,#f5f5f5);cursor:pointer}.ds-brand svg{display:block;width:32px;height:32px;flex-shrink:0}.ds-brand:hover{background:transparent}.ds-brand:focus-visible{outline:2px solid var(--color-focus,#479ef5);outline-offset:2px}.ds-brand:disabled{opacity:.45;cursor:default}@media(max-width:1100px){.ds-brand{padding-right:16px;font-size:19px}}"
     }
   ],
   "narrative": {
     "northStar": "Fluent Docked Editor",
-    "overview": "FrameIQ follows the approved Fluent Docked Editor direction: matte graphite surfaces, compact Inter typography, outlined icons, and restrained blue actions. Image inspection remains central, with direct access to frame identity and supporting controls.\n\nThe shared visual system applies to Studio, Library, Export, and Settings. Tonal surface steps and fine dividers organize information; imagery comes from imported media. The approved reference is docs/design/mockups/fluent-option-1.png. The previous Canvas/DesignCode world is superseded; its handoffs, captures, and earlier Figma pages remain historical references.",
+    "overview": "FrameIQ follows the approved Fluent Docked Editor direction: matte graphite surfaces, compact Inter typography, outlined icons, and restrained blue actions. Image inspection remains central, with direct access to frame identity and supporting controls.\n\nThe shared visual system applies to Studio, Library, Export, and Settings. Tonal surface steps and fine dividers organize information; imagery comes from imported media. The approved reference is docs/design/mockups/fluent-option-1.png. The previous Canvas/DesignCode world is superseded; its handoffs, captures, and earlier Figma pages remain historical references.\n\nThe user selected the FQ Monogram logo in `docs/design/logo-options/02-fq-monogram.png`. Production vector masters live in `apps/desktop/public/brand/`: the transparent graphite-and-blue monogram and a desktop icon with a Reading White backplate. The backplate keeps the graphite F visible against dark surfaces. The shared AppLogo component supplies the 32px header mark across all workspaces, the 48px model-setup mark, and the 64px Settings app-information mark. The static startup screen uses the same 64px asset before React mounts. Keep decorative marks hidden from assistive technology when adjacent text names the app. The browser uses SVG and ICO favicons; native PNG, ICO, and ICNS exports use the same vector icon. Windows installer and uninstaller icons, header artwork, and welcome/finish sidebar artwork also use this identity. The fixed-size installer bitmaps are regenerated with `tools/export-brand-assets.swift`.",
     "keyCharacteristics": [
       "Opaque graphite surfaces with no decorative glow or blur.",
       "Compact Inter controls and tabular frame/time numerals.",

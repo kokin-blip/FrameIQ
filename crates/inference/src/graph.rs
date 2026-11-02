@@ -70,12 +70,42 @@ fn tensor(t: &Tensor) -> AppResult<()> {
     }
 }
 pub fn validate(bytes: &[u8]) -> AppResult<()> {
+    validate_ops(bytes, &[], 10000)
+}
+pub(crate) fn validate_reviewed(bytes: &[u8]) -> AppResult<()> {
+    validate_ops(
+        bytes,
+        &[
+            "GreaterOrEqual",
+            "EyeLike",
+            "NonZero",
+            "ScatterND",
+            "Tile",
+            "Einsum",
+            "LayerNormalization",
+            "GridSample",
+            "Trilu",
+            "CastLike",
+            "CumSum",
+            "Mod",
+            "And",
+            "Or",
+            "Not",
+            "IsNaN",
+            "ArgMax",
+            "ArgMin",
+            "ReduceProd",
+        ],
+        25000,
+    )
+}
+fn validate_ops(bytes: &[u8], extra: &[&str], max_nodes: usize) -> AppResult<()> {
     let model = Model::decode(bytes).map_err(|_| bad())?;
     if !model.functions.is_empty() {
         return Err(bad());
     }
     let graph = model.graph.ok_or_else(bad)?;
-    if graph.nodes.len() > 10000 || !graph.sparse.is_empty() {
+    if graph.nodes.len() > max_nodes || !graph.sparse.is_empty() {
         return Err(bad());
     }
     let allowed = [
@@ -154,7 +184,8 @@ pub fn validate(bytes: &[u8]) -> AppResult<()> {
         "Where",
     ];
     for node in graph.nodes {
-        if !["", "ai.onnx"].contains(&node.domain.as_str()) || !allowed.contains(&node.op.as_str())
+        if !["", "ai.onnx"].contains(&node.domain.as_str())
+            || (!allowed.contains(&node.op.as_str()) && !extra.contains(&node.op.as_str()))
         {
             return Err(bad());
         }

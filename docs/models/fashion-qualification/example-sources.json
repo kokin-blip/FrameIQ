@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Small adapter/reference checks, no human accuracy labels. Video times are acquisition hints, not fabricated FrameRefV1 identities.",
+  "examples": [
+    {
+      "name": "footwear-cc0.jpg",
+      "sha256": "766dadbadeb5eeeb94727b61d01de2ccb07d95bf0e1a6355bf5b73fd52812d7c",
+      "bytes": 120476,
+      "width": 1200,
+      "height": 1600,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chaussure_38382.jpg",
+      "author": "Mathious Ier",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceGroup": "mathious-shoe-detail"
+    },
+    {
+      "name": "runway-65.png",
+      "sha256": "579d8ffd82dd575b83202c662b2122e6aa8ddd07d00983b977ea0d415acaafa2",
+      "bytes": 1066728,
+      "width": 1280,
+      "height": 720,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ethical_fashion_show_berlin_2012.webm",
+      "author": "GermanFashion.TV",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "sourceGroup": "berlin-ethical-2012",
+      "sourceSha256": "9ed20809f79a5f6a9c29cad0ffd1a0c380180a3d69e784bd3d98b6c643fa40a7",
+      "requestedSecond": 65
+    },
+    {
+      "name": "runway-42.png",
+      "sha256": "197166f2827d097434dfc4225b23dc9795b6b1af1271634eb683c0dbb558b23b",
+      "bytes": 1145083,
+      "width": 1280,
+      "height": 720,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ethical_fashion_show_berlin_2012.webm",
+      "author": "GermanFashion.TV",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "sourceGroup": "berlin-ethical-2012",
+      "sourceSha256": "9ed20809f79a5f6a9c29cad0ffd1a0c380180a3d69e784bd3d98b6c643fa40a7",
+      "requestedSecond": 42
+    },
+    {
+      "name": "footwear-shoe-cc0.png",
+      "sha256": "56c3c4f755b6b8787bdadac7992077aab796338ef88b253b16a7cf783bde245b",
+      "bytes": 3604657,
+      "width": 2178,
+      "height": 1788,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Worn_Shoe.png",
+      "author": "Aupajo",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourceGroup": "aupajo-worn-shoe"
+    },
+    {
+      "name": "runway-18.png",
+      "sha256": "d4f1f001d82533b0c5100475f1fc5378966ab527bb0107c2ca2063efce6d4db5",
+      "bytes": 1150134,
+      "width": 1280,
+      "height": 720,
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ethical_fashion_show_berlin_2012.webm",
+      "author": "GermanFashion.TV",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+      "sourceGroup": "berlin-ethical-2012",
+      "sourceSha256": "9ed20809f79a5f6a9c29cad0ffd1a0c380180a3d69e784bd3d98b6c643fa40a7",
+      "requestedSecond": 18
+    }
+  ]
+}

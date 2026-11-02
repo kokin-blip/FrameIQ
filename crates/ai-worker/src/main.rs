@@ -6,19 +6,47 @@ fn run() -> AppResult<()> {
     loop {
         let mut line = String::new();
         let n = (&mut reader)
-            .take(1024 * 1024 + 1)
+            .take(12 * 1024 * 1024 + 1)
             .read_line(&mut line)
             .map_err(|e| AppError::new("AI_PROTOCOL", e.to_string()))?;
         if n == 0 {
             break;
         }
-        if n > 1024 * 1024 {
+        if n > 12 * 1024 * 1024 {
             return Err(AppError::new(
                 "AI_PROTOCOL",
                 "Inference request exceeds limit.",
             ));
         }
         let response = match serde_json::from_str::<InferenceRequestV1>(&line) {
+            Ok(InferenceRequestV1::DownloadArtifact {
+                artifact,
+                directory,
+            }) => {
+                engine.handle(InferenceRequestV1::Unload);
+                match frameiq_inference::download::download_artifact(
+                    &artifact,
+                    std::path::Path::new(&directory),
+                    || false,
+                    |completed, total| {
+                        let mut out = std::io::stdout().lock();
+                        serde_json::to_writer(
+                            &mut out,
+                            &InferenceResponseV1::DownloadProgress { completed, total },
+                        )
+                        .map_err(|e| AppError::new("AI_PROTOCOL", e.to_string()))?;
+                        out.write_all(b"\n")
+                            .map_err(|e| AppError::new("AI_PROTOCOL", e.to_string()))?;
+                        out.flush()
+                            .map_err(|e| AppError::new("AI_PROTOCOL", e.to_string()))
+                    },
+                ) {
+                    Ok(path) => InferenceResponseV1::Downloaded {
+                        path: path.to_string_lossy().into(),
+                    },
+                    Err(error) => InferenceResponseV1::Error { error },
+                }
+            }
             Ok(InferenceRequestV1::Download {
                 manifest,
                 directory,
@@ -67,6 +95,32 @@ fn run() -> AppResult<()> {
                 engine.handle(InferenceRequestV1::Unload);
                 match frameiq_inference::local::probe(&runtime, port, &model, token.as_deref()) {
                     Ok(latency_ms) => InferenceResponseV1::RuntimeProbe { latency_ms },
+                    Err(error) => InferenceResponseV1::Error { error },
+                }
+            }
+            Ok(InferenceRequestV1::FashionLocal {
+                runtime,
+                port,
+                model,
+                token,
+                images,
+                context,
+                task,
+            }) => {
+                engine.handle(InferenceRequestV1::Unload);
+                match frameiq_inference::local::analyze_images(
+                    &runtime,
+                    port,
+                    &model,
+                    token.as_deref(),
+                    &images,
+                    &context,
+                    &task,
+                ) {
+                    Ok(result) => InferenceResponseV1::Fashion {
+                        result: serde_json::to_value(result)
+                            .map_err(|e| AppError::new("AI_PROTOCOL", e.to_string()))?,
+                    },
                     Err(error) => InferenceResponseV1::Error { error },
                 }
             }

@@ -1,3 +1,4 @@
+import { FashionStudio } from "./components/FashionStudio";
 import { useEffect, useState } from "react";
 import { api, message } from "./client";
 import { useModelRegistry } from "./workspace/modelRegistry";
@@ -88,6 +89,7 @@ export default function App() {
         )}
         {w.view === "extract" && <Studio w={w} images={images} />}
         {w.view === "library" && <ProjectLibrary w={w} />}
+        {w.view === "fashion" && <FashionStudio w={w} />}
         {w.view === "export" && <ExportStudio w={w} images={images} />}
         {w.view === "settings" && (
           <Settings

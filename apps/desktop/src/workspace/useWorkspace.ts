@@ -12,7 +12,7 @@ import type {
   ExportFormat,
   ColorMode,
 } from "../contracts";
-export type View = "library" | "extract" | "export" | "settings" | "setup";
+export type View = "library" | "extract" | "export" | "settings" | "setup" | "fashion";
 export function useWorkspace() {
   const [view, setView] = useState<View>(() =>
       desktop && !usePreferences.getState().setupCompleted
